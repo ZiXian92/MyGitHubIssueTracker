@@ -1,16 +1,25 @@
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.IOException;
 
+import controller.UI;
 
+/**
+ * The main program.
+ * @author ZiXian92
+ */
 public class MyGitHubIssueTracker {
-    /**
-     * @param args
-     */
+    private static final String MSG_IOERROR = "An IO error occurred. Exiting program.";
+    
     public static void main(String[] args) {
-	// TODO Auto-generated method stub
 	UI ui = new UI();
 	
-	ui.run();
+	try{
+	    ui.run();
+	} catch(IOException e){
+	    printIOErrorMessage();
+	}
     }
     
+    private static void printIOErrorMessage(){
+	System.out.println(MSG_IOERROR);
+    }
 }
