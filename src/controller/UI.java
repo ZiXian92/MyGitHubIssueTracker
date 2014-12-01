@@ -19,6 +19,9 @@ public class UI {
     private BufferedReader reader;	//Used to read in user input
     private Controller controller;	//Used to execute user input
     
+    /**
+     * Creates a new instance of UI.
+     */
     public UI(){
 	reader = new BufferedReader(new InputStreamReader(System.in));
 	controller = new Controller();
@@ -29,19 +32,31 @@ public class UI {
      * @throws IOException if error occurs when reading input or closing input reader.
      */
     public void run() throws IOException {
-	String username, input;
-	while(!controller.getLoginStatus()){
+	String username, password, input;
+	do{
 	    promptUsername();
-	    username = reader.readLine();
+	    username = readUsername();
 	    promptPassword();
-	    controller.executeLogin(username);
-	}
+	    password = readPassword();
+	} while(!controller.executeLogin(username, password));
 	promptUserInput();
-	while(!(input = reader.readLine()).equals(COMMAND_EXIT)){
+	while(!(input = readInput()).equals(COMMAND_EXIT)){
 	    controller.processInput(input);
 	    promptUserInput();
 	}
 	reader.close();
+    }
+    
+    private String readUsername() throws IOException{
+	return reader.readLine();
+    }
+    
+    private String readPassword() throws IOException{
+	return reader.readLine();
+    }
+    
+    private String readInput() throws IOException{
+	return reader.readLine();
     }
     
     private void promptUsername(){

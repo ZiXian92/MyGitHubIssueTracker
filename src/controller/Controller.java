@@ -1,14 +1,24 @@
 package controller;
 
+import java.io.IOException;
+
+import model.Model;
+
 /**
  * Defines the Controller that coordinates between the views and the Model.
  * @author ZiXian92
  */
 public class Controller implements Observer {
-    //Data members
-    private boolean isLoggedIn = false;
-    private String selectedProject = null, selectedIssue = null;
+    private static final String MSG_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
+    private static final String MSG_LOGGEDIN = "Logged in as %1$s.";
     
+    //Data members
+    private String selectedProject = null, selectedIssue = null;
+    private Model model = Model.getInstance();
+    
+    /**
+     * Creates a new instance of this controller.
+     */
     public Controller(){
 	
     }
@@ -17,8 +27,19 @@ public class Controller implements Observer {
      * Logs the user with the given username into GitHub.
      * @param username The user's GitHub username.
      */
-    public void executeLogin(String username){
-	
+    public boolean executeLogin(String username, String password){
+	try{
+	    if(model.loginUser(username, password)){
+		printLoginSuccessMessage(username);
+		return true;
+	    } else{
+		printLoginFailureMessage();
+		return false;
+	    }
+	} catch(IOException e){
+	    //call errorview.updateView()
+	    return false;
+	}
     }
     
     /**
@@ -29,12 +50,12 @@ public class Controller implements Observer {
 	
     }
     
-    /**
-     * Checks if the user is logged in.
-     * @return true if the user is logged in to GitHub via this application and false otherwise.
-     */
-    public boolean getLoginStatus(){
-	return isLoggedIn;
+    private void printLoginSuccessMessage(String username){
+	System.out.println(String.format(MSG_LOGGEDIN, username));
+    }
+    
+    private void printLoginFailureMessage(){
+	System.out.println(MSG_FAILEDLOGIN);
     }
 
     @Override
