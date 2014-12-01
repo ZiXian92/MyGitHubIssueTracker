@@ -6,6 +6,11 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 
+/**
+ * Defines the component that manages the in-memory storage of GitHub issues,
+ * as well as synchronizing data with GitHub.
+ * @author ZiXian92
+ */
 public class Model {
     private static final String HEADER_ACCEPT = "Accept";
     private static final String VAL_ACCEPT = "application/vnd.github.v3+json";
@@ -37,8 +42,11 @@ public class Model {
     public boolean loginUser(String username, String password) throws IOException {
 	HttpGet request = new HttpGet("https://api.github.com/users/"+username);
 	request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+	
+	//Encoding for basic authentication is to be done on username:password.
 	String encodedPassword = new String(Base64.encodeBase64((username+":"+password).getBytes()));
 	request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, encodedPassword));
+	
 	CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 	return response.getStatusLine().toString().equals(RESPONSE_OK);
     }
