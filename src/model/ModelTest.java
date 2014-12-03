@@ -28,4 +28,16 @@ public class ModelTest {
 	}
     }
     
+    @Test
+    public void testListProjects(){
+	try{
+	    Model model = Model.getInstance();
+	    model.loginUser("zixian92", "Nana7Nana");
+	    assertTrue(model.listProjects()!=null);
+	    //System.out.println(model.listProjects());
+	} catch(IOException e){
+	    
+	}
+    }
+    
 }
