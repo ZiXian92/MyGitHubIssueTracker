@@ -17,17 +17,14 @@ public class ControllerTest {
 	//Tests case of unsuccessful login due to wrong username.
 	//Please use correct password.
 	Controller controller = new Controller();
-	controller.executeLogin("Zi Xian92");
-	assertFalse(controller.getLoginStatus());
+	assertFalse(controller.executeLogin("Zi Xian92", "Nana7Nana"));
 	
 	//Tests case of unsuccessful login due to wrong password.
 	//Please enter a wrong password.
-	controller.executeLogin("ZiXian92");
-	assertFalse(controller.getLoginStatus());
+	assertFalse(controller.executeLogin("ZiXian92", "nana"));
 	
 	//Tests case of successful login.
-	controller.executeLogin("ZiXian92");
-	assertTrue(controller.getLoginStatus());
+	assertTrue(controller.executeLogin("ZiXian92", "Nana7Nana"));
     }
     
     @Test

@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -29,12 +30,14 @@ public class ModelTest {
     }
     
     @Test
+    //Tests the functionality of listing projects.
+    //Replace <username> and <password> with your own GitHub login credentials before running the test.
     public void testListProjects(){
 	try{
 	    Model model = Model.getInstance();
 	    model.loginUser("zixian92", "Nana7Nana");
-	    assertTrue(model.listProjects()!=null);
-	    //System.out.println(model.listProjects());
+	    String[] list = model.listProjects();
+	    assertTrue(list!=null);
 	} catch(IOException e){
 	    
 	}

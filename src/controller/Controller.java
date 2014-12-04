@@ -2,6 +2,8 @@ package controller;
 
 import java.io.IOException;
 
+import view.ListView;
+
 import model.Model;
 
 /**
@@ -15,6 +17,7 @@ public class Controller implements Observer {
     //Data members
     private String selectedProject = null, selectedIssue = null;
     private Model model = Model.getInstance();
+    private ListView listView = new ListView();
     
     /**
      * Creates a new instance of this controller.
@@ -31,6 +34,7 @@ public class Controller implements Observer {
 	try{
 	    if(model.loginUser(username, password)){
 		printLoginSuccessMessage(username);
+		listView.updateView(model.listProjects());
 		return true;
 	    } else{
 		printLoginFailureMessage();
