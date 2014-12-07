@@ -85,6 +85,8 @@ public class Model {
 	 */
 	public void initialise() throws IOException {
 		assert username!=null && !username.isEmpty();
+		
+		//Send request to get list of repositories.
 		HttpGet request = new HttpGet(API_URL+EXT_REPOS);
 		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
@@ -93,6 +95,8 @@ public class Model {
 			response.close();
 			return;
 		}
+		
+		//Get the message body of the response.
 		HttpEntity messageBody = response.getEntity();
 
 		if(messageBody==null){
@@ -107,14 +111,14 @@ public class Model {
 		}
 		response.close();
 		reader.close();
+		
+		//Parse the JSON string into Repository instances.
 		try{
 			JSONArray arr = new JSONArray(strBuilder.toString());
 			int size = arr.length();
-			ArrayList<String> temp = new ArrayList<String>();
 			for(int i=0; i<size; i++){
 				repoList.add(fetchIssues(arr.getJSONObject(i).getString(KEY_REPONAME)));
-				//get repository issues and add to repository
-				//add repository to list
+				
 			}
 		} catch(JSONException e){
 		}
@@ -133,14 +137,25 @@ public class Model {
 		return list;
 	}
 	
-	//Fetches issues under the specified repository and stores them in
-	//a Repository instance.
-	public Repository fetchIssues(String repo) throws IOException {
+	/**
+	 * Fetches issues under the specified repository and stores them in
+	 * a Repository instance.
+	 * @param repo The name of the repository whose issues are to be fetched.
+	 * @return A Repository representing the specified GitHub repository.
+	 * @throws IOException when IO error occurs during the request.
+	 */
+	public Repository fetchIssues(String repoName) throws IOException {
 		assert username!=null && !username.isEmpty();
-		HttpGet request = new HttpGet(API_URL+String.format(EXT_REPOISSUES, username, repo));
+		HttpGet request = new HttpGet(API_URL+String.format(EXT_REPOISSUES, username, repoName));
 		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-		
+		if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
+			response.close();
+			return null;
+		}
+		Repository repo = new Repository(repoName);
+		//get repository issues and add to repository
+		//add repository to list
 		response.close();
-		return null;	//Stub
+		return repo;
 	}
 }
