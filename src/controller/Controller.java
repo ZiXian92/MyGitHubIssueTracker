@@ -34,6 +34,7 @@ public class Controller implements Observer {
 		try{
 			if(model.loginUser(username, password)){
 				printLoginSuccessMessage(username);
+				model.initialise();
 				listView.updateView(model.listRepositories());
 				return true;
 			} else{

@@ -5,10 +5,10 @@ package view;
  * @author ZiXian92
  */
 public class ListView {
-    public void updateView(String[] projectList){
-	int size = projectList.length;
-	for(int i=0; i<size; i++){
-	    System.out.println((i+1)+". "+projectList[i]);
+	public void updateView(String[] projectList){
+		int size = projectList.length;
+		for(int i=0; i<size; i++){
+			System.out.println((i+1)+". "+projectList[i]);
+		}
 	}
-    }
 }

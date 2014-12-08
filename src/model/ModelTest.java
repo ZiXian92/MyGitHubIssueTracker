@@ -49,7 +49,7 @@ public class ModelTest {
 		Model model = Model.getInstance();
 		try{
 			model.loginUser("zixian92", "Nana7Nana");
-			assertFalse(model.fetchIssues("MyGitHubIssueTracker")==null);
+			assertFalse(model.makeRepository("MyGitHubIssueTracker")==null);
 		} catch(IOException e){
 			fail();
 		}
