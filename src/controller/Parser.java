@@ -24,8 +24,14 @@ public class Parser {
 		return null;
 	}
 	
+	/**
+	 * Gets the first word in the input, using whitespace as delimters.
+	 * @param input The string to extract the first word from. Cannot be null or empty.
+	 * @return The first word in the input string.
+	 */
 	private String extractFirstWord(String input){
-		String[] arr = input.split("\\s+");
+		assert input!=null && !input.isEmpty();
+		String[] arr = input.split("\\s+", 2);
 		return arr[0];
 	}
 }
