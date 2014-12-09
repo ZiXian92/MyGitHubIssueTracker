@@ -30,7 +30,7 @@ public class Model {
 	private static final String EXT_REPOS = "/user/repos";
 	private static final String EXT_REPOISSUES = "/repos/%1$s/%2$s/issues";
 	private static final String EXT_ORGS = "/user/orgs";
-	private static final String EXT_ORG_REPOS = "/orgs/%1$s/repos";
+	private static final String EXT_ORGREPOS = "/orgs/%1$s/repos";
 
 	private static final String HEADER_ACCEPT = "Accept";
 	private static final String VAL_ACCEPT = "application/vnd.github.v3+json";
@@ -40,6 +40,7 @@ public class Model {
 	private static final String RESPONSE_OK = "HTTP/1.1 200 OK";
 
 	private static final String KEY_REPONAME = "name";
+	private static final String KEY_ORGREPONAME = "full_name";
 	private static final String KEY_OWNER = "owner";
 	private static final String KEY_OWNERLOGIN = "login";
 	private static final String KEY_ORGLOGIN = KEY_OWNERLOGIN;
@@ -124,12 +125,14 @@ public class Model {
 	public Repository makeRepository(JSONObject obj) throws IOException {
 		assert obj!=null;
 		try{
+			//Initialize repository with name and owner
 			String repoName = obj.getString(KEY_REPONAME);
 			String owner = obj.getJSONObject(KEY_OWNER).getString(KEY_OWNERLOGIN);
 			Repository repo = new Repository(repoName, owner);
 			
 			//Sends request for issues under this repository.
 			HttpGet request = new HttpGet(API_URL+String.format(EXT_REPOISSUES, owner, repoName));
+			request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
 				response.close();
@@ -190,7 +193,7 @@ public class Model {
 	}
 	
 	/**
-	 * Loads repositories in which the user is a contributor from GitHub.
+	 * Loads repositories owned by the user.
 	 * @throws IOException if IO error occurs during the request or reading the response.
 	 */
 	private void loadRepositories() throws IOException {
@@ -241,14 +244,14 @@ public class Model {
 		//Sends request for user's organizations.
 		HttpGet request = new HttpGet(API_URL+EXT_ORGS);
 		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-		request.addHeader(HEADER_AUTH, VAL_AUTH);
+		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 		if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
 			response.close();
 			return;
 		}
 		
-		//Reads list of repositories.
+		//Reads list of organizations.
 		HttpEntity messageBody = response.getEntity();
 		if(messageBody==null){
 			response.close();
@@ -258,12 +261,56 @@ public class Model {
 			JSONArray arr = new JSONArray(getJSONContent(messageBody.getContent()));
 			response.close();
 			int size = arr.length();
-			Repository repo;
 			for(int i=0; i<size; i++){
-				
+				try{
+					addRepositories(arr.getJSONObject(i).getString(KEY_ORGLOGIN));
+				} catch(JSONException e){
+					//Will not happen but just in case.
+				}
 			}
 		} catch (JSONException e) {
 			//Will not happen unless GitHub changes their JSON format
+		}
+	}
+	
+	/**
+	 * Adds repositories involving the user from the given organization.
+	 * @param org The name of the organization to load repositories from.
+	 * @throws IOException 
+	 */
+	private void addRepositories(String org) throws IOException {
+		assert org!=null && !org.isEmpty();
+		
+		//Sends request for organization's repositories.
+		HttpGet request = new HttpGet(API_URL+String.format(EXT_ORGREPOS, org));
+		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+		if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
+			response.close();
+			return;
+		}
+		HttpEntity messageBody = response.getEntity();
+		if(messageBody==null){
+			response.close();
+			return;
+		}
+		try{
+			JSONArray arr = new JSONArray(getJSONContent(messageBody.getContent()));
+			response.close();
+			int size = arr.length();
+			Repository repo;
+			for(int i=0; i<size; i++){
+				try{
+					repo = makeRepository(arr.getJSONObject(i));
+				} catch(JSONException e){
+					repo = null;
+				}
+				if(repo!=null){
+					repoList.add(repo);
+				}
+			}
+		} catch(JSONException e){
+			//Will not happen unless GitHub changes JSON format.
 		}
 	}
 }

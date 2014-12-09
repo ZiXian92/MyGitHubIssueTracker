@@ -36,6 +36,7 @@ public class ModelTest {
 		try{
 			Model model = Model.getInstance();
 			model.loginUser("zixian92", "Nana7Nana");
+			model.initialise();
 			String[] list = model.listRepositories();
 			assertTrue(list!=null);
 		} catch(IOException e){
