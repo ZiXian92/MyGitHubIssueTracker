@@ -30,6 +30,7 @@ public class Model {
 	private static final String EXT_REPOS = "/user/repos";
 	private static final String EXT_REPOISSUES = "/repos/%1$s/%2$s/issues";
 	private static final String EXT_ORGS = "/user/orgs";
+	private static final String EXT_ORG_REPOS = "/orgs/%1$s/repos";
 
 	private static final String HEADER_ACCEPT = "Accept";
 	private static final String VAL_ACCEPT = "application/vnd.github.v3+json";
@@ -41,6 +42,7 @@ public class Model {
 	private static final String KEY_REPONAME = "name";
 	private static final String KEY_OWNER = "owner";
 	private static final String KEY_OWNERLOGIN = "login";
+	private static final String KEY_ORGLOGIN = KEY_OWNERLOGIN;
 	private static final String KEY_ISSUETITLE = "title";
 	private static final String KEY_STATUS = "state";
 	private static final String KEY_CONTENT = "body";
@@ -235,5 +237,33 @@ public class Model {
 	 */
 	private void loadOrganizationRepositories() throws IOException {
 		assert username!=null && !username.isEmpty();
+		
+		//Sends request for user's organizations.
+		HttpGet request = new HttpGet(API_URL+EXT_ORGS);
+		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		request.addHeader(HEADER_AUTH, VAL_AUTH);
+		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+		if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
+			response.close();
+			return;
+		}
+		
+		//Reads list of repositories.
+		HttpEntity messageBody = response.getEntity();
+		if(messageBody==null){
+			response.close();
+			return;
+		}
+		try {
+			JSONArray arr = new JSONArray(getJSONContent(messageBody.getContent()));
+			response.close();
+			int size = arr.length();
+			Repository repo;
+			for(int i=0; i<size; i++){
+				
+			}
+		} catch (JSONException e) {
+			//Will not happen unless GitHub changes their JSON format
+		}
 	}
 }

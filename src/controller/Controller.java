@@ -13,6 +13,7 @@ import model.Model;
 public class Controller implements Observer {
 	private static final String MSG_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
 	private static final String MSG_LOGGEDIN = "Logged in as %1$s.";
+	private static final String MSG_LOADDATA = "Loading data from GitHub...";
 
 	//Data members
 	private String selectedProject = null, selectedIssue = null;
@@ -57,6 +58,7 @@ public class Controller implements Observer {
 
 	private void printLoginSuccessMessage(String username){
 		System.out.println(String.format(MSG_LOGGEDIN, username));
+		System.out.println(MSG_LOADDATA);
 	}
 
 	private void printLoginFailureMessage(){
