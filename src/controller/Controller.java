@@ -2,8 +2,7 @@ package controller;
 
 import java.io.IOException;
 
-import view.ListView;
-
+import view.MessageView;
 import model.Model;
 
 /**
@@ -12,19 +11,23 @@ import model.Model;
  */
 public class Controller implements Observer {
 	private static final String MSG_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
-	private static final String MSG_LOGGEDIN = "Logged in as %1$s.";
-	private static final String MSG_LOADDATA = "Loading data from GitHub...";
+	private static final String MSG_LOGGEDIN = "Logged in as %1$s.\nLoading data from GitHub...";
+	private static final String MSG_IOERROR = "An I/O error has occured. Login failed.";
 
 	//Data members
-	private String selectedProject = null, selectedIssue = null;
-	private Model model = Model.getInstance();
-	private ListView listView = new ListView();
+	private String selectedRepository = null, selectedIssue = null;
+	private Model model;
+	private MessageView msgView;
+	private Parser parser;
 
 	/**
 	 * Creates a new instance of this controller.
 	 */
 	public Controller(){
-
+		model = Model.getInstance();
+		model.addObserver(this);
+		msgView = new MessageView();
+		parser = new Parser();
 	}
 
 	/**
@@ -34,44 +37,37 @@ public class Controller implements Observer {
 	public boolean executeLogin(String username, String password){
 		try{
 			if(model.loginUser(username, password)){
-				printLoginSuccessMessage(username);
+				msgView.updateView(String.format(MSG_LOGGEDIN, username));
 				model.initialise();
-				listView.updateView(model.listRepositories());
+				new List().execute();
 				return true;
 			} else{
-				printLoginFailureMessage();
+				msgView.updateView(MSG_FAILEDLOGIN);
 				return false;
 			}
 		} catch(IOException e){
-			//call errorview.updateView()
+			msgView.updateView(MSG_IOERROR);
 			return false;
 		}
 	}
 
 	/**
 	 * Executes the given input command.
-	 * @param input The input command to execute.
+	 * @param input The input command to execute. Cannot be null or an empty string.
 	 */
 	public void processInput(String input){
-
-	}
-
-	private void printLoginSuccessMessage(String username){
-		System.out.println(String.format(MSG_LOGGEDIN, username));
-		System.out.println(MSG_LOADDATA);
-	}
-
-	private void printLoginFailureMessage(){
-		System.out.println(MSG_FAILEDLOGIN);
+		assert input!=null && !input.isEmpty();
+		Command cmd = parser.parse(input, selectedRepository, selectedIssue);
+		cmd.execute();
 	}
 
 	@Override
-	public void updateSelectedProject(String projectName) {
-		if(projectName==null || projectName.isEmpty()){
-			selectedProject = null;
+	public void updateSelectedRepository(String repo) {
+		if(repo==null || repo.isEmpty()){
+			selectedRepository = null;
 			updateSelectedIssue(null);
 		} else{
-			selectedProject = projectName;
+			selectedRepository = repo;
 		}
 	}
 
@@ -85,7 +81,7 @@ public class Controller implements Observer {
 	 * @return The name of the selected project.
 	 */
 	public String getSelectedProject(){
-		return selectedProject;
+		return selectedRepository;
 	}
 
 	/**

@@ -33,13 +33,13 @@ public class ControllerTest {
 		Controller controller = new Controller();
 
 		//Tests boundary cases.
-		controller.updateSelectedProject("");
+		controller.updateSelectedRepository("");
 		assertEquals(null, controller.getSelectedProject());
-		controller.updateSelectedProject(null);
+		controller.updateSelectedRepository(null);
 		assertEquals(null, controller.getSelectedProject());
 
 		//Tests typical case.
-		controller.updateSelectedProject("MyGitHubIssueTracker");
+		controller.updateSelectedRepository("MyGitHubIssueTracker");
 		assertEquals("MyGitHubIssueTracker", controller.getSelectedProject());
 	}
 
@@ -47,7 +47,7 @@ public class ControllerTest {
 	//Tests observer method of updating the selected issue.
 	public void testUpdateSelectedIssue(){
 		Controller controller = new Controller();
-		controller.updateSelectedProject("MyGitHubIssueTracker");
+		controller.updateSelectedRepository("MyGitHubIssueTracker");
 
 		//Tests boundary cases
 		controller.updateSelectedIssue("");
@@ -60,7 +60,7 @@ public class ControllerTest {
 		assertEquals("Issue 1", controller.getSelectedIssue());
 
 		//Deselecting project should automatically deselect issue.
-		controller.updateSelectedProject(null);
+		controller.updateSelectedRepository(null);
 		assertEquals(null, controller.getSelectedIssue());
 	}
 }

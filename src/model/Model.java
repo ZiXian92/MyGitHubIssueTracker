@@ -16,6 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import controller.Observer;
 import structure.Issue;
 import structure.Repository;
 
@@ -29,21 +30,18 @@ public class Model {
 	private static final String EXT_USER = "/user";
 	private static final String EXT_REPOS = "/user/repos";
 	private static final String EXT_REPOISSUES = "/repos/%1$s/%2$s/issues";
-	private static final String EXT_ORGS = "/user/orgs";
-	private static final String EXT_ORGREPOS = "/orgs/%1$s/repos";
 
 	private static final String HEADER_ACCEPT = "Accept";
 	private static final String VAL_ACCEPT = "application/vnd.github.v3+json";
+	private static final String VAL_PREVIEWACCEPT = "application/vnd.github.moondragon-preview+json";
 	private static final String HEADER_AUTH = "Authorization";
 	private static final String VAL_AUTH = "Basic %1$s";
 
 	private static final String RESPONSE_OK = "HTTP/1.1 200 OK";
 
 	private static final String KEY_REPONAME = "name";
-	private static final String KEY_ORGREPONAME = "full_name";
 	private static final String KEY_OWNER = "owner";
 	private static final String KEY_OWNERLOGIN = "login";
-	private static final String KEY_ORGLOGIN = KEY_OWNERLOGIN;
 	private static final String KEY_ISSUETITLE = "title";
 	private static final String KEY_STATUS = "state";
 	private static final String KEY_CONTENT = "body";
@@ -54,9 +52,11 @@ public class Model {
 	//Data members
 	private String authCode, username;
 	private ArrayList<Repository> repoList;
+	private ArrayList<Observer> observerList;
 
 	private Model(){
 		repoList = new ArrayList<Repository>();
+		observerList = new ArrayList<Observer>();
 	}
 
 	/**
@@ -67,6 +67,15 @@ public class Model {
 			return instance = new Model();
 		}
 		return instance;
+	}
+	
+	/**
+	 * Adds the given observer to the list of observers.
+	 * @param observer The observer object to be added. Cannot be null.
+	 */
+	public void addObserver(Observer observer){
+		assert observer!=null;
+		observerList.add(observer);
 	}
 
 	/**
@@ -79,18 +88,24 @@ public class Model {
 		if(username==null || username.isEmpty() || password==null || password.isEmpty()){
 			return false;
 		}
-		this.username = username;
+		
+		//Creates the request.
 		HttpGet request = new HttpGet(API_URL+EXT_USER);
 		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 
 		//Encoding for basic authentication is to be done on username:password.
-		authCode = new String(Base64.encodeBase64((username+":"+password).getBytes()));
-		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+		String code = new String(Base64.encodeBase64((username+":"+password).getBytes()));
+		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, code));
 
 		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 		String responseStatus = response.getStatusLine().toString();
 		response.close();
-		return responseStatus.equals(RESPONSE_OK);
+		if(responseStatus.equals(RESPONSE_OK)){
+			this.username = username;
+			this.authCode = code;
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -98,8 +113,41 @@ public class Model {
 	 * @throws IOException if an IO error occurs during the request.
 	 */
 	public void initialise() throws IOException {
-		loadRepositories();
-		loadOrganizationRepositories();
+		assert authCode!=null && !authCode.isEmpty();
+
+		//Send request to get list of repositories.
+		HttpGet request = new HttpGet(API_URL+EXT_REPOS);
+		request.addHeader(HEADER_ACCEPT, VAL_PREVIEWACCEPT);
+		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+		if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
+			response.close();
+			return;
+		}
+
+		//Get the message body of the response.
+		HttpEntity messageBody = response.getEntity();
+
+		if(messageBody==null){
+			response.close();
+			return;
+		}
+
+		//Parse the JSON string into Repository instances.
+		try{
+			JSONArray arr = new JSONArray(getJSONContent(messageBody.getContent()));
+			response.close();
+			int size = arr.length();
+			Repository temp;
+			for(int i=0; i<size; i++){	//Add repository to list.
+				temp = makeRepository(arr.getJSONObject(i));
+				if(temp!=null){
+					repoList.add(temp);
+				}
+			}
+		} catch(JSONException e){
+			//Will not happen unless GitHub API decides to change their JSON format.
+		}
 	}
 	
 	/**
@@ -112,6 +160,7 @@ public class Model {
 		for(int i=0; itr.hasNext(); i++){
 			list[i] = itr.next().getName();
 		}
+		notifyObservers(null, null);
 		return list;
 	}
 	
@@ -193,124 +242,18 @@ public class Model {
 	}
 	
 	/**
-	 * Loads repositories owned by the user.
-	 * @throws IOException if IO error occurs during the request or reading the response.
+	 * Notifies observers on the application's status.
 	 */
-	private void loadRepositories() throws IOException {
-		assert username!=null && !username.isEmpty();
-
-		//Send request to get list of repositories.
-		HttpGet request = new HttpGet(API_URL+EXT_REPOS);
-		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-		if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
-			response.close();
-			return;
-		}
-
-		//Get the message body of the response.
-		HttpEntity messageBody = response.getEntity();
-
-		if(messageBody==null){
-			response.close();
-			return;
-		}
-
-		//Parse the JSON string into Repository instances.
-		try{
-			JSONArray arr = new JSONArray(getJSONContent(messageBody.getContent()));
-			response.close();
-			int size = arr.length();
-			Repository temp;
-			for(int i=0; i<size; i++){	//Add repository to list.
-				temp = makeRepository(arr.getJSONObject(i));
-				if(temp!=null){
-					repoList.add(temp);
-				}
+	private void notifyObservers(String selectedRepo, String selectedIssue){
+		assert !selectedRepo.isEmpty() && !selectedIssue.isEmpty();
+		Iterator<Observer> itr = observerList.iterator();
+		Observer temp;
+		while(itr.hasNext()){
+			temp = itr.next();
+			temp.updateSelectedRepository(selectedRepo);
+			if(selectedRepo!=null){
+				temp.updateSelectedIssue(selectedIssue);
 			}
-		} catch(JSONException e){
-			//Will not happen unless GitHub API decides to change their JSON format.
-		}
-	}
-	
-	/**
-	 * Loads repositories from organizations which the user is part of from GitHub.
-	 * @throws IOException if IO error occurs during the request or when reading the response.
-	 */
-	private void loadOrganizationRepositories() throws IOException {
-		assert username!=null && !username.isEmpty();
-		
-		//Sends request for user's organizations.
-		HttpGet request = new HttpGet(API_URL+EXT_ORGS);
-		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-		if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
-			response.close();
-			return;
-		}
-		
-		//Reads list of organizations.
-		HttpEntity messageBody = response.getEntity();
-		if(messageBody==null){
-			response.close();
-			return;
-		}
-		try {
-			JSONArray arr = new JSONArray(getJSONContent(messageBody.getContent()));
-			response.close();
-			int size = arr.length();
-			for(int i=0; i<size; i++){
-				try{
-					addRepositories(arr.getJSONObject(i).getString(KEY_ORGLOGIN));
-				} catch(JSONException e){
-					//Will not happen but just in case.
-				}
-			}
-		} catch (JSONException e) {
-			//Will not happen unless GitHub changes their JSON format
-		}
-	}
-	
-	/**
-	 * Adds repositories involving the user from the given organization.
-	 * @param org The name of the organization to load repositories from.
-	 * @throws IOException 
-	 */
-	private void addRepositories(String org) throws IOException {
-		assert org!=null && !org.isEmpty();
-		
-		//Sends request for organization's repositories.
-		HttpGet request = new HttpGet(API_URL+String.format(EXT_ORGREPOS, org));
-		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-		if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
-			response.close();
-			return;
-		}
-		HttpEntity messageBody = response.getEntity();
-		if(messageBody==null){
-			response.close();
-			return;
-		}
-		try{
-			JSONArray arr = new JSONArray(getJSONContent(messageBody.getContent()));
-			response.close();
-			int size = arr.length();
-			Repository repo;
-			for(int i=0; i<size; i++){
-				try{
-					repo = makeRepository(arr.getJSONObject(i));
-				} catch(JSONException e){
-					repo = null;
-				}
-				if(repo!=null){
-					repoList.add(repo);
-				}
-			}
-		} catch(JSONException e){
-			//Will not happen unless GitHub changes JSON format.
 		}
 	}
 }

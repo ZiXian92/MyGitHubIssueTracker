@@ -9,7 +9,7 @@ public interface Observer {
      * Updates the status of the currently selected project.
      * @param projectName The name of the currently selected project or null if no project is selected.
      */
-    void updateSelectedProject(String projectName);
+    void updateSelectedRepository(String repo);
     
     /**
      * Updates the status of the currently selected issue.
