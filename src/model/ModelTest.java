@@ -42,16 +42,4 @@ public class ModelTest {
 
 		}
 	}
-
-	@Test
-	//Change access identifier of Model.fetchIssues() to public before running this test.
-	public void testFetchIssues(){
-		Model model = Model.getInstance();
-		try{
-			model.loginUser("zixian92", "Nana7Nana");
-			assertFalse(model.makeRepository("MyGitHubIssueTracker")==null);
-		} catch(IOException e){
-			fail();
-		}
-	}
 }

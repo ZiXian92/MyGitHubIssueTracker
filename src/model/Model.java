@@ -29,6 +29,7 @@ public class Model {
 	private static final String EXT_USER = "/user";
 	private static final String EXT_REPOS = "/user/repos";
 	private static final String EXT_REPOISSUES = "/repos/%1$s/%2$s/issues";
+	private static final String EXT_ORGS = "/user/orgs";
 
 	private static final String HEADER_ACCEPT = "Accept";
 	private static final String VAL_ACCEPT = "application/vnd.github.v3+json";
@@ -38,9 +39,14 @@ public class Model {
 	private static final String RESPONSE_OK = "HTTP/1.1 200 OK";
 
 	private static final String KEY_REPONAME = "name";
+	private static final String KEY_OWNER = "owner";
+	private static final String KEY_OWNERLOGIN = "login";
 	private static final String KEY_ISSUETITLE = "title";
+	private static final String KEY_STATUS = "state";
+	private static final String KEY_CONTENT = "body";
+	private static final String KEY_ASSIGNEE = "assignee";
 
-	private static Model instance = null;
+	private static Model instance = null;	//The single instance of this class
 
 	//Data members
 	private String authCode, username;
@@ -79,7 +85,9 @@ public class Model {
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 
 		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-		return response.getStatusLine().toString().equals(RESPONSE_OK);
+		String responseStatus = response.getStatusLine().toString();
+		response.close();
+		return responseStatus.equals(RESPONSE_OK);
 	}
 
 	/**
@@ -87,38 +95,8 @@ public class Model {
 	 * @throws IOException if an IO error occurs during the request.
 	 */
 	public void initialise() throws IOException {
-		assert username!=null && !username.isEmpty();
-		
-		//Send request to get list of repositories.
-		HttpGet request = new HttpGet(API_URL+EXT_REPOS);
-		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-		if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
-			response.close();
-			return;
-		}
-		
-		//Get the message body of the response.
-		HttpEntity messageBody = response.getEntity();
-
-		if(messageBody==null){
-			response.close();
-			return;
-		}
-
-		//Parse the JSON string into Repository instances.
-		try{
-			JSONArray arr = new JSONArray(getJSONContent(messageBody.getContent()));
-			int size = arr.length();
-			for(int i=0; i<size; i++){	//Add repository to list.
-				repoList.add(makeRepository(arr.getJSONObject(i).getString(KEY_REPONAME)));
-			}
-		} catch(JSONException e){
-		
-		} finally{
-			response.close();
-		}
+		loadRepositories();
+		loadOrganizationRepositories();
 	}
 	
 	/**
@@ -132,6 +110,64 @@ public class Model {
 			list[i] = itr.next().getName();
 		}
 		return list;
+	}
+	
+	/**
+	 * Fetches issues under the specified repository and stores them in
+	 * a Repository instance.
+	 * @param obj The JSONObject representation of the repository to be instantiated..
+	 * @return A Repository representing the specified GitHub repository.
+	 * @throws IOException when IO error occurs during the request.
+	 */
+	public Repository makeRepository(JSONObject obj) throws IOException {
+		assert obj!=null;
+		try{
+			String repoName = obj.getString(KEY_REPONAME);
+			String owner = obj.getJSONObject(KEY_OWNER).getString(KEY_OWNERLOGIN);
+			Repository repo = new Repository(repoName, owner);
+			
+			//Sends request for issues under this repository.
+			HttpGet request = new HttpGet(API_URL+String.format(EXT_REPOISSUES, owner, repoName));
+			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
+				response.close();
+				return null;
+			}
+
+			//Loads issues from GitHub repository into this repository instance.
+			HttpEntity messageBody = response.getEntity();
+			if(messageBody!=null){
+				JSONObject temp;
+				JSONArray arr = new JSONArray(getJSONContent(messageBody.getContent()));
+				response.close();
+				int size = arr.length();
+				for(int i=0; i<size; i++){
+					temp = arr.getJSONObject(i);
+					repo.addIssue(makeIssue(temp));
+				}
+			}
+			return repo;
+		} catch(JSONException e){
+			return null;
+		}
+	}
+	
+	/**
+	 * Creates an Issue from the given JSON representation.
+	 * @param obj The JSON representation of the issue.
+	 * @return An Issue instance representing the issue or null if the JSON object format is wrong.
+	 */
+	private Issue makeIssue(JSONObject obj){
+		Issue issue = null;
+		try{
+			issue = new Issue(obj.getString(KEY_ISSUETITLE));
+			issue.setStatus(obj.getString(KEY_STATUS));
+			issue.setContent(obj.getString(KEY_CONTENT));
+			issue.setAssignee(obj.getString(KEY_ASSIGNEE));
+		} catch(JSONException e){
+			
+		}
+		return issue;
 	}
 	
 	/**
@@ -152,51 +188,52 @@ public class Model {
 	}
 	
 	/**
-	 * Fetches issues under the specified repository and stores them in
-	 * a Repository instance.
-	 * @param repo The name of the repository whose issues are to be fetched.
-	 * @return A Repository representing the specified GitHub repository.
-	 * @throws IOException when IO error occurs during the request.
+	 * Loads repositories in which the user is a contributor from GitHub.
+	 * @throws IOException if IO error occurs during the request or reading the response.
 	 */
-	public Repository makeRepository(String repoName) throws IOException {
+	private void loadRepositories() throws IOException {
 		assert username!=null && !username.isEmpty();
-		HttpGet request = new HttpGet(API_URL+String.format(EXT_REPOISSUES, username, repoName));
+
+		//Send request to get list of repositories.
+		HttpGet request = new HttpGet(API_URL+EXT_REPOS);
+		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 		if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
 			response.close();
-			return null;
+			return;
 		}
-		Repository repo = new Repository(repoName);
+
+		//Get the message body of the response.
 		HttpEntity messageBody = response.getEntity();
-		if(messageBody!=null){
-			try{
-				JSONObject temp;
-				JSONArray arr = new JSONArray(getJSONContent(messageBody.getContent()));
-				int size = arr.length();
-				for(int i=0; i<size; i++){
-					temp = arr.getJSONObject(i);
-					repo.addIssue(makeIssue(temp));
-				}
-			} catch(JSONException e){
-				
-			} finally{
-				response.close();
-			}
+
+		if(messageBody==null){
+			response.close();
+			return;
 		}
-		response.close();
-		return repo;
+
+		//Parse the JSON string into Repository instances.
+		try{
+			JSONArray arr = new JSONArray(getJSONContent(messageBody.getContent()));
+			response.close();
+			int size = arr.length();
+			Repository temp;
+			for(int i=0; i<size; i++){	//Add repository to list.
+				temp = makeRepository(arr.getJSONObject(i));
+				if(temp!=null){
+					repoList.add(temp);
+				}
+			}
+		} catch(JSONException e){
+			//Will not happen unless GitHub API decides to change their JSON format.
+		}
 	}
 	
 	/**
-	 * Creates an Issue from the given JSON representation.
-	 * @param obj The JSON representation of the issue.
-	 * @return An Issue instance representing the issue or null if the JSON object format is wrong.*/
-	private Issue makeIssue(JSONObject obj){
-		try{
-			Issue issue = new Issue(obj.getString(KEY_ISSUETITLE));
-			return issue;
-		} catch(JSONException e){
-			return null;
-		}
+	 * Loads repositories from organizations which the user is part of from GitHub.
+	 * @throws IOException if IO error occurs during the request or when reading the response.
+	 */
+	private void loadOrganizationRepositories() throws IOException {
+		assert username!=null && !username.isEmpty();
 	}
 }
