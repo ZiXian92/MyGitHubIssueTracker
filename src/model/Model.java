@@ -245,7 +245,12 @@ public class Model {
 	 * Notifies observers on the application's status.
 	 */
 	private void notifyObservers(String selectedRepo, String selectedIssue){
-		assert !selectedRepo.isEmpty() && !selectedIssue.isEmpty();
+		if(selectedRepo!=null){
+			assert !selectedRepo.isEmpty();
+		}
+		if(selectedIssue!=null){
+			assert !selectedIssue.isEmpty();
+		}
 		Iterator<Observer> itr = observerList.iterator();
 		Observer temp;
 		while(itr.hasNext()){

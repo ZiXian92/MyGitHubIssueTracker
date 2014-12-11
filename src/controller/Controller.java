@@ -57,12 +57,12 @@ public class Controller implements Observer {
 	 * @param input The input command to execute. Cannot be null or an empty string.
 	 */
 	public void processInput(String input){
-		if(input==null || input.trim().isEmpty()){
-			msgView.updateView(MSG_INVALIDCOMMAND);
-			return;
+		try{
+			Command cmd = parser.parse(input, selectedRepository, selectedIssue);
+			cmd.execute();
+		} catch(IllegalArgumentException e){
+			msgView.updateView(e.getMessage());
 		}
-		Command cmd = parser.parse(input, selectedRepository, selectedIssue);
-		cmd.execute();
 	}
 
 	@Override
