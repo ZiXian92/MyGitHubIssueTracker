@@ -20,8 +20,18 @@ public class Parser {
 	 */
 	public Command parse(String input, String selectedRepo, String selectedIssue){
 		assert input!=null && !input.isEmpty() && !selectedRepo.isEmpty() && !selectedIssue.isEmpty();
+		input = input.trim();
 		String commandWord = extractFirstWord(input);
-		return null;
+		switch(CommandType.getCommandType(commandWord)){
+			case LIST: return new ListCommand();
+			default: if(selectedRepo==null){
+						return new SelectRepo(input);
+					} else if(selectedIssue==null){
+						return new SelectIssue(input, selectedRepo);
+					} else{
+						return new CommentIssue(input, selectedRepo, selectedIssue);
+					}
+		}
 	}
 	
 	/**

@@ -13,6 +13,7 @@ public class Controller implements Observer {
 	private static final String MSG_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
 	private static final String MSG_LOGGEDIN = "Logged in as %1$s.\nLoading data from GitHub...";
 	private static final String MSG_IOERROR = "An I/O error has occured. Login failed.";
+	private static final String MSG_INVALIDCOMMAND = "Please use a non-empty, valid command.";
 
 	//Data members
 	private String selectedRepository = null, selectedIssue = null;
@@ -39,7 +40,7 @@ public class Controller implements Observer {
 			if(model.loginUser(username, password)){
 				msgView.updateView(String.format(MSG_LOGGEDIN, username));
 				model.initialise();
-				new List().execute();
+				new ListCommand().execute();
 				return true;
 			} else{
 				msgView.updateView(MSG_FAILEDLOGIN);
@@ -56,7 +57,10 @@ public class Controller implements Observer {
 	 * @param input The input command to execute. Cannot be null or an empty string.
 	 */
 	public void processInput(String input){
-		assert input!=null && !input.isEmpty();
+		if(input==null || input.trim().isEmpty()){
+			msgView.updateView(MSG_INVALIDCOMMAND);
+			return;
+		}
 		Command cmd = parser.parse(input, selectedRepository, selectedIssue);
 		cmd.execute();
 	}

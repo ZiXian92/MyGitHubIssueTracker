@@ -12,10 +12,13 @@ import org.junit.Test;
 public class ParserTest {
 
 	@Test
+	//Tests the list command parsing
 	public void testList() {
 		Parser parser = new Parser();
 		Command cmd = parser.parse("list", null, null);
-		assertTrue(cmd instanceof List);
+		assertTrue(cmd instanceof ListCommand);
+		cmd = parser.parse(" ls", null, null);
+		assertTrue(cmd instanceof ListCommand);
 	}
 
 }
