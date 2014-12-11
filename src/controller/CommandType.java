@@ -4,7 +4,8 @@ import java.util.HashSet;
 
 public enum CommandType {
 	LIST("list", "ls"), 
-	SELECT("select");
+	SELECT("select"),
+	OTHER();
 	
 	private HashSet<String> aliasTable;
 	
@@ -27,6 +28,6 @@ public enum CommandType {
 			if(cmd.aliasTable.contains(word))
 				return cmd;
 		}
-		return null;
+		return OTHER;
 	}
 }
