@@ -47,4 +47,9 @@ public class ModelTest {
 			fail();
 		}
 	}
+	
+	@Test
+	public void testGetRepository(){
+		
+	}
 }
