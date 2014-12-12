@@ -1,7 +1,5 @@
 package controller;
 
-import view.View;
-
 /**
  * Defines the list command.
  * @author ZiXian92

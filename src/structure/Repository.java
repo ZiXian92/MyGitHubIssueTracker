@@ -69,4 +69,9 @@ public class Repository {
 		assert assignee!=null && !assignee.isEmpty();
 		assignees.add(assignee);
 	}
+	
+	@Override
+	public String toString(){
+		return null;
+	}
 }
