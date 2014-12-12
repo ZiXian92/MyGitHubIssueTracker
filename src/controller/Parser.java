@@ -41,6 +41,13 @@ public class Parser {
 						} else{
 							throw new IllegalArgumentException("Select command not allowed when issue is selected.");
 						}
+			case BACK: if(selectedRepo==null){
+							throw new IllegalArgumentException("No repository is selected. Unable to go further up.");
+						} else if(selectedIssue==null){
+							return new ListCommand();
+						} else{
+							return new SelectRepo(selectedRepo);
+						}
 			default: if(selectedRepo==null){
 						return new SelectRepo(input);
 					} else if(selectedIssue==null){

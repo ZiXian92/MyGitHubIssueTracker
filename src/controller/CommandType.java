@@ -8,7 +8,8 @@ import java.util.HashSet;
  */
 public enum CommandType {
 	LIST("list", "ls"), 
-	SELECT("select"),
+	SELECT("select", "s"),
+	BACK("back", "b", "up"),
 	OTHER();
 	
 	private HashSet<String> aliasTable;
