@@ -7,6 +7,14 @@ import java.util.ArrayList;
  * @author ZiXian92
  */
 public class Repository {
+	private static final String LINE_DELIM = "\n";
+	private static final String CONTRIBUTOR_SEPARATOR = ", ";
+	private static final String KEY_NAME = "Name: ";
+	private static final String KEY_OWNER = "Owener: ";
+	private static final String KEY_CONTRIBUTORS = "Contributors: ";
+	private static final String KEY_ISSUES = "Issues: ";
+	
+	//Data members
 	private String name, owner;	//To be extracted by Model to update GitHub.
 	private ArrayList<Issue> issueList;
 	private ArrayList<String> assignees;
@@ -72,6 +80,23 @@ public class Repository {
 	
 	@Override
 	public String toString(){
-		return null;
+		StringBuilder strBuilder = new StringBuilder(KEY_NAME);
+		strBuilder = strBuilder.append(name).append(LINE_DELIM);
+		strBuilder = strBuilder.append(KEY_OWNER).append(owner).append(LINE_DELIM);
+		strBuilder = strBuilder.append(KEY_CONTRIBUTORS).append(LINE_DELIM);
+		int numContributors = assignees.size();
+		for(int i=0; i<numContributors; i++){
+			strBuilder = strBuilder.append(assignees.get(i));
+			if(i!=numContributors-1){
+				strBuilder = strBuilder.append(CONTRIBUTOR_SEPARATOR);
+			}
+		}
+		strBuilder = strBuilder.append(LINE_DELIM);
+		strBuilder = strBuilder.append(KEY_ISSUES).append(LINE_DELIM);
+		int numIssues = issueList.size();
+		for(int i=0; i<numIssues; i++){
+			strBuilder = strBuilder.append(i+1).append(". ").append(issueList.get(i).getCondensedString()).append(LINE_DELIM);
+		}
+		return strBuilder.toString();
 	}
 }

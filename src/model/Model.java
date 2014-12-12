@@ -59,6 +59,8 @@ public class Model {
 	private ArrayList<Repository> repoList;
 	private ArrayList<Observer> observerList;
 	private int numRepos;
+	
+	//Stores the indices of the repositories in repoList, starting from 1.
 	private HashMap<String, Integer> indexList;
 
 	private Model(){
@@ -151,7 +153,7 @@ public class Model {
 				temp = makeRepository(arr.getJSONObject(i));
 				if(temp!=null){
 					repoList.add(temp);
-					indexList.put(temp.getName(), numRepos++);
+					indexList.put(temp.getName(), ++numRepos);
 				}
 			}
 		} catch(JSONException e){
