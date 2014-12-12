@@ -1,6 +1,6 @@
 import java.io.IOException;
 
-import controller.UI;
+import view.UI;
 
 /**
  * The main program.
