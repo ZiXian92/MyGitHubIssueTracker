@@ -48,19 +48,6 @@ public class Repository {
 	}
 	
 	/**
-	 * Gets the list of issues in summarized form.
-	 * @return A list of issues in condensed String form.
-	 */
-	public String[] getIssues(){
-		int size = issueList.size();
-		String[] arr  = new String[size];
-		for(int i=0; i<size; i++){
-			arr[i] = issueList.get(i).getCondensedString();
-		}
-		return arr;
-	}
-	
-	/**
 	 * Adds the given issue to this repository's issue list.
 	 * @param issue the issue to be added.
 	 */
