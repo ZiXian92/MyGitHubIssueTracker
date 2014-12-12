@@ -2,6 +2,10 @@ package controller;
 
 import java.util.HashSet;
 
+/**
+ * Defines the command type and their list of aliases.
+ * @author ZiXian92
+ */
 public enum CommandType {
 	LIST("list", "ls"), 
 	SELECT("select"),

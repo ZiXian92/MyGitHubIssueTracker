@@ -50,7 +50,7 @@ public class Model {
 	private static Model instance = null;	//The single instance of this class
 
 	//Data members
-	private String authCode, username;
+	private String authCode;
 	private ArrayList<Repository> repoList;
 	private ArrayList<Observer> observerList;
 
@@ -101,7 +101,6 @@ public class Model {
 		String responseStatus = response.getStatusLine().toString();
 		response.close();
 		if(responseStatus.equals(RESPONSE_OK)){
-			this.username = username;
 			this.authCode = code;
 			return true;
 		}
@@ -260,5 +259,18 @@ public class Model {
 				temp.updateSelectedIssue(selectedIssue);
 			}
 		}
+	}
+	
+	/**
+	 * Gets the repository based on its index in the list.
+	 * @param index An integer between 1 and the number of repositories in the list.
+	 * @return The index-th Repository instance in the list.
+	 * @throws IllegalArgumentExecption if the definition for inde is violated.
+	 */
+	public Repository getRepository(int index) throws IllegalArgumentException {
+		if(index<1 || index>repoList.size()){
+			throw new IllegalArgumentException(MSG_INVALIDINDEX);
+		}
+		return repoList.get(index-1);
 	}
 }

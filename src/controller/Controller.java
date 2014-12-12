@@ -13,7 +13,6 @@ public class Controller implements Observer {
 	private static final String MSG_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
 	private static final String MSG_LOGGEDIN = "Logged in as %1$s.\nLoading data from GitHub...";
 	private static final String MSG_IOERROR = "An I/O error has occured. Login failed.";
-	private static final String MSG_INVALIDCOMMAND = "Please use a non-empty, valid command.";
 
 	//Data members
 	private String selectedRepository = null, selectedIssue = null;

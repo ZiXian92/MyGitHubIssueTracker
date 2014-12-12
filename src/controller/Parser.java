@@ -17,6 +17,7 @@ public class Parser {
 	 * @param input The user input to execute. Cannot be null or an empty string.
 	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
 	 * @param selectedIssue The currently selected issue. Cannot be an empty string.
+	 * @throws IllegalArgumentException if input is an invalid command.
 	 */
 	public Command parse(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException{
 		if(selectedRepo!=null){

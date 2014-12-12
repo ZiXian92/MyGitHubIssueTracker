@@ -31,6 +31,12 @@ public class ParserTest {
 		cmd = parser.parse("MyGitHubIssueTracker", null, null);
 		assertTrue(cmd instanceof SelectRepo);
 		
+		cmd = parser.parse(" MyGitHubIssueTracker", null, null);
+		assertTrue(cmd instanceof SelectRepo);
+		
+		cmd = parser.parse("MyGitHubIssueTracker ", null, null);
+		assertTrue(cmd instanceof SelectRepo);
+		
 		cmd = parser.parse("issue1", "MyGitHubIssueTracker", null);
 		assertTrue(cmd instanceof SelectIssue);
 		
@@ -42,6 +48,8 @@ public class ParserTest {
 	public void testInvalidCommands(){
 		Parser parser = new Parser();
 		parser.parse("select", null, null);
+		parser.parse(" select", null, null);
+		parser.parse("select ", null, null);
 		parser.parse("", null, null);
 		parser.parse(" ", null, null);
 	}
