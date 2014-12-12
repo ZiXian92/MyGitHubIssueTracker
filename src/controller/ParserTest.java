@@ -44,6 +44,16 @@ public class ParserTest {
 		assertTrue(cmd instanceof CommentIssue);
 	}
 	
+	@Test
+	public void testBack(){
+		Parser parser = new Parser();
+		Command cmd = parser.parse("back", "MyGitHubIssueTracker", "issue1");
+		assertTrue(cmd instanceof SelectRepo);
+		
+		cmd = parser.parse("back", "MyGitHubIssueTracker", null);
+		assertTrue(cmd instanceof ListCommand);
+	}
+	
 	@Test(expected=IllegalArgumentException.class)
 	public void testInvalidCommands(){
 		Parser parser = new Parser();
@@ -52,6 +62,7 @@ public class ParserTest {
 		parser.parse("select ", null, null);
 		parser.parse("", null, null);
 		parser.parse(" ", null, null);
+		parser.parse("back", null, null);
 	}
 
 }
