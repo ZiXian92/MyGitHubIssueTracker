@@ -304,4 +304,25 @@ public class Model {
 		}
 		return getRepository(indexList.get(repoName));
 	}
+	
+	/**
+	 * Gets the specified issue from the given repository.
+	 * @param issueName The name of the issue to be selected or the index of the issue in the repository,
+	 * 					starting from 1.
+	 * @param repoName The name of the repository that contains the issue to be selected.
+	 * @throws IllegalArgumentException If issue index is invalid or the repository does not contain this
+	 * 									issue.
+	 */
+	public Issue getIssue(String issueName, String repoName) throws IllegalArgumentException {
+		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
+		Repository repo = getRepository(repoName);
+		Issue selectedIssue;
+		try{
+			selectedIssue = repo.getIssue(Integer.parseInt(issueName));
+		} catch(NumberFormatException e){
+			selectedIssue = repo.getIssue(issueName);
+		}
+		notifyObservers(repoName, selectedIssue.getTitle());
+		return selectedIssue;
+	}
 }

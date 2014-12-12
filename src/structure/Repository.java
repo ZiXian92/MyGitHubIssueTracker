@@ -1,12 +1,16 @@
 package structure;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Defines the data structure that represents a repository in GitHub.
  * @author ZiXian92
  */
 public class Repository {
+	private static final String MSG_INVALIDINDEX = "Invalid index.";
+	private static final String MSG_NOSUCHELEMENT = "The issue does not exist in this repository.";
+	
 	private static final String LINE_DELIM = "\n";
 	private static final String CONTRIBUTOR_SEPARATOR = ", ";
 	private static final String KEY_NAME = "Name: ";
@@ -18,6 +22,8 @@ public class Repository {
 	private String name, owner;	//To be extracted by Model to update GitHub.
 	private ArrayList<Issue> issueList;
 	private ArrayList<String> assignees;
+	private HashMap<String, Integer> indexList;
+	private int numIssues;
 	
 	/**
 	 * Creates a new repository instance.
@@ -29,6 +35,8 @@ public class Repository {
 		this.owner = owner;
 		issueList = new ArrayList<Issue>();
 		assignees = new ArrayList<String>();
+		indexList = new HashMap<String, Integer>();
+		numIssues = 0;
 	}
 	
 	/**
@@ -54,6 +62,7 @@ public class Repository {
 	public void addIssue(Issue issue){
 		assert issue!=null;
 		issueList.add(issue);
+		indexList.put(issue.getTitle(), ++numIssues);
 	}
 	
 	/**
@@ -63,6 +72,35 @@ public class Repository {
 	public void addAssignee(String assignee){
 		assert assignee!=null && !assignee.isEmpty();
 		assignees.add(assignee);
+	}
+	
+	/**
+	 * Gets the index-th issue in this repository.
+	 * @param index The index of the issue on this repository.
+	 * @return The index-th issue in this repository's issue list.
+	 * @throws IllegalArgumentException If index is less than 1 or is greater than the number of
+	 * 									issues in this repository.
+	 */
+	public Issue getIssue(int index) throws IllegalArgumentException {
+		if(index<1 || index>numIssues){
+			throw new IllegalArgumentException(MSG_INVALIDINDEX);
+		}
+		return issueList.get(index-1);
+	}
+	
+	/**
+	 * Gets the issue with the given name in this repository.
+	 * @param issueName The name of the issue to get. Cannot be null or empty.
+	 * @return The issue with the given name in this repository.
+	 * @throws IllegalArgumentException If no such issue with the given name exists.
+	 */
+	public Issue getIssue(String issueName) throws IllegalArgumentException {
+		assert issueName!=null && !issueName.isEmpty();
+		if(!indexList.containsKey(issueName)){
+			throw new IllegalArgumentException(MSG_NOSUCHELEMENT);
+		}
+		int index = indexList.get(issueName);
+		return getIssue(index);
 	}
 	
 	@Override
