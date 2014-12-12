@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.commons.codec.binary.Base64;
@@ -49,6 +50,7 @@ public class Model {
 	
 	private static final String MSG_EMPTYLIST = "The repository list is empty.";
 	private static final String MSG_INVALIDINDEX = "No such item with this index.";
+	private static final String MSG_NOSUCHELEMENT = "This item does not exist.";
 
 	private static Model instance = null;	//The single instance of this class
 
@@ -56,10 +58,14 @@ public class Model {
 	private String authCode;
 	private ArrayList<Repository> repoList;
 	private ArrayList<Observer> observerList;
+	private int numRepos;
+	private HashMap<String, Integer> indexList;
 
 	private Model(){
 		repoList = new ArrayList<Repository>();
 		observerList = new ArrayList<Observer>();
+		indexList = new HashMap<String, Integer>();
+		numRepos = 0;
 	}
 
 	/**
@@ -145,6 +151,7 @@ public class Model {
 				temp = makeRepository(arr.getJSONObject(i));
 				if(temp!=null){
 					repoList.add(temp);
+					indexList.put(temp.getName(), numRepos++);
 				}
 			}
 		} catch(JSONException e){
@@ -157,7 +164,7 @@ public class Model {
 	 * @return The list of names of repositories that the current user is involved in.
 	 */
 	public String[] listRepositories() throws Exception{
-		if(repoList.isEmpty()){
+		if(numRepos==0){
 			throw new Exception(MSG_EMPTYLIST);
 		}
 		String[] list = new String[repoList.size()];
@@ -277,10 +284,22 @@ public class Model {
 		if(index<1 || index>repoList.size()){
 			throw new IllegalArgumentException(MSG_INVALIDINDEX);
 		}
-		return repoList.get(index-1);
+		Repository selectedRepo = repoList.get(index-1);
+		notifyObservers(selectedRepo.getName(), null);
+		return selectedRepo;
 	}
 	
+	/**
+	 * Gets the repository from the list given the repository name.
+	 * @param repoName The name of the repository to retrieve. Cannot be null or empty.
+	 * @return The Repository with the given name.
+	 * @throws IllegalArgumentException If none of the repositories have the given name.
+	 */
 	public Repository getRepository(String repoName) throws IllegalArgumentException {
-		
+		assert repoName!=null && !repoName.isEmpty();
+		if(!indexList.containsKey(repoName)){
+			throw new IllegalArgumentException(MSG_NOSUCHELEMENT);
+		}
+		return getRepository(indexList.get(repoName));
 	}
 }

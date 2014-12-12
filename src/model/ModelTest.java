@@ -40,7 +40,11 @@ public class ModelTest {
 			String[] list = model.listRepositories();
 			assertTrue(list!=null);
 		} catch(IOException e){
-
+			e.printStackTrace();
+			fail();
+		} catch(Exception e){
+			e.printStackTrace();
+			fail();
 		}
 	}
 }
