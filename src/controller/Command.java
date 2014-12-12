@@ -1,5 +1,6 @@
 package controller;
 
+import view.View;
 import model.Model;
 
 /**
@@ -9,6 +10,7 @@ import model.Model;
 public abstract class Command {
 	//Shared data member(s)
 	protected Model model = Model.getInstance();
+	protected View view = View.getInstance();
 	
 	/**
 	 * Executes this command.

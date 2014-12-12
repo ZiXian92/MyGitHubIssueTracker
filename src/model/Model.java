@@ -46,6 +46,8 @@ public class Model {
 	private static final String KEY_STATUS = "state";
 	private static final String KEY_CONTENT = "body";
 	private static final String KEY_ASSIGNEE = "assignee";
+	
+	private static final String MSG_INVALIDINDEX = "No such item with this index.";
 
 	private static Model instance = null;	//The single instance of this class
 

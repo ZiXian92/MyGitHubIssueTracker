@@ -2,7 +2,7 @@ package controller;
 
 import java.io.IOException;
 
-import view.MessageView;
+import view.View;
 import model.Model;
 
 /**
@@ -17,7 +17,7 @@ public class Controller implements Observer {
 	//Data members
 	private String selectedRepository = null, selectedIssue = null;
 	private Model model;
-	private MessageView msgView;
+	private View view;
 	private Parser parser;
 
 	/**
@@ -26,7 +26,7 @@ public class Controller implements Observer {
 	public Controller(){
 		model = Model.getInstance();
 		model.addObserver(this);
-		msgView = new MessageView();
+		view = View.getInstance();
 		parser = new Parser();
 	}
 
@@ -37,16 +37,16 @@ public class Controller implements Observer {
 	public boolean executeLogin(String username, String password){
 		try{
 			if(model.loginUser(username, password)){
-				msgView.updateView(String.format(MSG_LOGGEDIN, username));
+				view.updateView(String.format(MSG_LOGGEDIN, username));
 				model.initialise();
 				new ListCommand().execute();
 				return true;
 			} else{
-				msgView.updateView(MSG_FAILEDLOGIN);
+				view.updateView(MSG_FAILEDLOGIN);
 				return false;
 			}
 		} catch(IOException e){
-			msgView.updateView(MSG_IOERROR);
+			view.updateView(MSG_IOERROR);
 			return false;
 		}
 	}
@@ -60,7 +60,7 @@ public class Controller implements Observer {
 			Command cmd = parser.parse(input, selectedRepository, selectedIssue);
 			cmd.execute();
 		} catch(IllegalArgumentException e){
-			msgView.updateView(e.getMessage());
+			view.updateView(e.getMessage());
 		}
 	}
 

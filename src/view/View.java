@@ -5,9 +5,28 @@ import structure.Repository;
 
 /**
  * Defines the class that takes the given data and outputs them to the screen.
+ * Singleton Principle is applied here to eliminate redundant copies that are in Controller
+ * and the various Command instances.
  * @author ZiXian92
  */
 public class View {
+	//The only instance of this calss.
+	private static View view = null;
+	
+	private View(){
+		
+	}
+	
+	/**
+	 * Gets the only instance of the View class.
+	 */
+	public static View getInstance(){
+		if(view==null){
+			view = new View();
+		}
+		return view;
+	}
+	
 	/**
 	 * Prints the given message to the console.
 	 * @param message The message to be printed. Cannot be null or empty string.

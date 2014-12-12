@@ -1,11 +1,12 @@
 package controller;
 
-import view.ListView;
+import view.View;
 
+/**
+ * Defines the list command.
+ * @author ZiXian92
+ */
 public class ListCommand extends Command {
-	//Data member(s)
-	private ListView view = new ListView();
-	
 	/**
 	 * Creates a new instance of this command.
 	 */
