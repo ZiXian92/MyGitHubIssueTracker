@@ -39,7 +39,11 @@ public class Controller implements Observer {
 			if(model.loginUser(username, password)){
 				view.updateView(String.format(MSG_LOGGEDIN, username));
 				model.initialise();
-				new ListCommand().execute();
+				try {
+					new ListCommand().execute();
+				} catch (Exception e) {
+					view.updateView(e.getMessage());
+				}
 				return true;
 			} else{
 				view.updateView(MSG_FAILEDLOGIN);
@@ -59,7 +63,7 @@ public class Controller implements Observer {
 		try{
 			Command cmd = parser.parse(input, selectedRepository, selectedIssue);
 			cmd.execute();
-		} catch(IllegalArgumentException e){
+		} catch(Exception e){
 			view.updateView(e.getMessage());
 		}
 	}

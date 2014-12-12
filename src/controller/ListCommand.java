@@ -15,7 +15,7 @@ public class ListCommand extends Command {
 	}
 
 	@Override
-	public void execute() {
+	public void execute() throws Exception {
 		view.updateView(model.listRepositories());
 	}
 }

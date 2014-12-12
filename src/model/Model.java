@@ -47,6 +47,7 @@ public class Model {
 	private static final String KEY_CONTENT = "body";
 	private static final String KEY_ASSIGNEE = "assignee";
 	
+	private static final String MSG_EMPTYLIST = "The repository list is empty.";
 	private static final String MSG_INVALIDINDEX = "No such item with this index.";
 
 	private static Model instance = null;	//The single instance of this class
@@ -155,7 +156,10 @@ public class Model {
 	 * Gets the list of repositories that the current user is involved in.
 	 * @return The list of names of repositories that the current user is involved in.
 	 */
-	public String[] listRepositories(){
+	public String[] listRepositories() throws Exception{
+		if(repoList.isEmpty()){
+			throw new Exception(MSG_EMPTYLIST);
+		}
 		String[] list = new String[repoList.size()];
 		Iterator<Repository> itr = repoList.iterator();
 		for(int i=0; itr.hasNext(); i++){
@@ -274,5 +278,9 @@ public class Model {
 			throw new IllegalArgumentException(MSG_INVALIDINDEX);
 		}
 		return repoList.get(index-1);
+	}
+	
+	public Repository getRepository(String repoName) throws IllegalArgumentException {
+		
 	}
 }

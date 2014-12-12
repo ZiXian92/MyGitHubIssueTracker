@@ -1,7 +1,5 @@
 package controller;
 
-import view.View;
-
 /**
  * Defines the command class that selects a repository from the list.
  * @author ZiXian92
@@ -20,7 +18,7 @@ public class SelectRepo extends Command {
 	}
 	
 	@Override
-	public void execute() {
+	public void execute() throws Exception {
 		try{
 			view.updateView(model.getRepository(Integer.parseInt(repoName)));
 		} catch(NumberFormatException e){
