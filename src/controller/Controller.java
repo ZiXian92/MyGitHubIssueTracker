@@ -13,6 +13,10 @@ public class Controller implements Observer {
 	private static final String MSG_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
 	private static final String MSG_LOGGEDIN = "Logged in as %1$s.\nLoading data from GitHub...";
 	private static final String MSG_IOERROR = "An I/O error has occured. Login failed.";
+	private static final String MSG_NOREPOSELECTED = "Repository selected: None";
+	private static final String MSG_SELECTEDREPO = "Repository selected: %1$s";
+	private static final String MSG_NOISSUESELECTED = "Issue selected: None";
+	private static final String MSG_SELECTEDISSUE = "Issue selected: %1$s";
 
 	//Data members
 	private String selectedRepository = null, selectedIssue = null;
@@ -72,15 +76,18 @@ public class Controller implements Observer {
 	public void updateSelectedRepository(String repo) {
 		if(repo==null || repo.isEmpty()){
 			selectedRepository = null;
+			view.updateView(MSG_NOREPOSELECTED);
 			updateSelectedIssue(null);
 		} else{
 			selectedRepository = repo;
+			view.updateView(String.format(MSG_SELECTEDREPO, selectedRepository));
 		}
 	}
 
 	@Override
 	public void updateSelectedIssue(String issueName) {
 		selectedIssue = (issueName==null || issueName.isEmpty())? null: issueName;
+		view.updateView((selectedIssue==null)? MSG_NOISSUESELECTED: String.format(MSG_SELECTEDISSUE, selectedIssue));
 	}
 
 	/**
