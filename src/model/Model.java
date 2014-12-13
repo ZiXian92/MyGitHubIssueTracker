@@ -145,7 +145,7 @@ public class Model {
 
 		//Parse the JSON string into Repository instances.
 		try{
-			JSONArray arr = new JSONArray(getJSONContent(messageBody.getContent()));
+			JSONArray arr = new JSONArray(getJSONString(messageBody.getContent()));
 			response.close();
 			int size = arr.length();
 			Repository temp;
@@ -206,7 +206,7 @@ public class Model {
 			HttpEntity messageBody = response.getEntity();
 			if(messageBody!=null){
 				JSONObject temp;
-				JSONArray arr = new JSONArray(getJSONContent(messageBody.getContent()));
+				JSONArray arr = new JSONArray(getJSONString(messageBody.getContent()));
 				response.close();
 				int size = arr.length();
 				for(int i=0; i<size; i++){
@@ -244,7 +244,7 @@ public class Model {
 	 * @return The JSON string contained in the given message body.
 	 * @throws IOException if an IO error occurs.
 	 */
-	private String getJSONContent(InputStream in) throws IOException {
+	private String getJSONString(InputStream in) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 		StringBuilder strBuilder = new StringBuilder();
 		String input;
