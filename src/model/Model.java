@@ -197,8 +197,10 @@ public class Model {
 			repo = new Repository(repoName, owner);
 			
 			//Gets the list of contributors concurrently.
-			//Thread loadContribThread = new Thread(new LoadContributorsThread(repo, API_URL+String.format(EXT_CONTRIBUTORS, owner, repoName)));
-			//loadContribThread.start();
+			HttpGet request2 = new HttpGet(API_URL+String.format(EXT_CONTRIBUTORS, owner, repoName));
+			request2.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+			Thread loadContribThread = new Thread(new LoadContributorsThread(repo, request2));
+			loadContribThread.run();
 			
 			//Sends request for issues under this repository.
 			HttpGet request = new HttpGet(API_URL+String.format(EXT_REPOISSUES, owner, repoName));

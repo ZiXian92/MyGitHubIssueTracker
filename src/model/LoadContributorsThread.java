@@ -18,18 +18,17 @@ public class LoadContributorsThread implements Runnable {
 	private static final String RESPONSE_OK = "HTTP/1.1 200 OK";
 	
 	private Repository repo;
-	private String url;
+	private HttpGet request;
 	
-	public LoadContributorsThread(Repository repo, String url){
-		assert repo!=null && url!=null && !url.isEmpty();
+	public LoadContributorsThread(Repository repo, HttpGet request){
+		assert repo!=null && request!=null;
 		this.repo = repo;
-		this.url = url;
+		this.request = request;
 	}
 
 	@Override
 	public void run() {
-		HttpGet request = new HttpGet(url);
-		try {
+		try{
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
 				response.close();
