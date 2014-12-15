@@ -31,6 +31,7 @@ public class Model {
 	private static final String EXT_USER = "/user";
 	private static final String EXT_REPOS = "/user/repos";
 	private static final String EXT_REPOISSUES = "/repos/%1$s/%2$s/issues";
+	private static final String EXT_CONTRIBUTORS = "/repos/%1$s/%2$s/contributors";
 
 	private static final String HEADER_ACCEPT = "Accept";
 	private static final String VAL_ACCEPT = "application/vnd.github.v3+json";
@@ -47,6 +48,7 @@ public class Model {
 	private static final String KEY_STATUS = "state";
 	private static final String KEY_CONTENT = "body";
 	private static final String KEY_ASSIGNEE = "assignee";
+	private static final String KEY_USERNAME = "login";
 	
 	private static final String MSG_EMPTYLIST = "The repository list is empty.";
 	private static final String MSG_INVALIDINDEX = "No such item with this index.";
@@ -187,11 +189,16 @@ public class Model {
 	 */
 	public Repository makeRepository(JSONObject obj) throws IOException {
 		assert obj!=null;
+		Repository repo = null;
 		try{
 			//Initialize repository with name and owner
 			String repoName = obj.getString(KEY_REPONAME);
 			String owner = obj.getJSONObject(KEY_OWNER).getString(KEY_OWNERLOGIN);
-			Repository repo = new Repository(repoName, owner);
+			repo = new Repository(repoName, owner);
+			
+			//Gets the list of contributors concurrently.
+			//Thread loadContribThread = new Thread(new LoadContributorsThread(repo, API_URL+String.format(EXT_CONTRIBUTORS, owner, repoName)));
+			//loadContribThread.start();
 			
 			//Sends request for issues under this repository.
 			HttpGet request = new HttpGet(API_URL+String.format(EXT_REPOISSUES, owner, repoName));
@@ -201,7 +208,7 @@ public class Model {
 				response.close();
 				return null;
 			}
-
+			
 			//Loads issues from GitHub repository into this repository instance.
 			HttpEntity messageBody = response.getEntity();
 			if(messageBody!=null){
@@ -214,10 +221,13 @@ public class Model {
 					repo.addIssue(makeIssue(temp));
 				}
 			}
-			return repo;
+			//loadContribThread.join();
 		} catch(JSONException e){
-			return null;
-		}
+			
+		} //catch (InterruptedException e) {
+			
+		//}
+		return repo;
 	}
 	
 	/**
@@ -231,7 +241,7 @@ public class Model {
 			issue = new Issue(obj.getString(KEY_ISSUETITLE));
 			issue.setStatus(obj.getString(KEY_STATUS));
 			issue.setContent(obj.getString(KEY_CONTENT));
-			issue.setAssignee(obj.getString(KEY_ASSIGNEE));
+			issue.setAssignee(obj.getJSONObject(KEY_ASSIGNEE).getString(KEY_USERNAME));
 		} catch(JSONException e){
 			
 		}

@@ -55,6 +55,17 @@ public class Repository {
 		return owner;
 	}
 	
+	public String[] getAssignees(){
+		if(assignees.isEmpty()){
+			return null;
+		}
+		String[] arr = new String[assignees.size()];
+		for(int i=0; i<assignees.size(); i++){
+			arr[i] = assignees.get(i);
+		}
+		return arr;
+	}
+	
 	/**
 	 * Adds the given issue to this repository's issue list.
 	 * @param issue the issue to be added.

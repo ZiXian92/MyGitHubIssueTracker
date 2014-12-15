@@ -1,0 +1,63 @@
+package model;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClients;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import structure.Repository;
+
+public class LoadContributorsThread implements Runnable {
+	private static final String KEY_USERNAME = "login";
+	private static final String RESPONSE_OK = "HTTP/1.1 200 OK";
+	
+	private Repository repo;
+	private String url;
+	
+	public LoadContributorsThread(Repository repo, String url){
+		assert repo!=null && url!=null && !url.isEmpty();
+		this.repo = repo;
+		this.url = url;
+	}
+
+	@Override
+	public void run() {
+		HttpGet request = new HttpGet(url);
+		try {
+			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
+				response.close();
+				return;
+			}
+			HttpEntity messageBody = response.getEntity();
+			if(messageBody==null){
+				response.close();
+				return;
+			}
+			String input;
+			StringBuilder strBuilder = new StringBuilder();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(messageBody.getContent()));
+			while((input = reader.readLine())!=null){
+				strBuilder = strBuilder.append(input);
+			}
+			reader.close();
+			response.close();
+			JSONArray arr = new JSONArray(strBuilder.toString());
+			int numContributors = arr.length();
+			for(int i=0; i<numContributors; i++){
+				repo.addAssignee(arr.getJSONObject(i).getString(KEY_USERNAME));
+			}
+		} catch(JSONException e){
+			
+		} catch (IOException e) {
+			
+		}
+	}
+	
+}
