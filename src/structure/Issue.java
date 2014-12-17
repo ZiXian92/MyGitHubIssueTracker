@@ -15,17 +15,20 @@ public class Issue {
 	private static final String KEY_CONTENT = "Body: ";
 	private static final String KEY_STATUS = "Status: ";
 	private static final String KEY_ASSIGNEE = "Assignee: ";
+	private static final String KEY_NUMBER = "Number: ";
 	
 	//Data members
 	private String title, status, content, assignee;
+	private int number;
 	
 	/**
 	 * Creates a new issue instance.
 	 * @param title The title of the issue.
 	 */
-	public Issue(String title){
+	public Issue(String title, int number){
 		assert title!=null && !title.isEmpty();
 		this.title = title;
+		this.number = number;
 	}
 	
 	/**
@@ -50,6 +53,14 @@ public class Issue {
 	 */
 	public String getAssignee(){
 		return assignee;
+	}
+	
+	/**
+	 * Gets this issue's number.
+	 * @return This issue's number.
+	 */
+	public int getNumber(){
+		return number;
 	}
 	
 	/**
@@ -95,6 +106,7 @@ public class Issue {
 	public String toString(){
 		StringBuilder strBuilder =  new StringBuilder(KEY_TITLE);
 		strBuilder = strBuilder.append(title).append(LINE_DELIM);
+		strBuilder = strBuilder.append(KEY_NUMBER).append(number).append(LINE_DELIM);
 		strBuilder = strBuilder.append(KEY_STATUS).append(status).append(SEPARATOR);
 		strBuilder = strBuilder.append(KEY_ASSIGNEE).append(assignee).append(LINE_DELIM);
 		strBuilder = strBuilder.append(KEY_CONTENT).append(content);

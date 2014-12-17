@@ -44,6 +44,7 @@ public class Model {
 	private static final String KEY_REPONAME = "name";
 	private static final String KEY_OWNER = "owner";
 	private static final String KEY_OWNERLOGIN = "login";
+	private static final String KEY_ISSUENUMBER = "number";
 	private static final String KEY_ISSUETITLE = "title";
 	private static final String KEY_STATUS = "state";
 	private static final String KEY_CONTENT = "body";
@@ -240,7 +241,7 @@ public class Model {
 	private Issue makeIssue(JSONObject obj){
 		Issue issue = null;
 		try{
-			issue = new Issue(obj.getString(KEY_ISSUETITLE));
+			issue = new Issue(obj.getString(KEY_ISSUETITLE), Integer.parseInt(obj.getString(KEY_ISSUENUMBER)));
 			issue.setStatus(obj.getString(KEY_STATUS));
 			issue.setContent(obj.getString(KEY_CONTENT));
 			issue.setAssignee(obj.getJSONObject(KEY_ASSIGNEE).getString(KEY_USERNAME));
