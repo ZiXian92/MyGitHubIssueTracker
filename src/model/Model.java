@@ -323,7 +323,7 @@ public class Model {
 	 * 					starting from 1.
 	 * @param repoName The name of the repository that contains the issue to be selected.
 	 * @throws IllegalArgumentException If issue index is invalid or the repository does not contain this
-	 * 									issue.
+	 * 									issue or the repository cannot be found.
 	 */
 	public Issue getIssue(String issueName, String repoName) throws IllegalArgumentException {
 		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
@@ -336,5 +336,20 @@ public class Model {
 		}
 		notifyObservers(repoName, selectedIssue.getTitle());
 		return selectedIssue;
+	}
+	
+	/**
+	 * Closes the given issue from the given repository.
+	 * @param issueName The name or 1-based index of the issue in the given repository's list of issues.
+	 * @param repoName The name of the repository to close the issue.
+	 * @throws IllegalArgumentException If the issue and/or repository cannot be found.*/
+	public void closeIssue(String issueName, String repoName) throws IllegalArgumentException {
+		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
+		Repository repo = getRepository(repoName);
+		try{
+			repo.closeIssue(Integer.parseInt(issueName));
+		} catch(NumberFormatException e){
+			repo.closeIssue(issueName);
+		}
 	}
 }

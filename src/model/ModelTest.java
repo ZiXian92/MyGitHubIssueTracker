@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -71,6 +70,7 @@ public class ModelTest {
 		Model model = Model.getInstance();
 		model.getRepository(-1);
 		model.getRepository(100);	//Change if you have at least 100 repositories
+		model.getRepository("some repository");
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
@@ -80,5 +80,13 @@ public class ModelTest {
 		Model model = Model.getInstance();
 		model.getIssue("-1", "Orbital");
 		model.getIssue("1000000", "Orbital");
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testCloseIssue(){
+		Model model = Model.getInstance();
+		model.closeIssue("-1", "MyGitHubIssueTracker");
+		model.closeIssue("1000000", "MyGitHubIssueTracker");
+		model.closeIssue("issue2", "MyGitHubIssueTracker");
 	}
 }
