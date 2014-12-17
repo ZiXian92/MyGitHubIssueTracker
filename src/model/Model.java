@@ -241,7 +241,7 @@ public class Model {
 	private Issue makeIssue(JSONObject obj){
 		Issue issue = null;
 		try{
-			issue = new Issue(obj.getString(KEY_ISSUETITLE), Integer.parseInt(obj.getString(KEY_ISSUENUMBER)));
+			issue = new Issue(obj.getString(KEY_ISSUETITLE), obj.getInt(KEY_ISSUENUMBER));
 			issue.setStatus(obj.getString(KEY_STATUS));
 			issue.setContent(obj.getString(KEY_CONTENT));
 			issue.setAssignee(obj.getJSONObject(KEY_ASSIGNEE).getString(KEY_USERNAME));
