@@ -29,25 +29,12 @@ public class Parser {
 		if(input==null || (input = input.trim()).isEmpty()){
 			throw new IllegalArgumentException("Empty command.");
 		}
-		String commandWord = extractFirstWord(input), parameter;
+		String commandWord = extractFirstWord(input);
 		switch(CommandType.getCommandType(commandWord)){
 			case LIST: return new ListCommand();
-			case SELECT: if((parameter = removeFirstWord(input))==null || parameter.isEmpty()){
-							throw new IllegalArgumentException("Invalid command. No parameter passed.");
-						} else if(selectedRepo==null){
-							return new SelectRepo(parameter);
-						} else if(selectedIssue==null){
-							return new SelectIssue(parameter, selectedRepo);
-						} else{
-							throw new IllegalArgumentException("Select command not allowed when issue is selected.");
-						}
-			case BACK: if(selectedRepo==null){
-							throw new IllegalArgumentException("No repository is selected. Unable to go further up.");
-						} else if(selectedIssue==null){
-							return new ListCommand();
-						} else{
-							return new SelectRepo(selectedRepo);
-						}
+			case SELECT: return createSelectCommand(input, selectedRepo, selectedIssue);
+			case BACK: return createBackCommand(selectedRepo, selectedIssue);
+			case CLOSE: return createCloseCommand();
 			default: if(selectedRepo==null){
 						return new SelectRepo(input);
 					} else if(selectedIssue==null){
@@ -57,7 +44,7 @@ public class Parser {
 					}
 		}
 	}
-	
+
 	/**
 	 * Gets the first word in the input, using whitespace as delimters.
 	 * @param input The string to extract the first word from. Cannot be null or empty. Recommended to use
@@ -79,5 +66,48 @@ public class Parser {
 		assert input!=null && !input.isEmpty();
 		String[] arr = input.split("\\s+", 2);
 		return (arr.length<2)? null: arr[1];
+	}
+	
+	/**
+	 * Creates the appropriate select command.
+	 * @param input The command input
+	 * @param selectedRepo
+	 * @param selectedIssue
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
+	private Command createSelectCommand(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException {
+		String parameter;
+		assert input!=null;
+		if((parameter = removeFirstWord(input))==null || parameter.isEmpty()){
+			throw new IllegalArgumentException("Invalid command. No parameter passed.");
+		} else if(selectedRepo==null){
+			return new SelectRepo(parameter);
+		} else if(selectedIssue==null){
+			return new SelectIssue(parameter, selectedRepo);
+		} else{
+			throw new IllegalArgumentException("Select command not allowed when issue is selected.");
+		}
+	}
+	
+	/**
+	 * Creates the appropriate command object to execute the back command.
+	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
+	 * @param selectedIssue The currently selected issue. Cannot be an empty string
+	 * @throws IllegalArgumentException if the context in which back command is issued is invalid.
+	 */
+	private Command createBackCommand(String selectedRepo, String selectedIssue) throws IllegalArgumentException {
+		if(selectedRepo==null){
+			throw new IllegalArgumentException("No repository is selected. Unable to go further up.");
+		} else if(selectedIssue==null){
+			return new ListCommand();
+		} else{
+			assert !selectedRepo.isEmpty();
+			return new SelectRepo(selectedRepo);
+		}
+	}
+	
+	private Comamnd createCloseCommand(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException {
+		
 	}
 }

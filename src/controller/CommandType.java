@@ -10,6 +10,7 @@ public enum CommandType {
 	LIST("list", "ls"), 
 	SELECT("select", "s"),
 	BACK("back", "b", "up"),
+	CLOSE("close"), 
 	OTHER();
 	
 	private HashSet<String> aliasTable;
