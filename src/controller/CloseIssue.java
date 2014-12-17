@@ -17,7 +17,7 @@ public class CloseIssue extends Command {
 
 	@Override
 	public void execute() throws Exception {
-		model.closeIssue(repoName, issueName);
+		model.closeIssue(issueName, repoName);
 	}
 
 }

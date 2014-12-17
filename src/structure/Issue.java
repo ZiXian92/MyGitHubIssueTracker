@@ -29,6 +29,7 @@ public class Issue {
 		assert title!=null && !title.isEmpty();
 		this.title = title;
 		this.number = number;
+		this.status = STATE_OPEN;
 	}
 	
 	/**
@@ -74,14 +75,10 @@ public class Issue {
 	}
 	
 	/**
-	 * Sets the status of this issue.
-	 * @param status The new status for this issue. Should only be either Issue.STATE_OPEN or
-	 * 			Issue.STATE_CLOSED.
+	 * Closes this issue.
 	 */
-	public void setStatus(String status){
-		if(status!=null && (status.equals(STATE_OPEN) || status.equals(STATE_CLOSED))){
-			this.status = status;
-		}
+	public void close(){
+		status = STATE_CLOSED;
 	}
 	
 	/**

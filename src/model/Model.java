@@ -4,14 +4,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,6 +36,7 @@ public class Model {
 	private static final String EXT_REPOS = "/user/repos";
 	private static final String EXT_REPOISSUES = "/repos/%1$s/%2$s/issues";
 	private static final String EXT_CONTRIBUTORS = "/repos/%1$s/%2$s/contributors";
+	private static final String EXT_EDITISSUE = "/repos/%1$s/%2$s/issues/%3$d";
 
 	private static final String HEADER_ACCEPT = "Accept";
 	private static final String VAL_ACCEPT = "application/vnd.github.v3+json";
@@ -51,9 +56,12 @@ public class Model {
 	private static final String KEY_ASSIGNEE = "assignee";
 	private static final String KEY_USERNAME = "login";
 	
+	private static final String VAL_STATECLOSED = Issue.STATE_CLOSED;
+	
 	private static final String MSG_EMPTYLIST = "The repository list is empty.";
 	private static final String MSG_INVALIDINDEX = "No such item with this index.";
 	private static final String MSG_NOSUCHELEMENT = "This item does not exist.";
+	private static final String MSG_REQUESTERROR = "Error sending request. Please try again.";
 
 	private static Model instance = null;	//The single instance of this class
 
@@ -199,12 +207,14 @@ public class Model {
 			
 			//Gets the list of contributors concurrently.
 			HttpGet request2 = new HttpGet(API_URL+String.format(EXT_CONTRIBUTORS, owner, repoName));
+			request2.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 			request2.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 			Thread loadContribThread = new Thread(new LoadContributorsThread(repo, request2));
 			loadContribThread.run();
 			
 			//Sends request for issues under this repository.
 			HttpGet request = new HttpGet(API_URL+String.format(EXT_REPOISSUES, owner, repoName));
+			request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 			request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
@@ -242,7 +252,6 @@ public class Model {
 		Issue issue = null;
 		try{
 			issue = new Issue(obj.getString(KEY_ISSUETITLE), obj.getInt(KEY_ISSUENUMBER));
-			issue.setStatus(obj.getString(KEY_STATUS));
 			issue.setContent(obj.getString(KEY_CONTENT));
 			issue.setAssignee(obj.getJSONObject(KEY_ASSIGNEE).getString(KEY_USERNAME));
 		} catch(JSONException e){
@@ -343,14 +352,34 @@ public class Model {
 	 * Closes the given issue from the given repository.
 	 * @param issueName The name or 1-based index of the issue in the given repository's list of issues.
 	 * @param repoName The name of the repository to close the issue.
-	 * @throws IllegalArgumentException If the issue and/or repository cannot be found.*/
-	public void closeIssue(String issueName, String repoName) throws IllegalArgumentException {
+	 * @throws IllegalArgumentException If the issue and/or repository cannot be found.
+	 * @throws Exception If an error occurred when sending the request to GitHub.
+	 */
+	public void closeIssue(String issueName, String repoName) throws IllegalArgumentException, Exception {
 		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
 		Repository repo = getRepository(repoName);
+		Issue issue;
 		try{
-			repo.closeIssue(Integer.parseInt(issueName));
+			issue = repo.getIssue(Integer.parseInt(issueName));
 		} catch(NumberFormatException e){
-			repo.closeIssue(issueName);
+			issue = repo.getIssue(issueName);
+		}
+		HttpPatch request = new HttpPatch(API_URL+String.format(EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber()));
+		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+		JSONObject obj = new JSONObject();
+		try {
+			obj.put(KEY_STATUS, VAL_STATECLOSED);
+			request.setEntity(new StringEntity(obj.toString()));
+			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			if(response.getStatusLine().toString().equals(RESPONSE_OK)){
+				response.close();
+				issue.close();
+				notifyObservers(repoName, null);
+			} else{
+				throw new Exception();
+			}
+		} catch (Exception e) {
+			throw new Exception(MSG_REQUESTERROR);
 		}
 	}
 }

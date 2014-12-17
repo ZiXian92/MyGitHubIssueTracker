@@ -123,7 +123,7 @@ public class Repository {
 		if(index<1 || index>issueList.size()){
 			throw new IllegalArgumentException(MSG_INVALIDINDEX);
 		}
-		issueList.get(index-1).setStatus(Issue.STATE_CLOSED);
+		issueList.get(index-1).close();
 	}
 	
 	/**
