@@ -114,6 +114,32 @@ public class Repository {
 		return getIssue(index);
 	}
 	
+	/**
+	 * Marks the issue with the given index as closed.
+	 * @param index The 1-based index of the issue to close in this repository's issue list.
+	 * @throws IllegalArgumentException If index is invalid.
+	 */
+	public void closeIssue(int index) throws IllegalArgumentException {
+		if(index<1 || index>issueList.size()){
+			throw new IllegalArgumentException(MSG_INVALIDINDEX);
+		}
+		issueList.get(index-1).setStatus(Issue.STATE_CLOSED);
+	}
+	
+	/**
+	 * Closes the issue with the given name.
+	 * @param issueName The name of the issue to close.
+	 * @throws IllegalArgumentException If there is no issue with the given name.
+	 */
+	public void closeIssue(String issueName) throws IllegalArgumentException {
+		assert issueName!=null && !issueName.isEmpty();
+		if(!indexList.containsKey(issueName)){
+			throw new IllegalArgumentException(MSG_NOSUCHELEMENT);
+		}
+		int index = indexList.get(issueName);
+		closeIssue(index);
+	}
+	
 	@Override
 	public String toString(){
 		StringBuilder strBuilder = new StringBuilder(KEY_NAME);
