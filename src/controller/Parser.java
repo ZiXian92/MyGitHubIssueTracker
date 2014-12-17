@@ -34,7 +34,7 @@ public class Parser {
 			case LIST: return new ListCommand();
 			case SELECT: return createSelectCommand(input, selectedRepo, selectedIssue);
 			case BACK: return createBackCommand(selectedRepo, selectedIssue);
-			case CLOSE: return createCloseCommand();
+			case CLOSE: return createCloseCommand(input, selectedRepo, selectedIssue);
 			default: if(selectedRepo==null){
 						return new SelectRepo(input);
 					} else if(selectedIssue==null){
@@ -107,7 +107,28 @@ public class Parser {
 		}
 	}
 	
-	private Comamnd createCloseCommand(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException {
-		
+	/**
+	 * Creates the appropriate command for closing an issue.
+	 * @param input The command input. Cannot be null or empty string.
+	 * @param selectedRepo The name of the selected repository. Cannot be an empty string.
+	 * @param selectedIssue The name of the selected issue. Cannot be an empty string.
+	 * @throws IllegalArgumentException If there is insufficient parameters in input or the context
+	 * 									in which this command is given is invalid.
+	 */
+	private Command createCloseCommand(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException {
+		assert input!=null && !input.isEmpty();
+		if(selectedRepo==null){
+			throw new IllegalArgumentException("No repository selected.");
+		}
+		assert !selectedRepo.isEmpty();
+		if(selectedIssue==null){
+			input = removeFirstWord(input);
+			if(input==null || input.isEmpty()){
+				throw new IllegalArgumentException("No issue selected.");
+			}
+			return new CloseIssue(selectedRepo, input);
+		}
+		assert !selectedIssue.isEmpty();
+		return new CloseIssue(selectedRepo, selectedIssue);
 	}
 }

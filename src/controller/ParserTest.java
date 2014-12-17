@@ -63,6 +63,18 @@ public class ParserTest {
 		parser.parse("", null, null);
 		parser.parse(" ", null, null);
 		parser.parse("back", null, null);
+		parser.parse("close", null, null);
+		parser.parse("close", "repo1", null);
 	}
 
+	@Test
+	public void testClose(){
+		Parser parser = new Parser();
+		
+		Command cmd = parser.parse("close", "repo1", "issue1");
+		assertTrue(cmd instanceof CloseIssue);
+		
+		cmd = parser.parse("close 1", "repo1", null);
+		assertTrue(cmd instanceof CloseIssue);
+	}
 }
