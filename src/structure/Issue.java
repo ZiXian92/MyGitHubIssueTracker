@@ -182,8 +182,12 @@ public class Issue {
 		JSONObject obj = new JSONObject();
 		obj.put(KEY_ISSUETITLE, title);
 		obj.put(KEY_CONTENT, content);
-		obj.put(KEY_ASSIGNEE, assignee);
 		obj.put(KEY_STATUS, status);
+		if(assignee==null){
+			obj.put(KEY_ASSIGNEE, JSONObject.NULL);
+		} else{
+			obj.put(KEY_ASSIGNEE, assignee);
+		}
 		return obj;
 	}
 }

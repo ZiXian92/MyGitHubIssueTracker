@@ -29,6 +29,7 @@ import structure.Repository;
  * @author ZiXian92
  */
 public class Model {
+	//API URL and extensions
 	private static final String API_URL = "https://api.github.com";
 	private static final String EXT_USER = "/user";
 	private static final String EXT_REPOS = "/user/repos";
@@ -36,6 +37,7 @@ public class Model {
 	private static final String EXT_CONTRIBUTORS = "/repos/%1$s/%2$s/contributors";
 	private static final String EXT_EDITISSUE = "/repos/%1$s/%2$s/issues/%3$d";
 
+	//Request headers and values
 	private static final String HEADER_ACCEPT = "Accept";
 	private static final String VAL_ACCEPT = "application/vnd.github.v3+json";
 	private static final String VAL_PREVIEWACCEPT = "application/vnd.github.moondragon-preview+json";
@@ -45,9 +47,6 @@ public class Model {
 	//HTTP response
 	private static final String RESPONSE_OK = "HTTP/1.1 200 OK";
 
-	private static final String KEY_STATUS = "state";
-	private static final String VAL_STATECLOSED = Issue.STATE_CLOSED;
-	
 	//Error messages
 	private static final String MSG_EMPTYLIST = "The repository list is empty.";
 	private static final String MSG_INVALIDINDEX = "No such item with this index.";
@@ -336,7 +335,7 @@ public class Model {
 	public void closeIssue(String issueName, String repoName) throws IllegalArgumentException, Exception {
 		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
 		Repository repo = getRepository(repoName);
-		Issue issue;
+		Issue issue, temp;
 		try{
 			issue = repo.getIssue(Integer.parseInt(issueName));
 		} catch(NumberFormatException e){
@@ -344,15 +343,16 @@ public class Model {
 		}
 		HttpPatch request = new HttpPatch(API_URL+String.format(EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber()));
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-		JSONObject obj = new JSONObject();
+		temp = new Issue(issue);
+		temp.close();
+		
 		try {
-			obj.put(KEY_STATUS, VAL_STATECLOSED);
+			JSONObject obj = temp.toJSONObject();
 			request.setEntity(new StringEntity(obj.toString()));
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			if(response.getStatusLine().toString().equals(RESPONSE_OK)){
 				response.close();
 				issue.close();
-				notifyObservers(repoName, null);
 			} else{
 				throw new Exception();
 			}
