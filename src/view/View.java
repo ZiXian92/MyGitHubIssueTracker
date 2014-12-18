@@ -46,6 +46,7 @@ public class View {
 		for(int i=0; i<size; i++){
 			System.out.println((i+1)+". "+repoList[i]);
 		}
+		System.out.println();
 	}
 	
 	/**

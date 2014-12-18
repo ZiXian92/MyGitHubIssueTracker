@@ -76,18 +76,18 @@ public class Controller implements Observer {
 	public void updateSelectedRepository(String repo) {
 		if(repo==null || repo.isEmpty()){
 			selectedRepository = null;
-			view.updateView(MSG_NOREPOSELECTED);
+			//view.updateView(MSG_NOREPOSELECTED);
 			updateSelectedIssue(null);
 		} else{
 			selectedRepository = repo;
-			view.updateView(String.format(MSG_SELECTEDREPO, selectedRepository));
+			//view.updateView(String.format(MSG_SELECTEDREPO, selectedRepository));
 		}
 	}
 
 	@Override
 	public void updateSelectedIssue(String issueName) {
 		selectedIssue = (issueName==null || issueName.isEmpty())? null: issueName;
-		view.updateView((selectedIssue==null)? MSG_NOISSUESELECTED: String.format(MSG_SELECTEDISSUE, selectedIssue));
+		//view.updateView((selectedIssue==null)? MSG_NOISSUESELECTED: String.format(MSG_SELECTEDISSUE, selectedIssue));
 	}
 
 	/**

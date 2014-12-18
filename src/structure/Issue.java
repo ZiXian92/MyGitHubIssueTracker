@@ -158,7 +158,7 @@ public class Issue {
 		strBuilder = strBuilder.append(FIELD_NUMBER).append(number).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_STATUS).append(status).append(SEPARATOR);
 		strBuilder = strBuilder.append(FIELD_ASSIGNEE).append(assignee).append(LINE_DELIM);
-		strBuilder = strBuilder.append(FIELD_CONTENT).append(content);
+		strBuilder = strBuilder.append(FIELD_CONTENT).append(content).append(LINE_DELIM);;
 		return strBuilder.toString();
 	}
 	
