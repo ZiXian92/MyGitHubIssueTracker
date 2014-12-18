@@ -24,3 +24,5 @@ MyGitHubIssueTracker
 <p>Enter <b>back</b> or <b>b</b>. Highest level is the list of repositories. Deselects currently selected repository/issue, whichever is of lower level(Issue&lt;Repository&lt;Repository List).</p>
 <h3>Closing an Issue</h3>
 <p>Enter <b>close</b> to close the currently selected issue. Enter <b>close </b>, followed by the issue's index number to close an issue in the currently selected repository.</p>
+<h2>Guide for Developers</h2>
+<p>The link to the developer's guide webpage will be posted here once the guide is completed.</p>
