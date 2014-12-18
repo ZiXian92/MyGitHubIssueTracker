@@ -4,14 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPatch;
@@ -44,20 +42,13 @@ public class Model {
 	private static final String HEADER_AUTH = "Authorization";
 	private static final String VAL_AUTH = "Basic %1$s";
 
+	//HTTP response
 	private static final String RESPONSE_OK = "HTTP/1.1 200 OK";
 
-	private static final String KEY_REPONAME = "name";
-	private static final String KEY_OWNER = "owner";
-	private static final String KEY_OWNERLOGIN = "login";
-	private static final String KEY_ISSUENUMBER = "number";
-	private static final String KEY_ISSUETITLE = "title";
 	private static final String KEY_STATUS = "state";
-	private static final String KEY_CONTENT = "body";
-	private static final String KEY_ASSIGNEE = "assignee";
-	private static final String KEY_USERNAME = "login";
-	
 	private static final String VAL_STATECLOSED = Issue.STATE_CLOSED;
 	
+	//Error messages
 	private static final String MSG_EMPTYLIST = "The repository list is empty.";
 	private static final String MSG_INVALIDINDEX = "No such item with this index.";
 	private static final String MSG_NOSUCHELEMENT = "This item does not exist.";
@@ -159,9 +150,12 @@ public class Model {
 			JSONArray arr = new JSONArray(getJSONString(messageBody.getContent()));
 			response.close();
 			int size = arr.length();
+			assert size==5;
 			Repository temp;
+			JSONObject obj;
 			for(int i=0; i<size; i++){	//Add repository to list.
-				temp = makeRepository(arr.getJSONObject(i));
+				obj = arr.getJSONObject(i);
+				temp = makeRepository(obj);
 				if(temp!=null){
 					repoList.add(temp);
 					indexList.put(temp.getName(), ++numRepos);
@@ -198,12 +192,11 @@ public class Model {
 	 */
 	public Repository makeRepository(JSONObject obj) throws IOException {
 		assert obj!=null;
-		Repository repo = null;
+		
 		try{
-			//Initialize repository with name and owner
-			String repoName = obj.getString(KEY_REPONAME);
-			String owner = obj.getJSONObject(KEY_OWNER).getString(KEY_OWNERLOGIN);
-			repo = new Repository(repoName, owner);
+			Repository repo = Repository.makeInstance(obj);
+			String repoName = repo.getName();
+			String owner = repo.getOwner();
 			
 			//Gets the list of contributors concurrently.
 			HttpGet request2 = new HttpGet(API_URL+String.format(EXT_CONTRIBUTORS, owner, repoName));
@@ -231,33 +224,18 @@ public class Model {
 				int size = arr.length();
 				for(int i=0; i<size; i++){
 					temp = arr.getJSONObject(i);
-					repo.addIssue(makeIssue(temp));
+					repo.addIssue(Issue.makeInstance(temp));
 				}
 			}
-			//loadContribThread.join();
+			loadContribThread.join();
+			return repo;
 		} catch(JSONException e){
-			
-		} //catch (InterruptedException e) {
-			
-		//}
-		return repo;
-	}
-	
-	/**
-	 * Creates an Issue from the given JSON representation.
-	 * @param obj The JSON representation of the issue.
-	 * @return An Issue instance representing the issue or null if the JSON object format is wrong.
-	 */
-	private Issue makeIssue(JSONObject obj){
-		Issue issue = null;
-		try{
-			issue = new Issue(obj.getString(KEY_ISSUETITLE), obj.getInt(KEY_ISSUENUMBER));
-			issue.setContent(obj.getString(KEY_CONTENT));
-			issue.setAssignee(obj.getJSONObject(KEY_ASSIGNEE).getString(KEY_USERNAME));
-		} catch(JSONException e){
-			
+			return null;
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			return null;
 		}
-		return issue;
+		
 	}
 	
 	/**

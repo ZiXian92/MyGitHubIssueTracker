@@ -3,20 +3,30 @@ package structure;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Defines the data structure that represents a repository in GitHub.
  * @author ZiXian92
  */
 public class Repository {
+	//Error messages
 	private static final String MSG_INVALIDINDEX = "Invalid index.";
 	private static final String MSG_NOSUCHELEMENT = "The issue does not exist in this repository.";
 	
+	//For use in output formatting
 	private static final String LINE_DELIM = "\n";
 	private static final String CONTRIBUTOR_SEPARATOR = ", ";
-	private static final String KEY_NAME = "Name: ";
-	private static final String KEY_OWNER = "Owener: ";
-	private static final String KEY_CONTRIBUTORS = "Contributors: ";
-	private static final String KEY_ISSUES = "Issues: ";
+	private static final String FIELD_NAME = "Name: ";
+	private static final String FIELD_OWNER = "Owner: ";
+	private static final String FIELD_CONTRIBUTORS = "Contributors: ";
+	private static final String FIELD_ISSUES = "Issues: ";
+	
+	//For JSON parsing
+	private static final String KEY_REPONAME = "name";
+	private static final String KEY_OWNER = "owner";
+	private static final String KEY_OWNERLOGIN = "login";
 	
 	//Data members
 	private String name, owner;	//To be extracted by Model to update GitHub.
@@ -37,6 +47,16 @@ public class Repository {
 		assignees = new ArrayList<String>();
 		indexList = new HashMap<String, Integer>();
 		numIssues = 0;
+	}
+	
+	/**
+	 * Creates a repository instance from the JSON object.
+	 * @param obj The JSON object to convert into Repository.
+	 * @throws JSONException If the JSON format is not correct.
+	 */
+	public static Repository makeInstance(JSONObject obj) throws JSONException {
+		assert obj!=null;
+		return new Repository(obj.getString(KEY_REPONAME), obj.getJSONObject(KEY_OWNER).getString(KEY_OWNERLOGIN));
 	}
 	
 	/**
@@ -142,10 +162,10 @@ public class Repository {
 	
 	@Override
 	public String toString(){
-		StringBuilder strBuilder = new StringBuilder(KEY_NAME);
+		StringBuilder strBuilder = new StringBuilder(FIELD_NAME);
 		strBuilder = strBuilder.append(name).append(LINE_DELIM);
-		strBuilder = strBuilder.append(KEY_OWNER).append(owner).append(LINE_DELIM);
-		strBuilder = strBuilder.append(KEY_CONTRIBUTORS).append(LINE_DELIM);
+		strBuilder = strBuilder.append(FIELD_OWNER).append(owner).append(LINE_DELIM);
+		strBuilder = strBuilder.append(FIELD_CONTRIBUTORS).append(LINE_DELIM);
 		int numContributors = assignees.size();
 		for(int i=0; i<numContributors; i++){
 			strBuilder = strBuilder.append(assignees.get(i));
@@ -154,7 +174,7 @@ public class Repository {
 			}
 		}
 		strBuilder = strBuilder.append(LINE_DELIM);
-		strBuilder = strBuilder.append(KEY_ISSUES).append(LINE_DELIM);
+		strBuilder = strBuilder.append(FIELD_ISSUES).append(LINE_DELIM);
 		int numIssues = issueList.size();
 		for(int i=0; i<numIssues; i++){
 			strBuilder = strBuilder.append(i+1).append(". ").append(issueList.get(i).getCondensedString()).append(LINE_DELIM);
