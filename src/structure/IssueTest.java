@@ -2,6 +2,14 @@ package structure;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
 
 /**
@@ -9,11 +17,21 @@ import org.junit.Test;
  * @author ZiXian92
  */
 public class IssueTest {
-	//Note to self: Use curl to download an issue in json format in a file.
-	//Get the JSON string from the file to test issue class.
 	@Test
-	public void test() {
-		fail("Not yet implemented");
+	public void testMakeInstance() throws IOException, JSONException {
+		File file = new File("testFiles/issue7");
+		BufferedReader reader = new BufferedReader(new FileReader(file));
+		String input;
+		StringBuilder strBuilder = new StringBuilder();
+		while((input = reader.readLine())!=null){
+			strBuilder = strBuilder.append(input);
+		}
+		reader.close();
+		JSONObject obj = new JSONObject(strBuilder.toString());
+		Issue issue = Issue.makeInstance(obj);
+		assertTrue(issue!=null);
+		assertEquals(7, issue.getNumber());
+		assertEquals("ZiXian92", issue.getAssignee());
 	}
 
 }
