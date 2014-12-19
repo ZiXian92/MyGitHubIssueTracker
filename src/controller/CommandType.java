@@ -7,10 +7,11 @@ import java.util.HashSet;
  * @author ZiXian92
  */
 public enum CommandType {
-	LIST("list", "ls"), 
+	ADD("add", "a"),
+	LIST("list", "ls", "l"), 
 	SELECT("select", "s"),
 	BACK("back", "b", "up"),
-	CLOSE("close"), 
+	CLOSE("close", "c"), 
 	OTHER();
 	
 	private HashSet<String> aliasTable;
