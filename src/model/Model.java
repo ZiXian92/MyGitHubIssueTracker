@@ -13,6 +13,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
@@ -46,6 +47,7 @@ public class Model {
 
 	//HTTP response
 	private static final String RESPONSE_OK = "HTTP/1.1 200 OK";
+	private static final String RESPONSE_CREATED = "HTTP/1.1 201 Created";
 
 	//Error messages
 	private static final String MSG_EMPTYLIST = "The repository list is empty.";
@@ -326,13 +328,42 @@ public class Model {
 	}
 	
 	/**
+	 * Adds the given issue(in JSON string format) to the given repository.
+	 * @param jsonIssue The JSON string representation of the issue to be added. Cannot be null or empty.
+	 * @param repoName The name of the repository to add the issue to.
+	 */
+	public void addIssue(String jsonIssue, String repoName) throws IOException {
+		assert jsonIssue!=null && !jsonIssue.isEmpty() && repoName!=null && !repoName.isEmpty();
+		Repository repo = getRepository(repoName);
+		HttpPost request = new HttpPost(API_URL+String.format(EXT_REPOISSUES, repo.getOwner(), repo.getName()));
+		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		request.setEntity(new StringEntity(jsonIssue));
+		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+		if(!response.getStatusLine().toString().equals(RESPONSE_CREATED) || response.getEntity()==null){
+			response.close();
+			return;
+		}
+		HttpEntity messageBody = response.getEntity();
+		try {
+			JSONObject obj = new JSONObject(getJSONString(messageBody.getContent()));
+			response.close();
+			repo.addIssue(Issue.makeInstance(obj));
+		} catch (JSONException e) {
+			//Will not happen
+		} catch(IOException e){
+			throw new IOException("An IO error occurred when reading the created issue.");
+		}
+	}
+	
+	/**
 	 * Closes the given issue from the given repository.
 	 * @param issueName The name or 1-based index of the issue in the given repository's list of issues.
 	 * @param repoName The name of the repository to close the issue.
 	 * @throws IllegalArgumentException If the issue and/or repository cannot be found.
 	 * @throws Exception If an error occurred when sending the request to GitHub.
 	 */
-	public void closeIssue(String issueName, String repoName) throws IllegalArgumentException, Exception {
+	public void closeIssue(String issueName, String repoName) throws IllegalArgumentException {
 		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
 		Repository repo = getRepository(repoName);
 		Issue issue, temp;
@@ -351,13 +382,11 @@ public class Model {
 			request.setEntity(new StringEntity(obj.toString()));
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			if(response.getStatusLine().toString().equals(RESPONSE_OK)){
-				response.close();
 				issue.close();
-			} else{
-				throw new Exception();
 			}
+			response.close();
 		} catch (Exception e) {
-			throw new Exception(MSG_REQUESTERROR);
+			//Fail silently
 		}
 	}
 }
