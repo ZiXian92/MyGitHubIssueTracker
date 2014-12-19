@@ -76,27 +76,45 @@ public class Parser {
 	 * */
 	private Command createAddCommand(String input, String selectedRepo) throws IllegalArgumentException, InvalidContextException {
 		assert input!=null && !input.isEmpty();
-		input = removeFirstWord(input);
-		if(input==null || input.isEmpty()){
-			throw new IllegalArgumentException("No title given.");
-		}
 		if(selectedRepo==null){
 			throw new InvalidContextException("Inapplicable action. Please select a repository.");
 		}
 		assert !selectedRepo.isEmpty();
+		input = removeFirstWord(input);
+		if(input==null || input.isEmpty()){
+			throw new IllegalArgumentException("No title given.");
+		}
 		return new AddIssue(input, selectedRepo);
 	}
 
+	/**
+	 * Creates the appropriate command object to execute the back command.
+	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
+	 * @param selectedIssue The currently selected issue. Cannot be an empty string
+	 * @throws IllegalArgumentException if the context in which back command is issued is invalid.
+	 * @throws InvalidContextException If no repository is selected.
+	 */
+	private Command createBackCommand(String selectedRepo, String selectedIssue) throws InvalidContextException {
+		if(selectedRepo==null){
+			throw new InvalidContextException("No repository is selected. Unable to go further up.");
+		} else if(selectedIssue==null){
+			return new ListCommand();
+		} else{
+			assert !selectedRepo.isEmpty();
+			return new SelectRepo(selectedRepo);
+		}
+	}
 	
 	/**
 	 * Creates the appropriate select command.
 	 * @param input The command input
-	 * @param selectedRepo
-	 * @param selectedIssue
-	 * @return
-	 * @throws IllegalArgumentException
+	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
+	 * @param selectedIssue The currently selected issue. Cannot be an empty string.
+	 * @return SelectRepo or SelectIssue comamnd.
+	 * @throws IllegalArgumentException If input contains only the command word.
+	 * @throws InvalidContextException If an issue is already selected.
 	 */
-	private Command createSelectCommand(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException {
+	private Command createSelectCommand(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException, InvalidContextException {
 		String parameter;
 		assert input!=null;
 		if((parameter = removeFirstWord(input))==null || parameter.isEmpty()){
@@ -104,26 +122,10 @@ public class Parser {
 		} else if(selectedRepo==null){
 			return new SelectRepo(parameter);
 		} else if(selectedIssue==null){
+			assert !selectedRepo.isEmpty();
 			return new SelectIssue(parameter, selectedRepo);
 		} else{
-			throw new IllegalArgumentException("Select command not allowed when issue is selected.");
-		}
-	}
-	
-	/**
-	 * Creates the appropriate command object to execute the back command.
-	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
-	 * @param selectedIssue The currently selected issue. Cannot be an empty string
-	 * @throws IllegalArgumentException if the context in which back command is issued is invalid.
-	 */
-	private Command createBackCommand(String selectedRepo, String selectedIssue) throws IllegalArgumentException {
-		if(selectedRepo==null){
-			throw new IllegalArgumentException("No repository is selected. Unable to go further up.");
-		} else if(selectedIssue==null){
-			return new ListCommand();
-		} else{
-			assert !selectedRepo.isEmpty();
-			return new SelectRepo(selectedRepo);
+			throw new InvalidContextException("Select command not allowed when issue is selected.");
 		}
 	}
 	
@@ -134,11 +136,12 @@ public class Parser {
 	 * @param selectedIssue The name of the selected issue. Cannot be an empty string.
 	 * @throws IllegalArgumentException If there is insufficient parameters in input or the context
 	 * 									in which this command is given is invalid.
+	 * @throws InvalidContextException If the context is invalid.
 	 */
-	private Command createCloseCommand(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException {
+	private Command createCloseCommand(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException, InvalidContextException {
 		assert input!=null && !input.isEmpty();
 		if(selectedRepo==null){
-			throw new IllegalArgumentException("No repository selected.");
+			throw new InvalidContextException("No repository selected.");
 		}
 		assert !selectedRepo.isEmpty();
 		if(selectedIssue==null){

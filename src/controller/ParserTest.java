@@ -1,5 +1,6 @@
 package controller;
 
+import Misc.InvalidContextException;
 import controller.Parser;
 import static org.junit.Assert.*;
 
@@ -13,7 +14,7 @@ public class ParserTest {
 
 	@Test
 	//Tests the list command parsing
-	public void testList() {
+	public void testList() throws IllegalArgumentException, InvalidContextException {
 		Parser parser = new Parser();
 		Command cmd = parser.parse("list", null, null);
 		assertTrue(cmd instanceof ListCommand);
@@ -23,7 +24,7 @@ public class ParserTest {
 	
 	@Test
 	//Tests parsing of select command
-	public void testSelect(){
+	public void testSelect() throws IllegalArgumentException, InvalidContextException{
 		Parser parser = new Parser();
 		Command cmd = parser.parse("select MyGitHubIssueTracker", null, null);
 		assertTrue(cmd instanceof SelectRepo);
@@ -45,7 +46,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testBack(){
+	public void testBack() throws IllegalArgumentException, InvalidContextException{
 		Parser parser = new Parser();
 		Command cmd = parser.parse("back", "MyGitHubIssueTracker", "issue1");
 		assertTrue(cmd instanceof SelectRepo);
@@ -54,21 +55,41 @@ public class ParserTest {
 		assertTrue(cmd instanceof ListCommand);
 	}
 	
+	@Test
+	public void testAdd() throws IllegalArgumentException, InvalidContextException{
+		Parser parser = new Parser();
+		Command cmd = parser.parse("add new issue", "MyGitHubIssueTracker", null);
+		assertTrue(cmd instanceof AddIssue);
+		
+		cmd = parser.parse("add new issue", "MyGitHubIssueTracker", "issue1");
+		assertTrue(cmd instanceof AddIssue);
+	}
+	
 	@Test(expected=IllegalArgumentException.class)
-	public void testInvalidCommands(){
+	public void testInvalidCommands() throws IllegalArgumentException, InvalidContextException{
 		Parser parser = new Parser();
 		parser.parse("select", null, null);
 		parser.parse(" select", null, null);
 		parser.parse("select ", null, null);
 		parser.parse("", null, null);
 		parser.parse(" ", null, null);
+		parser.parse("close", "repo1", null);
+		parser.parse("add", "MyGitHubIssueTracker", null);
+		parser.parse("add ", "MyGitHubIssueTracker", null);
+	}
+	
+	@Test(expected=InvalidContextException.class)
+	public void testInvalidContext() throws IllegalArgumentException, InvalidContextException {
+		Parser parser = new Parser();
 		parser.parse("back", null, null);
 		parser.parse("close", null, null);
-		parser.parse("close", "repo1", null);
+		parser.parse("add", null, null);
+		parser.parse("add new issue", null, null);
+		parser.parse("select 2", "repo1", "issue1");
 	}
 
 	@Test
-	public void testClose(){
+	public void testClose() throws IllegalArgumentException, InvalidContextException{
 		Parser parser = new Parser();
 		
 		Command cmd = parser.parse("close", "repo1", "issue1");
