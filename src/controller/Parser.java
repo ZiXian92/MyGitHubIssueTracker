@@ -1,5 +1,7 @@
 package controller;
 
+import Misc.InvalidContextException;
+
 /**
  * Defines the parser class to parse the input commands.
  * @author ZiXian92
@@ -18,8 +20,9 @@ public class Parser {
 	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
 	 * @param selectedIssue The currently selected issue. Cannot be an empty string.
 	 * @throws IllegalArgumentException if input is an invalid command.
+	 * @throws InvalidContextException If the command is invalid for the context.
 	 */
-	public Command parse(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException{
+	public Command parse(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException, InvalidContextException{
 		if(selectedRepo!=null){
 			assert !selectedRepo.isEmpty();
 		}
@@ -31,6 +34,7 @@ public class Parser {
 		}
 		String commandWord = extractFirstWord(input);
 		switch(CommandType.getCommandType(commandWord)){
+			case ADD: return createAddCommand(input, selectedRepo);
 			case LIST: return new ListCommand();
 			case SELECT: return createSelectCommand(input, selectedRepo, selectedIssue);
 			case BACK: return createBackCommand(selectedRepo, selectedIssue);
@@ -39,6 +43,7 @@ public class Parser {
 		}
 	}
 
+	
 	/**
 	 * Gets the first word in the input, using whitespace as delimters.
 	 * @param input The string to extract the first word from. Cannot be null or empty. Recommended to use
@@ -61,6 +66,27 @@ public class Parser {
 		String[] arr = input.split("\\s+", 2);
 		return (arr.length<2)? null: arr[1];
 	}
+	
+	/**
+	 * Creates AddIssueCommand with input(after removing first word) as issue title in the given repository.
+	 * @param input The input string containing the issue title. Cannot be null or empty string.
+	 * @param selectedRepo The name of the repository to create issue in. Cannot be an empty string.
+	 * @throws IllegalArgumentException If input only contains the command word.
+	 * @throws InvalidContextException If no repository is selected.
+	 * */
+	private Command createAddCommand(String input, String selectedRepo) throws IllegalArgumentException, InvalidContextException {
+		assert input!=null && !input.isEmpty();
+		input = removeFirstWord(input);
+		if(input==null || input.isEmpty()){
+			throw new IllegalArgumentException("No title given.");
+		}
+		if(selectedRepo==null){
+			throw new InvalidContextException("Inapplicable action. Please select a repository.");
+		}
+		assert !selectedRepo.isEmpty();
+		return new AddIssue(input, selectedRepo);
+	}
+
 	
 	/**
 	 * Creates the appropriate select command.
