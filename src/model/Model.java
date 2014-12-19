@@ -281,7 +281,7 @@ public class Model {
 	 * Gets the repository based on its index in the list.
 	 * @param index An integer between 1 and the number of repositories in the list.
 	 * @return The index-th Repository instance in the list.
-	 * @throws IllegalArgumentExecption if the definition for inde is violated.
+	 * @throws IllegalArgumentExecption if the definition for index is violated.
 	 */
 	public Repository getRepository(int index) throws IllegalArgumentException {
 		if(index<1 || index>repoList.size()){

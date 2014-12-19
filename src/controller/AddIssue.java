@@ -39,6 +39,8 @@ public class AddIssue extends Command {
 		input = reader.readLine();
 		if(input.trim().isEmpty()){
 			obj.put(KEY_ASSIGNEE, JSONObject.NULL);
+		} else{
+			obj.put(KEY_ASSIGNEE, input);
 		}
 		model.addIssue(obj.toString(), repoName);
 	}
