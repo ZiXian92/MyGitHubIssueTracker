@@ -82,12 +82,4 @@ public class ModelTest {
 		model.getIssue("-1", "Orbital");
 		model.getIssue("1000000", "Orbital");
 	}
-	
-	@Test(expected=Exception.class)
-	public void testCloseIssue(){
-		Model model = Model.getInstance();
-		model.closeIssue("-1", "MyGitHubIssueTracker");
-		model.closeIssue("1000000", "MyGitHubIssueTracker");
-		model.closeIssue("issue2", "MyGitHubIssueTracker");
-	}
 }
