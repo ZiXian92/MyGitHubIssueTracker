@@ -1,7 +1,5 @@
 package controller;
 
-import java.io.IOException;
-
 import view.View;
 import model.Model;
 
@@ -10,14 +8,10 @@ import model.Model;
  * @author ZiXian92
  */
 public class Controller implements Observer {
+	//Error messages
 	private static final String MSG_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
 	private static final String MSG_LOGGEDIN = "Logged in as %1$s.\nLoading data from GitHub...";
-	private static final String MSG_IOERROR = "An I/O error has occured. Login failed. Connect to the Internet and try again.";
-	private static final String MSG_NOREPOSELECTED = "Repository selected: None";
-	private static final String MSG_SELECTEDREPO = "Repository selected: %1$s";
-	private static final String MSG_NOISSUESELECTED = "Issue selected: None";
-	private static final String MSG_SELECTEDISSUE = "Issue selected: %1$s";
-
+	
 	//Data members
 	private String selectedRepository = null, selectedIssue = null;
 	private Model model;
