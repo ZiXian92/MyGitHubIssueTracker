@@ -43,6 +43,7 @@ public class AddIssue extends Command {
 			obj.put(KEY_ASSIGNEE, input);
 		}
 		model.addIssue(obj.toString(), repoName);
+		new SelectRepo(repoName).execute();
 	}
 
 	private void printPrompt(String msg){
