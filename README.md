@@ -22,6 +22,8 @@ MyGitHubIssueTracker
 <p>Enter the index associated with the issue in the selected repository's list of issues after selecting a repository.</p>
 <h3>Go Up a Level</h3>
 <p>Enter <b>back</b> or <b>b</b>. Highest level is the list of repositories. Deselects currently selected repository/issue, whichever is of lower level(Issue&lt;Repository&lt;Repository List).</p>
+<h3>Adding an Issue</h3>
+<p>Select the repository you wish to add the new issue into. Enter <b>add &lt;issue_title&gt;</b>. Enter the body content and assignee as prompted. Note: There is a bug causing the assignee information to be dropped at the time of writing.</p>
 <h3>Closing an Issue</h3>
 <p>Enter <b>close</b> to close the currently selected issue. Enter <b>close </b>, followed by the issue's index number to close an issue in the currently selected repository.</p>
 <h3>Exiting the Program</h3>
