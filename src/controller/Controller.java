@@ -12,7 +12,7 @@ import model.Model;
 public class Controller implements Observer {
 	private static final String MSG_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
 	private static final String MSG_LOGGEDIN = "Logged in as %1$s.\nLoading data from GitHub...";
-	private static final String MSG_IOERROR = "An I/O error has occured. Login failed.";
+	private static final String MSG_IOERROR = "An I/O error has occured. Login failed. Connect to the Internet and try again.";
 	private static final String MSG_NOREPOSELECTED = "Repository selected: None";
 	private static final String MSG_SELECTEDREPO = "Repository selected: %1$s";
 	private static final String MSG_NOISSUESELECTED = "Issue selected: None";
@@ -43,18 +43,14 @@ public class Controller implements Observer {
 			if(model.loginUser(username, password)){
 				view.updateView(String.format(MSG_LOGGEDIN, username));
 				model.initialise();
-				try {
-					new ListCommand().execute();
-				} catch (Exception e) {
-					view.updateView(e.getMessage());
-				}
+				new ListCommand().execute();
 				return true;
 			} else{
 				view.updateView(MSG_FAILEDLOGIN);
 				return false;
 			}
-		} catch(IOException e){
-			view.updateView(MSG_IOERROR);
+		} catch(Exception e){
+			view.updateView(e.getMessage());
 			return false;
 		}
 	}

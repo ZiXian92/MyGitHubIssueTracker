@@ -10,6 +10,8 @@ import structure.Repository;
  * @author ZiXian92
  */
 public class View {
+	private static final String MSG_EMPTYLIST = "The list is empty.";
+	
 	//The only instance of this calss.
 	private static View view = null;
 	
@@ -41,7 +43,9 @@ public class View {
 	 * @param repoList The list of repositories to be displayed.
 	 */
 	public void updateView(String[] repoList){
-		assert repoList!=null;
+		if(repoList==null){
+			System.out.println(MSG_EMPTYLIST);
+		}
 		int size = repoList.length;
 		for(int i=0; i<size; i++){
 			System.out.println((i+1)+". "+repoList[i]);

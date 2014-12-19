@@ -50,8 +50,9 @@ public class Model {
 	private static final String RESPONSE_CREATED = "HTTP/1.1 201 Created";
 
 	//Error messages
-	private static final String MSG_EMPTYLIST = "The repository list is empty.";
+	private static final String MSG_CONNECTIONERROR = "Error executing request. Connect to the Internet and try again.";
 	private static final String MSG_INVALIDINDEX = "No such item with this index.";
+	private static final String MSG_LOCALISSUEPARSINGERROR = "Failed to create local instance of new issue. You may want to restart the program to view the new issue.";
 	private static final String MSG_NOSUCHELEMENT = "This item does not exist.";
 	private static final String MSG_REQUESTERROR = "Error sending request. Please try again.";
 
@@ -111,19 +112,25 @@ public class Model {
 		String code = new String(Base64.encodeBase64((username+":"+password).getBytes()));
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, code));
 
-		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-		String responseStatus = response.getStatusLine().toString();
-		response.close();
-		if(responseStatus.equals(RESPONSE_OK)){
-			this.authCode = code;
-			return true;
+		try{
+			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			String responseStatus = response.getStatusLine().toString();
+			response.close();
+			if(responseStatus.equals(RESPONSE_OK)){
+				this.authCode = code;
+				return true;
+			}
+		} catch(IOException e){
+			throw new IOException(MSG_CONNECTIONERROR);
 		}
 		return false;
 	}
 
 	/**
 	 * Loads the repositories and issues from GitHub.
-	 * @throws IOException if an IO error occurs during the request.
+	 * Best effort to fetch and parse all data. If an error occurs while parsing an entity, the current entity
+	 * is dropped. Probability of this happening is low as the JSON object is produced by GitHub API.
+	 * @throws IOException if an error occurred during the request.
 	 */
 	public void initialise() throws IOException {
 		assert authCode!=null && !authCode.isEmpty();
@@ -132,22 +139,22 @@ public class Model {
 		HttpGet request = new HttpGet(API_URL+EXT_REPOS);
 		request.addHeader(HEADER_ACCEPT, VAL_PREVIEWACCEPT);
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-		if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
-			response.close();
-			return;
-		}
-
-		//Get the message body of the response.
-		HttpEntity messageBody = response.getEntity();
-
-		if(messageBody==null){
-			response.close();
-			return;
-		}
-
-		//Parse the JSON string into Repository instances.
 		try{
+			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
+				response.close();
+				return;
+			}
+
+			//Get the message body of the response.
+			HttpEntity messageBody = response.getEntity();
+
+			if(messageBody==null){
+				response.close();
+				return;
+			}
+
+			//Parse the JSON string into Repository instances.
 			JSONArray arr = new JSONArray(getJSONString(messageBody.getContent()));
 			response.close();
 			int size = arr.length();
@@ -155,25 +162,31 @@ public class Model {
 			Repository temp;
 			JSONObject obj;
 			for(int i=0; i<size; i++){	//Add repository to list.
-				obj = arr.getJSONObject(i);
-				temp = makeRepository(obj);
-				if(temp!=null){
-					repoList.add(temp);
-					indexList.put(temp.getName(), ++numRepos);
+				try{
+					obj = arr.getJSONObject(i);
+					temp = makeRepository(obj);
+					if(temp!=null){
+						repoList.add(temp);
+						indexList.put(temp.getName(), ++numRepos);
+					}
+				} catch(JSONException e){
+					//Fail silently
 				}
 			}
 		} catch(JSONException e){
-			//Will not happen unless GitHub API decides to change their JSON format.
+			//Fail silently
+		} catch(IOException e){
+			throw new IOException(MSG_REQUESTERROR);
 		}
 	}
 	
 	/**
 	 * Gets the list of repositories that the current user is involved in.
-	 * @return The list of names of repositories that the current user is involved in.
+	 * @return The list of names of repositories that the current user is involved in or null if the list is empty.
 	 */
-	public String[] listRepositories() throws Exception{
+	public String[] listRepositories(){
 		if(numRepos==0){
-			throw new Exception(MSG_EMPTYLIST);
+			return null;
 		}
 		String[] list = new String[repoList.size()];
 		Iterator<Repository> itr = repoList.iterator();
@@ -188,10 +201,10 @@ public class Model {
 	 * Fetches issues under the specified repository and stores them in
 	 * a Repository instance.
 	 * @param obj The JSONObject representation of the repository to be instantiated..
-	 * @return A Repository representing the specified GitHub repository.
-	 * @throws IOException when IO error occurs during the request.
+	 * @return A Repository representing the specified GitHub repository. Returns null if any error
+	 * 			occurs when executing the requests or parsing the response objects.
 	 */
-	public Repository makeRepository(JSONObject obj) throws IOException {
+	public Repository makeRepository(JSONObject obj){
 		assert obj!=null;
 		
 		try{
@@ -230,10 +243,10 @@ public class Model {
 			}
 			loadContribThread.join();
 			return repo;
-		} catch(JSONException e){
-			return null;
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
+			return null;
+		} catch(Exception e){
 			return null;
 		}
 		
@@ -242,17 +255,20 @@ public class Model {
 	/**
 	 * Reads the JSON string from the message body of the given HTTP response.
 	 * @param in The input stream of the HTTP response's message body.
-	 * @return The JSON string contained in the given message body.
-	 * @throws IOException if an IO error occurs.
+	 * @return The JSON string contained in the given message body or whatever is read if an error occurs.
 	 */
-	private String getJSONString(InputStream in) throws IOException {
+	private String getJSONString(InputStream in){
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 		StringBuilder strBuilder = new StringBuilder();
 		String input;
-		while((input = reader.readLine())!=null){
-			strBuilder = strBuilder.append(input);
+		try{
+			while((input = reader.readLine())!=null){
+				strBuilder = strBuilder.append(input);
+			}
+			reader.close();
+		} catch(IOException e){
+			
 		}
-		reader.close();
 		return strBuilder.toString();
 	}
 	
@@ -331,33 +347,36 @@ public class Model {
 	 * Adds the given issue(in JSON string format) to the given repository.
 	 * @param jsonIssue The JSON string representation of the issue to be added. Cannot be null or empty.
 	 * @param repoName The name of the repository to add the issue to.
+	 * @throws IOException If an error occurs when executing the request.
+	 * @throws JSONException If an error occurs when parsing the JSON representation of the new issue.
 	 */
-	public void addIssue(String jsonIssue, String repoName) throws IOException {
+	public void addIssue(String jsonIssue, String repoName) throws IOException, JSONException {
 		assert jsonIssue!=null && !jsonIssue.isEmpty() && repoName!=null && !repoName.isEmpty();
 		Repository repo = getRepository(repoName);
 		HttpPost request = new HttpPost(API_URL+String.format(EXT_REPOISSUES, repo.getOwner(), repo.getName()));
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 		request.setEntity(new StringEntity(jsonIssue));
-		CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-		if(!response.getStatusLine().toString().equals(RESPONSE_CREATED) || response.getEntity()==null){
-			response.close();
-			return;
-		}
-		HttpEntity messageBody = response.getEntity();
-		try {
+		try{
+			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			if(!response.getStatusLine().toString().equals(RESPONSE_CREATED) || response.getEntity()==null){
+				response.close();
+				return;
+			}
+			HttpEntity messageBody = response.getEntity();
 			JSONObject obj = new JSONObject(getJSONString(messageBody.getContent()));
 			response.close();
 			repo.addIssue(Issue.makeInstance(obj));
 		} catch (JSONException e) {
-			//Will not happen
+			throw new JSONException(MSG_LOCALISSUEPARSINGERROR);
 		} catch(IOException e){
-			throw new IOException("An IO error occurred when reading the created issue.");
+			throw new IOException(MSG_REQUESTERROR);
 		}
 	}
 	
 	/**
 	 * Closes the given issue from the given repository.
+	 * Does nothing if an error occurs during parsing or request, or if the request is unsuccessful.
 	 * @param issueName The name or 1-based index of the issue in the given repository's list of issues.
 	 * @param repoName The name of the repository to close the issue.
 	 * @throws IllegalArgumentException If the issue and/or repository cannot be found.
