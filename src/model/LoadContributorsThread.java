@@ -13,13 +13,23 @@ import org.json.JSONException;
 
 import structure.Repository;
 
+/**
+ * Defines a thread to fetch the given repository's contributors.
+ * @author ZiXian92
+ */
 public class LoadContributorsThread implements Runnable {
 	private static final String KEY_USERNAME = "login";
 	private static final String RESPONSE_OK = "HTTP/1.1 200 OK";
 	
+	//Data members
 	private Repository repo;
 	private HttpGet request;
 	
+	/**
+	 * Creates a Runnable instance to fetch the given repository's contributors in another thread.
+	 * @param repo The repository to load contributors into.
+	 * @param request The request to be executed to fetch contributor data.
+	 */
 	public LoadContributorsThread(Repository repo, HttpGet request){
 		assert repo!=null && request!=null;
 		this.repo = repo;
