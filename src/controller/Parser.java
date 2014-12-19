@@ -35,13 +35,7 @@ public class Parser {
 			case SELECT: return createSelectCommand(input, selectedRepo, selectedIssue);
 			case BACK: return createBackCommand(selectedRepo, selectedIssue);
 			case CLOSE: return createCloseCommand(input, selectedRepo, selectedIssue);
-			default: if(selectedRepo==null){
-						return new SelectRepo(input);
-					} else if(selectedIssue==null){
-						return new SelectIssue(input, selectedRepo);
-					} else{
-						return new CommentIssue(input, selectedRepo, selectedIssue);
-					}
+			default: return makeAppropriateCommand(input, selectedRepo, selectedIssue);
 		}
 	}
 
@@ -130,5 +124,24 @@ public class Parser {
 		}
 		assert !selectedIssue.isEmpty();
 		return new CloseIssue(selectedRepo, selectedIssue);
+	}
+	
+	/**
+	 * Makes the appropriate command based on the input parameters.
+	 * @param input The input parameter string.
+	 * @param selectedRepo The name of the currently selected repository. Can be null but not an empty string.
+	 * @param selectedIssue The name of the currently selected issue. Can be null but not an empty string.
+	 * @return
+	 */
+	private Command makeAppropriateCommand(String input, String selectedRepo, String selectedIssue) {
+		if(selectedRepo==null){
+			return new SelectRepo(input);
+		} else if(selectedIssue==null){
+			assert !selectedRepo.isEmpty();
+			return new SelectIssue(input, selectedRepo);
+		} else{
+			assert !selectedRepo.isEmpty() && !selectedIssue.isEmpty();
+			return new CommentIssue(input, selectedRepo, selectedIssue);
+		}
 	}
 }
