@@ -8,6 +8,7 @@ import java.util.HashSet;
  */
 public enum CommandType {
 	ADD("add", "a"),
+	EDIT("edit", "e"),
 	LIST("list", "ls", "l"), 
 	SELECT("select", "s"),
 	BACK("back", "b", "up"),

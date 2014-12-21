@@ -35,6 +35,7 @@ public class Parser {
 		String commandWord = extractFirstWord(input);
 		switch(CommandType.getCommandType(commandWord)){
 			case ADD: return createAddCommand(input, selectedRepo);
+			case EDIT: return createEditIssueCommand(selectedRepo, selectedIssue);
 			case LIST: return new ListCommand();
 			case SELECT: return createSelectCommand(input, selectedRepo, selectedIssue);
 			case BACK: return createBackCommand(selectedRepo, selectedIssue);
@@ -71,6 +72,7 @@ public class Parser {
 	 * Creates AddIssueCommand with input(after removing first word) as issue title in the given repository.
 	 * @param input The input string containing the issue title. Cannot be null or empty string.
 	 * @param selectedRepo The name of the repository to create issue in. Cannot be an empty string.
+	 * @return A COmmand to create an issue in the given repository.
 	 * @throws IllegalArgumentException If input only contains the command word.
 	 * @throws InvalidContextException If no repository is selected.
 	 * */
@@ -90,7 +92,8 @@ public class Parser {
 	/**
 	 * Creates the appropriate command object to execute the back command.
 	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
-	 * @param selectedIssue The currently selected issue. Cannot be an empty string
+	 * @param selectedIssue The currently selected issue. Cannot be an empty string.
+	 * @return A Command to go up 1 level.
 	 * @throws IllegalArgumentException if the context in which back command is issued is invalid.
 	 * @throws InvalidContextException If no repository is selected.
 	 */
@@ -134,6 +137,7 @@ public class Parser {
 	 * @param input The command input. Cannot be null or empty string.
 	 * @param selectedRepo The name of the selected repository. Cannot be an empty string.
 	 * @param selectedIssue The name of the selected issue. Cannot be an empty string.
+	 * @return A Command to close the given issue.
 	 * @throws IllegalArgumentException If there is insufficient parameters in input or the context
 	 * 									in which this command is given is invalid.
 	 * @throws InvalidContextException If the context is invalid.
@@ -156,11 +160,26 @@ public class Parser {
 	}
 	
 	/**
+	 * Creates a command to edit an issue.
+	 * @param selectedRepo The name of the repository in which an issue is to be edited.
+	 * @param selectedIssue The name of the issue to be edited.
+	 * @return A Command to edit the given issue.
+	 * @throws InvalidContextException If no issue is selected.
+	 */
+	private Command createEditIssueCommand(String selectedRepo, String selectedIssue) throws InvalidContextException{
+		if(selectedRepo==null || selectedIssue==null){
+			throw new InvalidContextException("No issue selected.");
+		}
+		assert !selectedRepo.isEmpty() && !selectedIssue.isEmpty();
+		return new EditIssue(selectedRepo, selectedIssue);
+	}
+	
+	/**
 	 * Makes the appropriate command based on the input parameters.
 	 * @param input The input parameter string.
 	 * @param selectedRepo The name of the currently selected repository. Can be null but not an empty string.
 	 * @param selectedIssue The name of the currently selected issue. Can be null but not an empty string.
-	 * @return
+	 * @return A Command that is appropriate for the current context.
 	 */
 	private Command makeAppropriateCommand(String input, String selectedRepo, String selectedIssue) {
 		if(selectedRepo==null){

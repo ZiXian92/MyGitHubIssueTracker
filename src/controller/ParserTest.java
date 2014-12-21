@@ -86,6 +86,8 @@ public class ParserTest {
 		parser.parse("add", null, null);
 		parser.parse("add new issue", null, null);
 		parser.parse("select 2", "repo1", "issue1");
+		parser.parse("edit", null, "issue1");
+		parser.parse("edit", "repo1", null);
 	}
 
 	@Test
@@ -97,5 +99,12 @@ public class ParserTest {
 		
 		cmd = parser.parse("close 1", "repo1", null);
 		assertTrue(cmd instanceof CloseIssue);
+	}
+	
+	@Test
+	public void testEdit() throws IllegalArgumentException, InvalidContextException{
+		Parser parser = new Parser();
+		Command cmd = parser.parse("edit abc", "repo1", "issue1");
+		assertTrue(cmd instanceof EditIssue);
 	}
 }
