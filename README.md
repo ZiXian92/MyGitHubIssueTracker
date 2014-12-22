@@ -23,7 +23,9 @@ MyGitHubIssueTracker
 <h3>Go Up a Level</h3>
 <p>Enter <b>back</b> or <b>b</b>. Highest level is the list of repositories. Deselects currently selected repository/issue, whichever is of lower level(Issue&lt;Repository&lt;Repository List).</p>
 <h3>Adding an Issue</h3>
-<p>Select the repository you wish to add the new issue into. Enter <b>add &lt;issue_title&gt;</b>. Enter the body content and assignee as prompted.</p>
+<p>Select the repository you wish to add the new issue into. Enter <b>add &lt;issue_title&gt;</b>. Enter the body content and assignee as prompted. You will see the new issue if it is successfully created.</p>
+<h3>Editing an Issue</h3>
+<p>Navigate to the issue to be edited. Enter <b>edit</b>, followed by edit details as prompted. You will see the updated issue if the edit was successful. Note that to retain old value for a particular field, type nothing and hit Enter. Entering 1 or more spaces without any text clears the value for that field.</p>
 <h3>Closing an Issue</h3>
 <p>Enter <b>close</b> to close the currently selected issue. Enter <b>close </b>, followed by the issue's index number to close an issue in the currently selected repository.</p>
 <h3>Exiting the Program</h3>
