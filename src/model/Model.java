@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import Misc.FailedRequestException;
 import controller.Observer;
 import structure.Issue;
 import structure.Repository;
@@ -52,10 +54,11 @@ public class Model {
 	//Error messages
 	private static final String MSG_CONNECTIONERROR = "Error executing request. Connect to the Internet and try again.";
 	private static final String MSG_INVALIDINDEX = "No such item with this index.";
-	private static final String MSG_LOCALISSUEPARSINGERROR = "Failed to create local instance of new issue. You may want to restart the program to view the new issue.";
+	private static final String MSG_LOCALISSUEPARSINGERROR = "Failed to create local instance issue. You may want to restart the program.";
 	private static final String MSG_NOSUCHELEMENT = "This item does not exist.";
-	private static final String MSG_REQUESTERROR = "Error sending request. Please try again.";
-
+	private static final String MSG_REQUESTERROR = "An error occurred while trying to send request. Please try again.";
+	private static final String MSG_FAILEDREQUEST = "Request failed.";
+	
 	private static Model instance = null;	//The single instance of this class
 
 	//Data members
@@ -380,9 +383,10 @@ public class Model {
 	 * @param issueName The name or 1-based index of the issue in the given repository's list of issues.
 	 * @param repoName The name of the repository to close the issue.
 	 * @throws IllegalArgumentException If the issue and/or repository cannot be found.
-	 * @throws Exception If an error occurred when sending the request to GitHub.
+	 * @throws IOException If an error occurs in the process of sending request.
+	 * @throws IllegalArgumentException If the given issue/repository does not exist.
 	 */
-	public void closeIssue(String issueName, String repoName) throws IllegalArgumentException {
+	public void closeIssue(String issueName, String repoName) throws IllegalArgumentException, IOException {
 		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
 		Repository repo = getRepository(repoName);
 		Issue issue, temp;
@@ -393,6 +397,7 @@ public class Model {
 		}
 		HttpPatch request = new HttpPatch(API_URL+String.format(EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber()));
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 		temp = new Issue(issue);
 		temp.close();
 		
@@ -405,7 +410,46 @@ public class Model {
 			}
 			response.close();
 		} catch (Exception e) {
-			//Fail silently
+			throw new IOException(MSG_REQUESTERROR);
+		}
+	}
+	
+	/**
+	 * Edits the given issue with the given changes.
+	 * @param changes The JSON object representing the changes to be made.
+	 * @param repoName The name of the repository containing the issue to be edited.
+	 * @param issueName The name of the issue to be edited.
+	 * @return The edited Issue. Returns the original issue if the request fails or the response message does not exist.
+	 * @throws IllegalArgumentException If the given repository/issue does not exist.
+	 * @throws IOException If an error occurs in the process of sending the request.
+	 * @throws JSONException if an error occurs while parsing the JSON object in the response.
+	 */
+	public Issue editIssue(JSONObject changes, String repoName, String issueName) throws IllegalArgumentException, IOException, JSONException {
+		assert changes!=null && repoName!=null && !repoName.isEmpty() && issueName!=null && !issueName.isEmpty();
+		Repository repo = getRepository(repoName);
+		Issue issue = repo.getIssue(issueName);
+		HttpPatch request = new HttpPatch(API_URL+String.format(EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber()));
+		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		try {
+			request.setEntity(new StringEntity(changes.toString()));
+			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			if(!response.getStatusLine().toString().equals(RESPONSE_OK) || response.getEntity()==null){
+				response.close();
+				return issue;	//Fail silently
+			}
+			HttpEntity messageBody = response.getEntity();	//Will not be null, as defined in GitHub API response.
+			assert messageBody!=null;
+			JSONObject obj = new JSONObject(getJSONString(messageBody.getContent()));
+			response.close();
+			Issue editedIssue = Issue.makeInstance(obj);
+			repo.replaceIssue(issue.getTitle(), editedIssue);
+			notifyObservers(repoName, editedIssue.getTitle());
+			return editedIssue;
+		} catch(JSONException e){
+			throw new JSONException(MSG_LOCALISSUEPARSINGERROR);
+		} catch(IOException e){
+			throw new IOException(MSG_REQUESTERROR);
 		}
 	}
 }

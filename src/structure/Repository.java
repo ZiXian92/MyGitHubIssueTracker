@@ -160,6 +160,23 @@ public class Repository {
 		closeIssue(index);
 	}
 	
+	/**
+	 * Replaces the given issue with the given updated issue.
+	 * @param issueName The name of the issue to be replaced. Cannot be null or empty string.
+	 * @param editedIssue The new issue to replace the target issue. Cannot be null.
+	 * @throws IllegalArgumentException If issueName represents a non-existent issue.
+	 */
+	public void replaceIssue(String issueName, Issue editedIssue) throws IllegalArgumentException {
+		assert issueName!=null && !issueName.isEmpty() && editedIssue!=null;
+		if(!indexList.containsKey(issueName)){
+			throw new IllegalArgumentException(MSG_NOSUCHELEMENT);
+		}
+		int index = indexList.get(issueName);
+		issueList.set(index-1, editedIssue);
+		indexList.remove(issueName);
+		indexList.put(editedIssue.getTitle(), index);
+	}
+	
 	@Override
 	public String toString(){
 		StringBuilder strBuilder = new StringBuilder(FIELD_NAME);
