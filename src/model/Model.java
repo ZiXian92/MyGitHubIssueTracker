@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,7 +20,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import Misc.FailedRequestException;
 import controller.Observer;
 import structure.Issue;
 import structure.Repository;
@@ -57,7 +55,6 @@ public class Model {
 	private static final String MSG_LOCALISSUEPARSINGERROR = "Failed to create local instance issue. You may want to restart the program.";
 	private static final String MSG_NOSUCHELEMENT = "This item does not exist.";
 	private static final String MSG_REQUESTERROR = "An error occurred while trying to send request. Please try again.";
-	private static final String MSG_FAILEDREQUEST = "Request failed.";
 	
 	private static Model instance = null;	//The single instance of this class
 

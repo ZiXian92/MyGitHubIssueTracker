@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -48,17 +47,9 @@ public class ModelTest {
 	//Tests the functionality of listing projects.
 	//Replace <username> and <password> with your own GitHub login credentials before running the test.
 	public void testListRepositories(){
-		try{
-			Model model = Model.getInstance();
-			String[] list = model.listRepositories();
-			assertTrue(list!=null);
-		} catch(IOException e){
-			e.printStackTrace();
-			fail();
-		} catch(Exception e){
-			e.printStackTrace();
-			fail();
-		}
+		Model model = Model.getInstance();
+		String[] list = model.listRepositories();
+		assertTrue(list!=null);
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
