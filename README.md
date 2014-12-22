@@ -9,7 +9,7 @@ MyGitHubIssueTracker
 </ul>
 <h3>Launching the Program</h3>
 <ol>
-<li>Download the JAR file from the repository and save it to a location you wish to launch the program from.</li>
+<li>Download the JAR file from <b>releases</b> folder in the repository and save it to a location you wish to launch the program from.</li>
 <li>Open the Command Prompt(for Windows) or Terminal(for MAC OS and Linux) and navigate to the location where the JAR file was saved.</li>
 <li>Make the JAR file executable.</li>
 <li>From the Command Prompt or Terminal, execute <b>java -jar MyGitHubIssueTracker.jar</b>, assuming you saved the JAR file as MyGitHubIssueTracker.jar.</li>
