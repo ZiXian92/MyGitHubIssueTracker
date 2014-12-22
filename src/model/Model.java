@@ -141,7 +141,7 @@ public class Model {
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 		try{
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-			if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
+			if(!response.getStatusLine().toString().equals(RESPONSE_OK) || response.getEntity()==null){
 				response.close();
 				return;
 			}
@@ -149,16 +149,10 @@ public class Model {
 			//Get the message body of the response.
 			HttpEntity messageBody = response.getEntity();
 
-			if(messageBody==null){
-				response.close();
-				return;
-			}
-
 			//Parse the JSON string into Repository instances.
 			JSONArray arr = new JSONArray(getJSONString(messageBody.getContent()));
 			response.close();
 			int size = arr.length();
-			assert size==5;
 			Repository temp;
 			JSONObject obj;
 			for(int i=0; i<size; i++){	//Add repository to list.
@@ -224,22 +218,20 @@ public class Model {
 			request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 			request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-			if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
+			if(!response.getStatusLine().toString().equals(RESPONSE_OK) || response.getEntity()==null){
 				response.close();
 				return null;
 			}
 			
 			//Loads issues from GitHub repository into this repository instance.
 			HttpEntity messageBody = response.getEntity();
-			if(messageBody!=null){
-				JSONObject temp;
-				JSONArray arr = new JSONArray(getJSONString(messageBody.getContent()));
-				response.close();
-				int size = arr.length();
-				for(int i=0; i<size; i++){
-					temp = arr.getJSONObject(i);
-					repo.addIssue(Issue.makeInstance(temp));
-				}
+			JSONObject temp;
+			JSONArray arr = new JSONArray(getJSONString(messageBody.getContent()));
+			response.close();
+			int size = arr.length();
+			for(int i=0; i<size; i++){
+				temp = arr.getJSONObject(i);
+				repo.addIssue(Issue.makeInstance(temp));
 			}
 			loadContribThread.join();
 			return repo;
