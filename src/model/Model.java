@@ -337,28 +337,32 @@ public class Model {
 	
 	/**
 	 * Adds the given issue(in JSON string format) to the given repository.
-	 * @param jsonIssue The JSON string representation of the issue to be added. Cannot be null or empty.
+	 * @param jsonIssue The JSON representation of the issue to be added. Cannot be null or empty.
 	 * @param repoName The name of the repository to add the issue to.
+	 * @return The created issue. Returns null if the request fails.
 	 * @throws IOException If an error occurs when executing the request.
 	 * @throws JSONException If an error occurs when parsing the JSON representation of the new issue.
 	 */
-	public void addIssue(String jsonIssue, String repoName) throws IOException, JSONException {
-		assert jsonIssue!=null && !jsonIssue.isEmpty() && repoName!=null && !repoName.isEmpty();
+	public Issue addIssue(JSONObject jsonIssue, String repoName) throws IOException, JSONException {
+		assert jsonIssue!=null && repoName!=null && !repoName.isEmpty();
 		Repository repo = getRepository(repoName);
 		HttpPost request = new HttpPost(API_URL+String.format(EXT_REPOISSUES, repo.getOwner(), repo.getName()));
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-		request.setEntity(new StringEntity(jsonIssue));
 		try{
+			request.setEntity(new StringEntity(jsonIssue.toString()));
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			if(!response.getStatusLine().toString().equals(RESPONSE_CREATED) || response.getEntity()==null){
 				response.close();
-				return;
+				return null;
 			}
 			HttpEntity messageBody = response.getEntity();
 			JSONObject obj = new JSONObject(getJSONString(messageBody.getContent()));
 			response.close();
-			repo.addIssue(Issue.makeInstance(obj));
+			Issue issue = Issue.makeInstance(obj);
+			repo.addIssue(issue);
+			notifyObservers(repoName, issue.getTitle());
+			return issue;
 		} catch (JSONException e) {
 			throw new JSONException(MSG_LOCALISSUEPARSINGERROR);
 		} catch(IOException e){

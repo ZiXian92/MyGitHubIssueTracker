@@ -5,6 +5,11 @@ import java.io.InputStreamReader;
 
 import org.json.JSONObject;
 
+import structure.Issue;
+
+/**Defines the command to add a new issue.
+ * @author ZiXian92
+ */
 public class AddIssue extends Command {
 	private static final String KEY_TITLE = "title";
 	private static final String KEY_BODY = "body";
@@ -42,8 +47,12 @@ public class AddIssue extends Command {
 		} else{
 			obj.put(KEY_ASSIGNEE, input);
 		}
-		model.addIssue(obj.toString(), repoName);
-		new SelectRepo(repoName).execute();
+		Issue issue = model.addIssue(obj, repoName);
+		if(issue==null){
+			view.updateView(model.getRepository(repoName));
+		} else{
+			view.updateView(issue);
+		}
 	}
 
 	private void printPrompt(String msg){
