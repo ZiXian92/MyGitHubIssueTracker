@@ -7,18 +7,26 @@ import java.io.InputStreamReader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Defines the command to edit the given issue.
+ * @author ZiXian92
+ */
 public class EditIssue extends Command {
+	//JSON key values
 	private static final String KEY_TITLE = "title";
 	private static final String KEY_BODY = "body";
 	private static final String KEY_ASSIGNEE = "assignee";
 	
+	//Prompt messages
 	private static final String PROMPT_TITLE = "New title(Enter nothing to retain current title): ";
 	private static final String PROMPT_CONTENT = "New content(Enter nothing to skip, space to remove content): ";
 	private static final String PROMPT_ASSIGNEE = "New assignee(Enter nothing to skip, space to remove assignee): ";
 	
+	//Error messages
 	private static final String MSG_PARSEERROR = "Error parsing changes.";
 	private static final String MSG_IOERROR = "An IO error occurred.";
 	
+	//Data members
 	private String repoName, issueName;
 	
 	/**
