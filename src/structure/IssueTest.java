@@ -6,7 +6,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -26,11 +28,25 @@ public class IssueTest {
 			strBuilder = strBuilder.append(input);
 		}
 		reader.close();
-		JSONObject obj = new JSONObject(strBuilder.toString());
-		Issue issue = Issue.makeInstance(obj);
+		JSONObject issueObj = new JSONObject(strBuilder.toString());
+		File labelFile = new File("testFiles/labels");
+		reader = new BufferedReader(new FileReader(labelFile));
+		strBuilder = new StringBuilder();
+		while((input = reader.readLine())!=null){
+			strBuilder = strBuilder.append(input);
+		}
+		reader.close();
+		JSONArray labelsObj = new JSONArray(strBuilder.toString());
+		ArrayList<String> labels = new ArrayList<String>();
+		for(int i=0; i<labelsObj.length(); i++){
+			labels.add(labelsObj.getJSONObject(i).getString("name"));
+		}
+		Issue issue = Issue.makeInstance(issueObj, labels);
 		assertTrue(issue!=null);
 		assertEquals(7, issue.getNumber());
 		assertEquals("ZiXian92", issue.getAssignee());
+		assertEquals(1, issue.getLabels().length);
+		assertEquals("bug", issue.getLabels()[0]);
 	}
 
 }

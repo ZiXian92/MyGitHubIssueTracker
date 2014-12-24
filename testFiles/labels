@@ -1,0 +1,57 @@
+[
+  {
+    "url": "https://api.github.com/repos/ZiXian92/MyGitHubIssueTracker/labels/bug",
+    "name": "bug",
+    "color": "fc2929"
+  },
+  {
+    "url": "https://api.github.com/repos/ZiXian92/MyGitHubIssueTracker/labels/duplicate",
+    "name": "duplicate",
+    "color": "cccccc"
+  },
+  {
+    "url": "https://api.github.com/repos/ZiXian92/MyGitHubIssueTracker/labels/enhancement",
+    "name": "enhancement",
+    "color": "84b6eb"
+  },
+  {
+    "url": "https://api.github.com/repos/ZiXian92/MyGitHubIssueTracker/labels/help+wanted",
+    "name": "help wanted",
+    "color": "159818"
+  },
+  {
+    "url": "https://api.github.com/repos/ZiXian92/MyGitHubIssueTracker/labels/invalid",
+    "name": "invalid",
+    "color": "e6e6e6"
+  },
+  {
+    "url": "https://api.github.com/repos/ZiXian92/MyGitHubIssueTracker/labels/question",
+    "name": "question",
+    "color": "cc317c"
+  },
+  {
+    "url": "https://api.github.com/repos/ZiXian92/MyGitHubIssueTracker/labels/wontfix",
+    "name": "wontfix",
+    "color": "ffffff"
+  },
+  {
+    "url": "https://api.github.com/repos/ZiXian92/MyGitHubIssueTracker/labels/Epic",
+    "name": "Epic",
+    "color": "bfd4f2"
+  },
+  {
+    "url": "https://api.github.com/repos/ZiXian92/MyGitHubIssueTracker/labels/Task",
+    "name": "Task",
+    "color": "fbca04"
+  },
+  {
+    "url": "https://api.github.com/repos/ZiXian92/MyGitHubIssueTracker/labels/In+progress",
+    "name": "In progress",
+    "color": "207de5"
+  },
+  {
+    "url": "https://api.github.com/repos/ZiXian92/MyGitHubIssueTracker/labels/Completed",
+    "name": "Completed",
+    "color": "009800"
+  }
+]

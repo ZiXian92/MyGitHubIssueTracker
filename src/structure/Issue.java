@@ -1,5 +1,8 @@
 package structure;
 
+import java.util.ArrayList;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -8,12 +11,13 @@ import org.json.JSONObject;
  * @author ZiXian92
  */
 public class Issue {
+	//Allowable states
 	public static final String STATE_OPEN = "open";
 	public static final String STATE_CLOSED = "closed";
 	
+	//Output formatting
 	private static final String LINE_DELIM = "\n";
 	private static final String SEPARATOR = "\t";
-	
 	private static final String FIELD_TITLE = "Title: ";
 	private static final String FIELD_CONTENT = "Body: ";
 	private static final String FIELD_STATUS = "Status: ";
@@ -27,20 +31,27 @@ public class Issue {
 	private static final String KEY_CONTENT = "body";
 	private static final String KEY_ASSIGNEE = "assignee";
 	private static final String KEY_USERNAME = "login";
+	private static final String KEY_LABELS = "labels";
+	private static final String KEY_LABELNAME = "name";
 	
 	//Data members
 	private String title, status, content, assignee;
 	private int number;
+	private ArrayList<String> labels, applicableLabels;
 	
 	/**
 	 * Creates a new issue instance.
 	 * @param title The title of the issue.
+	 * @param int number This issue's number.
+	 * @param applicableLabels The list of labels that are applicable to this issue.
 	 */
-	public Issue(String title, int number){
+	public Issue(String title, int number, ArrayList<String> applicableLabels){
 		assert title!=null && !title.isEmpty();
 		this.title = title;
 		this.number = number;
 		this.status = STATE_OPEN;
+		this.applicableLabels = applicableLabels;
+		this.labels = new ArrayList<String>();
 	}
 	
 	/**
@@ -61,14 +72,21 @@ public class Issue {
 	 * @param obj The JSON object to be converted to an issue.
 	 * @throws JSONException If the JSON format is wrong.
 	 */
-	public static Issue makeInstance(JSONObject obj) throws JSONException{
-		assert obj!=null;
-		Issue issue = new Issue(obj.getString(KEY_ISSUETITLE), obj.getInt(KEY_ISSUENUMBER));
+	public static Issue makeInstance(JSONObject obj, ArrayList<String> applicableLabels) throws JSONException{
+		assert obj!=null && applicableLabels!=null;
+		Issue issue = new Issue(obj.getString(KEY_ISSUETITLE), obj.getInt(KEY_ISSUENUMBER), applicableLabels);
 		issue.setContent(obj.getString(KEY_CONTENT));
 		if(obj.isNull(KEY_ASSIGNEE)){
 			issue.setAssignee(null);
 		} else{
 			issue.setAssignee(obj.getJSONObject(KEY_ASSIGNEE).getString(KEY_USERNAME));
+		}
+		JSONArray labelArray = obj.getJSONArray(KEY_LABELS);
+		int numLabels = labelArray.length();
+		String label;
+		for(int i=0; i<numLabels; i++){
+			label = labelArray.getJSONObject(i).getString(KEY_LABELNAME);
+			issue.addLabel(label);
 		}
 		return issue;
 	}
@@ -114,6 +132,22 @@ public class Issue {
 	}
 	
 	/**
+	 * Gets the list of labels assigned to this issue.
+	 * @return An array of label names or null if no label is assigned to this issue.
+	 */
+	public String[] getLabels(){
+		int size = labels.size();;
+		if(size==0){
+			return null;
+		}
+		String[] arr = labels.toArray(new String[size]);
+		for(int i=0; i<size; i++){
+			arr[i] = labels.get(i);
+		}
+		return arr;
+	}
+	
+	/**
 	 * Sets the title for this issue.
 	 * @param title The new title for this issue. Cannot be null or empty string.
 	 */
@@ -149,6 +183,16 @@ public class Issue {
 			assert !assignee.isEmpty();
 		}
 		this.assignee = assignee;
+	}
+	
+	/**
+	 * Adds the given label to this issue only if the label is applicable to this issue.
+	 * @param label The name of the label to be added to this issue.
+	 */
+	public void addLabel(String label){
+		if(label!=null && !label.isEmpty()){
+			labels.add(label);
+		}
 	}
 	
 	@Override

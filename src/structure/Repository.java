@@ -31,7 +31,7 @@ public class Repository {
 	//Data members
 	private String name, owner;	//To be extracted by Model to update GitHub.
 	private ArrayList<Issue> issueList;
-	private ArrayList<String> assignees;
+	private ArrayList<String> assignees, labels;
 	private HashMap<String, Integer> indexList;
 	private int numIssues;
 	
@@ -46,6 +46,7 @@ public class Repository {
 		issueList = new ArrayList<Issue>();
 		assignees = new ArrayList<String>();
 		indexList = new HashMap<String, Integer>();
+		labels = new ArrayList<String>();
 		numIssues = 0;
 	}
 	
@@ -75,6 +76,10 @@ public class Repository {
 		return owner;
 	}
 	
+	/**
+	 * Gets the list of contributors to this repository.
+	 * @return An array of the contributors' names.
+	 */
 	public String[] getAssignees(){
 		if(assignees.isEmpty()){
 			return null;
@@ -87,13 +92,20 @@ public class Repository {
 	}
 	
 	/**
+	 * Gets the list of labels in this repository.*/
+	public ArrayList<String> getLabels(){
+		return labels;
+	}
+	
+	/**
 	 * Adds the given issue to this repository's issue list.
 	 * @param issue the issue to be added.
 	 */
 	public void addIssue(Issue issue){
-		assert issue!=null;
-		issueList.add(issue);
-		indexList.put(issue.getTitle(), ++numIssues);
+		if(issue!=null){
+			issueList.add(issue);
+			indexList.put(issue.getTitle(), ++numIssues);
+		}
 	}
 	
 	/**
@@ -101,8 +113,19 @@ public class Repository {
 	 * @param assignee The assignee to add. Cannot be null or empty string.
 	 */
 	public void addAssignee(String assignee){
-		assert assignee!=null && !assignee.isEmpty();
-		assignees.add(assignee);
+		if(assignee!=null && !assignee.isEmpty()){
+			assignees.add(assignee);
+		}
+	}
+	
+	/**
+	 * Adds a new label to this repository.
+	 * @param label The new label to be added.
+	 */
+	public void addLabel(String label){
+		if(label!=null && !label.isEmpty()){
+			labels.add(label);
+		}
 	}
 	
 	/**

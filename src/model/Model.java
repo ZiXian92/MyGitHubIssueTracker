@@ -35,6 +35,7 @@ public class Model {
 	private static final String EXT_USER = "/user";
 	private static final String EXT_REPOS = "/user/repos";
 	private static final String EXT_REPOISSUES = "/repos/%1$s/%2$s/issues";
+	private static final String EXT_REPOLABELS = "/repos/%1$s/%2$s/labels";
 	private static final String EXT_CONTRIBUTORS = "/repos/%1$s/%2$s/contributors";
 	private static final String EXT_EDITISSUE = "/repos/%1$s/%2$s/issues/%3$d";
 
@@ -207,17 +208,23 @@ public class Model {
 			String owner = repo.getOwner();
 			
 			//Gets the list of contributors concurrently.
-			HttpGet request2 = new HttpGet(API_URL+String.format(EXT_CONTRIBUTORS, owner, repoName));
-			request2.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-			request2.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-			Thread loadContribThread = new Thread(new LoadContributorsThread(repo, request2));
+			HttpGet contributorRequest = new HttpGet(API_URL+String.format(EXT_CONTRIBUTORS, owner, repoName));
+			contributorRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+			contributorRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+			Thread loadContribThread = new Thread(new LoadContributorsThread(repo, contributorRequest));
 			loadContribThread.run();
 			
+			HttpGet labelsRequest = new HttpGet(API_URL+String.format(EXT_REPOLABELS, owner, repoName));
+			labelsRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+			labelsRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+			Thread loadLabelsThread = new Thread(new LoadLabelsThread(repo, labelsRequest));
+			loadLabelsThread.run();
+			
 			//Sends request for issues under this repository.
-			HttpGet request = new HttpGet(API_URL+String.format(EXT_REPOISSUES, owner, repoName));
-			request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-			request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			HttpGet issueRequest = new HttpGet(API_URL+String.format(EXT_REPOISSUES, owner, repoName));
+			issueRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+			issueRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+			CloseableHttpResponse response = HttpClients.createDefault().execute(issueRequest);
 			if(!response.getStatusLine().toString().equals(RESPONSE_OK) || response.getEntity()==null){
 				response.close();
 				return null;
@@ -228,10 +235,11 @@ public class Model {
 			JSONObject temp;
 			JSONArray arr = new JSONArray(getJSONString(messageBody.getContent()));
 			response.close();
+			loadLabelsThread.join();
 			int size = arr.length();
 			for(int i=0; i<size; i++){
 				temp = arr.getJSONObject(i);
-				repo.addIssue(Issue.makeInstance(temp));
+				repo.addIssue(Issue.makeInstance(temp, repo.getLabels()));
 			}
 			loadContribThread.join();
 			return repo;
@@ -359,7 +367,7 @@ public class Model {
 			HttpEntity messageBody = response.getEntity();
 			JSONObject obj = new JSONObject(getJSONString(messageBody.getContent()));
 			response.close();
-			Issue issue = Issue.makeInstance(obj);
+			Issue issue = Issue.makeInstance(obj, repo.getLabels());
 			repo.addIssue(issue);
 			notifyObservers(repoName, issue.getTitle());
 			return issue;
@@ -435,7 +443,7 @@ public class Model {
 			assert messageBody!=null;
 			JSONObject obj = new JSONObject(getJSONString(messageBody.getContent()));
 			response.close();
-			Issue editedIssue = Issue.makeInstance(obj);
+			Issue editedIssue = Issue.makeInstance(obj, repo.getLabels());
 			repo.replaceIssue(issue.getTitle(), editedIssue);
 			notifyObservers(repoName, editedIssue.getTitle());
 			return editedIssue;
