@@ -2,7 +2,6 @@ package model;
 
 import static org.junit.Assert.*;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.Test;
 
