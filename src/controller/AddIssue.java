@@ -11,12 +11,19 @@ import structure.Issue;
  * @author ZiXian92
  */
 public class AddIssue extends Command {
+	//JSON parameter key values.
 	private static final String KEY_TITLE = "title";
 	private static final String KEY_BODY = "body";
 	private static final String KEY_ASSIGNEE = "assignee";
+	private static final String KEY_LABELS = "labels";
 	
+	//Prompt messages
 	private static final String PROMPT_BODY = "Please enter body message(terminate with Enter button): ";
-	private static final String PROMPT_ASSIGNEE = "Assignee: ";
+	private static final String PROMPT_ASSIGNEE = "Enter assignee: ";
+	private static final String PROMPT_LABELS = "Enter label(s)(comma-separated): ";
+	
+	//For separating labels
+	private static final String LABEL_SEPARATOR = ",";
 	
 	//Data members
 	private String title, repoName;
@@ -47,12 +54,20 @@ public class AddIssue extends Command {
 		} else{
 			obj.put(KEY_ASSIGNEE, input);
 		}
+		printPrompt(PROMPT_LABELS);
+		input = reader.readLine();
+		String[] labels = input.split(LABEL_SEPARATOR);
+		int numLabels = labels.length;
+		for(int i=0; i<numLabels; i++){
+			obj.append(KEY_LABELS, labels[i].trim());
+		}
 		Issue issue = model.addIssue(obj, repoName);
 		if(issue==null){
 			view.updateView(model.getRepository(repoName));
 		} else{
 			view.updateView(issue);
 		}
+		
 	}
 
 	private void printPrompt(String msg){
