@@ -10,6 +10,7 @@ import Misc.Util;
 
 /**
  * Defines the data structure that represents a repository in GitHub.
+ * It is up to the programmer to ensure that the information is consistent with that on GitHub.
  * @author ZiXian92
  */
 public class Repository {
@@ -101,6 +102,35 @@ public class Repository {
 	}
 	
 	/**
+	 * Gets the index-th issue in this repository.
+	 * @param index The index of the issue on this repository.
+	 * @return The index-th issue in this repository's issue list.
+	 * @throws IllegalArgumentException If index is less than 1 or is greater than the number of
+	 * 									issues in this repository.
+	 */
+	public Issue getIssue(int index) throws IllegalArgumentException {
+		if(index<1 || index>numIssues){
+			throw new IllegalArgumentException(MSG_INVALIDINDEX);
+		}
+		return issueList.get(index-1);
+	}
+	
+	/**
+	 * Gets the issue with the given name in this repository.
+	 * @param issueName The name of the issue to get. Cannot be null or empty.
+	 * @return The issue with the given name in this repository.
+	 * @throws IllegalArgumentException If no such issue with the given name exists.
+	 */
+	public Issue getIssue(String issueName) throws IllegalArgumentException {
+		assert issueName!=null && !issueName.isEmpty();
+		if(!indexList.containsKey(issueName)){
+			throw new IllegalArgumentException(MSG_NOSUCHELEMENT);
+		}
+		int index = indexList.get(issueName);
+		return getIssue(index);
+	}
+	
+	/**
 	 * Adds the given issue to this repository's issue list.
 	 * @param issue the issue to be added.
 	 */
@@ -130,35 +160,6 @@ public class Repository {
 		if(label!=null && !label.isEmpty()){
 			labels.add(label);
 		}
-	}
-	
-	/**
-	 * Gets the index-th issue in this repository.
-	 * @param index The index of the issue on this repository.
-	 * @return The index-th issue in this repository's issue list.
-	 * @throws IllegalArgumentException If index is less than 1 or is greater than the number of
-	 * 									issues in this repository.
-	 */
-	public Issue getIssue(int index) throws IllegalArgumentException {
-		if(index<1 || index>numIssues){
-			throw new IllegalArgumentException(MSG_INVALIDINDEX);
-		}
-		return issueList.get(index-1);
-	}
-	
-	/**
-	 * Gets the issue with the given name in this repository.
-	 * @param issueName The name of the issue to get. Cannot be null or empty.
-	 * @return The issue with the given name in this repository.
-	 * @throws IllegalArgumentException If no such issue with the given name exists.
-	 */
-	public Issue getIssue(String issueName) throws IllegalArgumentException {
-		assert issueName!=null && !issueName.isEmpty();
-		if(!indexList.containsKey(issueName)){
-			throw new IllegalArgumentException(MSG_NOSUCHELEMENT);
-		}
-		int index = indexList.get(issueName);
-		return getIssue(index);
 	}
 	
 	/**
@@ -205,6 +206,16 @@ public class Repository {
 			indexList.remove(issueName);
 			indexList.put(editedIssue.getTitle(), index);
 			editedIssue.setApplicableLabels(labels);
+		}
+	}
+	
+	/**
+	 * Sets the owner of this repository. Does nothing if owner is null or an empty string.
+	 * @param owner The name of the owner of this repository.
+	 */
+	public void setOwner(String owner){
+		if(owner!=null && !owner.isEmpty()){
+			this.owner = owner;
 		}
 	}
 	
