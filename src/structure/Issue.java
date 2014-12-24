@@ -23,6 +23,8 @@ public class Issue {
 	private static final String FIELD_STATUS = "Status: ";
 	private static final String FIELD_ASSIGNEE = "Assignee: ";
 	private static final String FIELD_NUMBER = "Number: ";
+	private static final String FIELD_LABELS = "Labels: ";
+	private static final String LABEL_DELIM = ", ";
 	
 	//For JSON parsing
 	private static final String KEY_ISSUENUMBER = "number";
@@ -43,14 +45,13 @@ public class Issue {
 	 * Creates a new issue instance.
 	 * @param title The title of the issue.
 	 * @param int number This issue's number.
-	 * @param applicableLabels The list of labels that are applicable to this issue.
 	 */
-	public Issue(String title, int number, ArrayList<String> applicableLabels){
+	public Issue(String title, int number){
 		assert title!=null && !title.isEmpty();
 		this.title = title;
 		this.number = number;
 		this.status = STATE_OPEN;
-		this.applicableLabels = applicableLabels;
+		this.applicableLabels = new ArrayList<String>();
 		this.labels = new ArrayList<String>();
 	}
 	
@@ -72,9 +73,9 @@ public class Issue {
 	 * @param obj The JSON object to be converted to an issue.
 	 * @throws JSONException If the JSON format is wrong.
 	 */
-	public static Issue makeInstance(JSONObject obj, ArrayList<String> applicableLabels) throws JSONException{
-		assert obj!=null && applicableLabels!=null;
-		Issue issue = new Issue(obj.getString(KEY_ISSUETITLE), obj.getInt(KEY_ISSUENUMBER), applicableLabels);
+	public static Issue makeInstance(JSONObject obj) throws JSONException{
+		assert obj!=null;
+		Issue issue = new Issue(obj.getString(KEY_ISSUETITLE), obj.getInt(KEY_ISSUENUMBER));
 		issue.setContent(obj.getString(KEY_CONTENT));
 		if(obj.isNull(KEY_ASSIGNEE)){
 			issue.setAssignee(null);
@@ -141,9 +142,19 @@ public class Issue {
 			return null;
 		}
 		String[] arr = labels.toArray(new String[size]);
-		for(int i=0; i<size; i++){
-			arr[i] = labels.get(i);
+		return arr;
+	}
+	
+	/**
+	 * Gets the list of labels that can be assigned to this issue.
+	 * @return An array of labels that can be assigned to this issue or null if there is none.
+	 */
+	public String[] getApplicableLabels(){
+		int numLabels = applicableLabels.size();
+		if(numLabels==0){
+			return null;
 		}
+		String[] arr = applicableLabels.toArray(new String[numLabels]);
 		return arr;
 	}
 	
@@ -186,6 +197,18 @@ public class Issue {
 	}
 	
 	/**
+	 * Sets the list of applicable labels for this issue. Replaces the current list of applicable labels.
+	 * @param applicableLabels The list of applicable labels for this issue.
+	 * */
+	public void setApplicableLabels(ArrayList<String> applicableLabels){
+		if(applicableLabels!=null){
+			this.applicableLabels = applicableLabels;
+		}
+	}
+	
+	
+	
+	/**
 	 * Adds the given label to this issue only if the label is applicable to this issue.
 	 * @param label The name of the label to be added to this issue.
 	 */
@@ -195,6 +218,20 @@ public class Issue {
 		}
 	}
 	
+	private String convertLabelsToString(ArrayList<String> labels){
+		if(!labels.isEmpty()){
+			StringBuilder strBuilder = new StringBuilder(labels.get(0));
+			int size = labels.size();
+			for(int i=1; i<size; i++){
+				strBuilder = strBuilder.append(LABEL_DELIM).append(labels.get(i));
+			}
+			return strBuilder.toString();
+		} else{
+			return "";
+		}
+		
+	}
+	
 	@Override
 	public String toString(){
 		StringBuilder strBuilder =  new StringBuilder(FIELD_TITLE);
@@ -202,6 +239,7 @@ public class Issue {
 		strBuilder = strBuilder.append(FIELD_NUMBER).append(number).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_STATUS).append(status).append(SEPARATOR);
 		strBuilder = strBuilder.append(FIELD_ASSIGNEE).append(assignee).append(LINE_DELIM);
+		strBuilder = strBuilder.append(FIELD_LABELS).append(convertLabelsToString(labels)).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_CONTENT).append(content).append(LINE_DELIM);;
 		return strBuilder.toString();
 	}

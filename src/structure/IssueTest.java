@@ -41,7 +41,7 @@ public class IssueTest {
 		for(int i=0; i<labelsObj.length(); i++){
 			labels.add(labelsObj.getJSONObject(i).getString("name"));
 		}
-		Issue issue = Issue.makeInstance(issueObj, labels);
+		Issue issue = Issue.makeInstance(issueObj);
 		assertTrue(issue!=null);
 		assertEquals(7, issue.getNumber());
 		assertEquals("ZiXian92", issue.getAssignee());

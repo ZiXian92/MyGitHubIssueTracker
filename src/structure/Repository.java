@@ -105,6 +105,7 @@ public class Repository {
 		if(issue!=null){
 			issueList.add(issue);
 			indexList.put(issue.getTitle(), ++numIssues);
+			issue.setApplicableLabels(labels);
 		}
 	}
 	
@@ -198,6 +199,7 @@ public class Repository {
 		issueList.set(index-1, editedIssue);
 		indexList.remove(issueName);
 		indexList.put(editedIssue.getTitle(), index);
+		editedIssue.setApplicableLabels(labels);
 	}
 	
 	@Override

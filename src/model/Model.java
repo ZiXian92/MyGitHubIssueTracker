@@ -237,7 +237,7 @@ public class Model {
 			int size = arr.length();
 			for(int i=0; i<size; i++){
 				temp = arr.getJSONObject(i);
-				repo.addIssue(Issue.makeInstance(temp, repo.getLabels()));
+				repo.addIssue(Issue.makeInstance(temp));
 			}
 			loadContribThread.join();
 			return repo;
@@ -345,7 +345,7 @@ public class Model {
 			HttpEntity messageBody = response.getEntity();
 			JSONObject obj = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			response.close();
-			Issue issue = Issue.makeInstance(obj, repo.getLabels());
+			Issue issue = Issue.makeInstance(obj);
 			repo.addIssue(issue);
 			notifyObservers(repoName, issue.getTitle());
 			return issue;
@@ -421,7 +421,7 @@ public class Model {
 			assert messageBody!=null;
 			JSONObject obj = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			response.close();
-			Issue editedIssue = Issue.makeInstance(obj, repo.getLabels());
+			Issue editedIssue = Issue.makeInstance(obj);
 			repo.replaceIssue(issue.getTitle(), editedIssue);
 			notifyObservers(repoName, editedIssue.getTitle());
 			return editedIssue;
