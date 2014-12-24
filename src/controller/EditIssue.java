@@ -1,12 +1,13 @@
 package controller;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import structure.Issue;
 
 /**
  * Defines the command to edit the given issue.
@@ -32,8 +33,9 @@ public class EditIssue extends Command {
 	private static final String LABEL_DELIM = ",";
 	
 	//Error messages
-	private static final String MSG_PARSEERROR = "Error parsing changes.";
-	private static final String MSG_IOERROR = "An IO error occurred.";
+	private static final String MSG_INPUTERROR = "AN error occurred while reading/parsing input.";
+	private static final String MSG_LOCALPARSINGERROR = "Request successful. Error parsing local copy of issue.";
+	private static final String MSG_NOSUCHITEM = "Repository/Issue not found.";
 	
 	//Data members
 	private String repoName, issueName;
@@ -55,7 +57,7 @@ public class EditIssue extends Command {
 		JSONObject obj = new JSONObject();
 		String input;
 		view.updateView(PROMPT_MESSAGE);
-		try{
+		try{	//Gets details from user input
 			printPrompt(PROMPT_TITLE);
 			input = reader.readLine().trim();
 			if(!input.isEmpty()){
@@ -85,12 +87,23 @@ public class EditIssue extends Command {
 					}
 				}
 			}
-		} catch(JSONException e){
-			throw new JSONException(MSG_PARSEERROR);
-		} catch(IOException e){
-			throw new IOException(MSG_IOERROR);
+		} catch(Exception e){
+			view.updateView(MSG_INPUTERROR);
+			new SelectIssue(issueName, repoName).execute();
+			return;
 		}
-		view.updateView(model.editIssue(obj, repoName, issueName));
+		try {	//Main execution
+			Issue issue = model.editIssue(obj, repoName, issueName);
+			if(issue!=null){
+				view.updateView(issue);
+			} else{	//Either repository or issue is invalid
+				view.updateView(MSG_NOSUCHITEM);
+				new ListCommand().execute();
+			}
+		} catch (JSONException e) {
+			view.updateView(MSG_LOCALPARSINGERROR);
+			new SelectIssue(issueName, repoName).execute();
+		}
 	}
 	
 	private void printPrompt(String msg){

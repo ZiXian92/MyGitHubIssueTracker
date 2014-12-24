@@ -190,22 +190,22 @@ public class Repository {
 	
 	/**
 	 * Replaces the given issue with the given updated issue.
+	 * Does nothing if issueName is null or empty, editedIssue is null, or if this repository
+	 * does not contain an issue with the given issueName.
 	 * @param issueName The name of the issue to be replaced. Cannot be null or empty string.
 	 * @param editedIssue The new issue to replace the target issue. Cannot be null.
-	 * @throws IllegalArgumentException If issueName represents a non-existent issue.
 	 */
-	public void replaceIssue(String issueName, Issue editedIssue) throws IllegalArgumentException {
+	public void replaceIssue(String issueName, Issue editedIssue){
 		if(issueName==null || issueName.isEmpty() || editedIssue==null){
 			return;
 		}
-		if(!indexList.containsKey(issueName)){
-			throw new IllegalArgumentException(MSG_NOSUCHELEMENT);
+		if(indexList.containsKey(issueName)){
+			int index = indexList.get(issueName);
+			issueList.set(index-1, editedIssue);
+			indexList.remove(issueName);
+			indexList.put(editedIssue.getTitle(), index);
+			editedIssue.setApplicableLabels(labels);
 		}
-		int index = indexList.get(issueName);
-		issueList.set(index-1, editedIssue);
-		indexList.remove(issueName);
-		indexList.put(editedIssue.getTitle(), index);
-		editedIssue.setApplicableLabels(labels);
 	}
 	
 	@Override

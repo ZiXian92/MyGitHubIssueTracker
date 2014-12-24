@@ -33,6 +33,8 @@ public class SelectRepo extends Command {
 		if(repo==null){
 			view.updateView(MSG_NOSUCHREPO);
 			new ListCommand().execute();
+		} else{
+			view.updateView(repo);
 		}
 	}
 

@@ -399,15 +399,22 @@ public class Model {
 	 * @param changes The JSON object representing the changes to be made.
 	 * @param repoName The name of the repository containing the issue to be edited.
 	 * @param issueName The name of the issue to be edited.
-	 * @return The edited Issue. Returns the original issue if the request fails or the response message does not exist.
-	 * @throws IllegalArgumentException If the given repository/issue does not exist.
-	 * @throws IOException If an error occurs in the process of sending the request.
+	 * @return The edited issue. Returns the original issue if the request fails or the response message does not exist.
+	 * 			Returns null if the given issue and/or repository cannot be found.
 	 * @throws JSONException if an error occurs while parsing the JSON object in the response.
 	 */
-	public Issue editIssue(JSONObject changes, String repoName, String issueName) throws IllegalArgumentException, IOException, JSONException {
+	public Issue editIssue(JSONObject changes, String repoName, String issueName) throws JSONException {
 		assert changes!=null && repoName!=null && !repoName.isEmpty() && issueName!=null && !issueName.isEmpty();
+		
 		Repository repo = getRepository(repoName);
+		if(repo==null){
+			return null;
+		}
 		Issue issue = repo.getIssue(issueName);
+		if(issue==null){
+			return null;
+		}
+		
 		HttpPatch request = new HttpPatch(API_URL+String.format(EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber()));
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
@@ -416,20 +423,17 @@ public class Model {
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			if(!response.getStatusLine().toString().equals(RESPONSE_OK) || response.getEntity()==null){
 				response.close();
-				return issue;	//Fail silently
+				return issue;
 			}
 			HttpEntity messageBody = response.getEntity();	//Will not be null, as defined in GitHub API response.
-			assert messageBody!=null;
 			JSONObject obj = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			response.close();
 			Issue editedIssue = Issue.makeInstance(obj);
 			repo.replaceIssue(issue.getTitle(), editedIssue);
 			notifyObservers(repoName, editedIssue.getTitle());
 			return editedIssue;
-		} catch(JSONException e){
-			throw new JSONException(MSG_LOCALISSUEPARSINGERROR);
-		} catch(IOException e){
-			throw new IOException(MSG_REQUESTERROR);
+		} catch(IOException e){	//If error occurs during request.
+			return issue;
 		}
 	}
 }
