@@ -26,8 +26,6 @@ public class Issue {
 	private static final String FIELD_ASSIGNEE = "Assignee: ";
 	private static final String FIELD_NUMBER = "Number: ";
 	private static final String FIELD_LABELS = "Labels: ";
-	private static final String LABEL_DELIM = ", ";
-	
 	//For JSON parsing
 	private static final String KEY_ISSUENUMBER = "number";
 	private static final String KEY_ISSUETITLE = "title";
