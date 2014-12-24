@@ -14,7 +14,6 @@ public abstract class Command {
 	
 	/**
 	 * Executes this command.
-	 * @throws Exception If an exception occurs that causes the command;s execution to fail.
 	 */
-	public abstract void execute() throws Exception;
+	public abstract void execute();
 }

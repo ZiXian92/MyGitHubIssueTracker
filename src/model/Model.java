@@ -50,9 +50,7 @@ public class Model {
 
 	//Error messages
 	private static final String MSG_CONNECTIONERROR = "Error executing request. Connect to the Internet and try again.";
-	private static final String MSG_INVALIDINDEX = "No such item with this index.";
 	private static final String MSG_LOCALISSUEPARSINGERROR = "Failed to create local instance issue. You may want to restart the program.";
-	private static final String MSG_NOSUCHELEMENT = "This item does not exist.";
 	private static final String MSG_REQUESTERROR = "An error occurred while trying to send request. Please try again.";
 	
 	private static Model instance = null;	//The single instance of this class
@@ -274,12 +272,11 @@ public class Model {
 	/**
 	 * Gets the repository based on its index in the list.
 	 * @param index An integer between 1 and the number of repositories in the list.
-	 * @return The index-th Repository instance in the list.
-	 * @throws IllegalArgumentExecption if the definition for index is violated.
+	 * @return The index-th Repository instance in the list or null if index is invalid.
 	 */
-	public Repository getRepository(int index) throws IllegalArgumentException {
+	public Repository getRepository(int index){
 		if(index<1 || index>repoList.size()){
-			throw new IllegalArgumentException(MSG_INVALIDINDEX);
+			return null;
 		}
 		Repository selectedRepo = repoList.get(index-1);
 		notifyObservers(selectedRepo.getName(), null);
@@ -289,13 +286,11 @@ public class Model {
 	/**
 	 * Gets the repository from the list given the repository name.
 	 * @param repoName The name of the repository to retrieve. Cannot be null or empty.
-	 * @return The Repository with the given name.
-	 * @throws IllegalArgumentException If none of the repositories have the given name.
+	 * @return The Repository with the given name or null if the given repository cannot be found.
 	 */
-	public Repository getRepository(String repoName) throws IllegalArgumentException {
-		assert repoName!=null && !repoName.isEmpty();
-		if(!indexList.containsKey(repoName)){
-			throw new IllegalArgumentException(MSG_NOSUCHELEMENT);
+	public Repository getRepository(String repoName){
+		if(repoName==null || repoName.isEmpty() || !indexList.containsKey(repoName)){
+			return null;
 		}
 		return getRepository(indexList.get(repoName));
 	}
@@ -305,19 +300,26 @@ public class Model {
 	 * @param issueName The name of the issue to be selected or the index of the issue in the repository,
 	 * 					starting from 1.
 	 * @param repoName The name of the repository that contains the issue to be selected.
-	 * @throws IllegalArgumentException If issue index is invalid or the repository does not contain this
-	 * 									issue or the repository cannot be found.
+	 * @return The issue with the given issue name from the given repository or null
+	 * 			if the repository and/or issue cannot be found. 
 	 */
-	public Issue getIssue(String issueName, String repoName) throws IllegalArgumentException {
-		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
+	public Issue getIssue(String issueName, String repoName){
+		if(issueName==null || issueName.isEmpty() || repoName==null || repoName.isEmpty()){
+			return null;
+		}
 		Repository repo = getRepository(repoName);
+		if(repo==null){
+			return null;
+		}
 		Issue selectedIssue;
 		try{
 			selectedIssue = repo.getIssue(Integer.parseInt(issueName));
 		} catch(NumberFormatException e){
 			selectedIssue = repo.getIssue(issueName);
 		}
-		notifyObservers(repoName, selectedIssue.getTitle());
+		if(selectedIssue!=null){
+			notifyObservers(repoName, selectedIssue.getTitle());
+		}
 		return selectedIssue;
 	}
 	
@@ -325,11 +327,10 @@ public class Model {
 	 * Adds the given issue(in JSON string format) to the given repository.
 	 * @param jsonIssue The JSON representation of the issue to be added. Cannot be null or empty.
 	 * @param repoName The name of the repository to add the issue to.
-	 * @return The created issue. Returns null if the request fails.
-	 * @throws IOException If an error occurs when executing the request.
+	 * @return The created issue. Returns null if the request fails or an error occurred during the request..
 	 * @throws JSONException If an error occurs when parsing the JSON representation of the new issue.
 	 */
-	public Issue addIssue(JSONObject jsonIssue, String repoName) throws IOException, JSONException {
+	public Issue addIssue(JSONObject jsonIssue, String repoName) throws JSONException {
 		assert jsonIssue!=null && repoName!=null && !repoName.isEmpty();
 		Repository repo = getRepository(repoName);
 		HttpPost request = new HttpPost(API_URL+String.format(EXT_REPOISSUES, repo.getOwner(), repo.getName()));
@@ -352,7 +353,7 @@ public class Model {
 		} catch (JSONException e) {
 			throw new JSONException(MSG_LOCALISSUEPARSINGERROR);
 		} catch(IOException e){
-			throw new IOException(MSG_REQUESTERROR);
+			return null;
 		}
 	}
 	

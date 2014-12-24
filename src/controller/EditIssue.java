@@ -28,6 +28,7 @@ public class EditIssue extends Command {
 	private static final String PROMPT_ASSIGNEE = "New assignee: ";
 	private static final String PROMPT_LABELS = "Labels(comma-separated): ";
 	
+	//For labels processing
 	private static final String LABEL_DELIM = ",";
 	
 	//Error messages
@@ -49,7 +50,7 @@ public class EditIssue extends Command {
 	}
 
 	@Override
-	public void execute() throws Exception {
+	public void execute() {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		JSONObject obj = new JSONObject();
 		String input;
@@ -60,16 +61,19 @@ public class EditIssue extends Command {
 			if(!input.isEmpty()){
 				obj.put(KEY_TITLE, input);
 			}
+			
 			printPrompt(PROMPT_CONTENT);
 			input = reader.readLine();
 			if(!input.isEmpty()){
 				obj.put(KEY_BODY, input.trim());
 			}
+			
 			printPrompt(PROMPT_ASSIGNEE);
 			if(!(input = reader.readLine()).isEmpty()){
 				input = input.trim();
 				obj.put(KEY_ASSIGNEE, input.isEmpty()? JSONObject.NULL: input);
 			}
+			
 			printPrompt(PROMPT_LABELS);
 			if(!(input = reader.readLine()).isEmpty()){
 				obj.put(KEY_LABELS, new JSONArray());

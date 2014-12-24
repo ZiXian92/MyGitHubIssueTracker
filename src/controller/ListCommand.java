@@ -13,7 +13,7 @@ public class ListCommand extends Command {
 	}
 
 	@Override
-	public void execute() throws Exception {
+	public void execute() {
 		view.updateView(model.listRepositories());
 	}
 }

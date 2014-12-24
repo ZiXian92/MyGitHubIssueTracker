@@ -179,12 +179,13 @@ public class Repository {
 	 * @throws IllegalArgumentException If there is no issue with the given name.
 	 */
 	public void closeIssue(String issueName) throws IllegalArgumentException {
-		assert issueName!=null && !issueName.isEmpty();
-		if(!indexList.containsKey(issueName)){
-			throw new IllegalArgumentException(MSG_NOSUCHELEMENT);
+		if(issueName!=null && !issueName.isEmpty()){
+			if(!indexList.containsKey(issueName)){
+				throw new IllegalArgumentException(MSG_NOSUCHELEMENT);
+			}
+			int index = indexList.get(issueName);
+			closeIssue(index);
 		}
-		int index = indexList.get(issueName);
-		closeIssue(index);
 	}
 	
 	/**
@@ -194,7 +195,9 @@ public class Repository {
 	 * @throws IllegalArgumentException If issueName represents a non-existent issue.
 	 */
 	public void replaceIssue(String issueName, Issue editedIssue) throws IllegalArgumentException {
-		assert issueName!=null && !issueName.isEmpty() && editedIssue!=null;
+		if(issueName==null || issueName.isEmpty() || editedIssue==null){
+			return;
+		}
 		if(!indexList.containsKey(issueName)){
 			throw new IllegalArgumentException(MSG_NOSUCHELEMENT);
 		}

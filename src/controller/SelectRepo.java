@@ -1,10 +1,15 @@
 package controller;
 
+import structure.Repository;
+
 /**
  * Defines the command class that selects a repository from the list.
  * @author ZiXian92
  */
 public class SelectRepo extends Command {
+	//Error message
+	private static final String MSG_NOSUCHREPO = "Repository does not exist.";
+	
 	//Data members
 	private String repoName;
 
@@ -18,11 +23,16 @@ public class SelectRepo extends Command {
 	}
 	
 	@Override
-	public void execute() throws Exception {
+	public void execute() {
+		Repository repo;
 		try{
-			view.updateView(model.getRepository(Integer.parseInt(repoName)));
+			repo = model.getRepository(Integer.parseInt(repoName));
 		} catch(NumberFormatException e){
-			view.updateView(model.getRepository(repoName));
+			repo = model.getRepository(repoName);
+		}
+		if(repo==null){
+			view.updateView(MSG_NOSUCHREPO);
+			new ListCommand().execute();
 		}
 	}
 
