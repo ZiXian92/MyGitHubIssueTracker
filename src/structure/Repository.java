@@ -6,6 +6,8 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import Misc.Util;
+
 /**
  * Defines the data structure that represents a repository in GitHub.
  * @author ZiXian92
@@ -22,6 +24,7 @@ public class Repository {
 	private static final String FIELD_OWNER = "Owner: ";
 	private static final String FIELD_CONTRIBUTORS = "Contributors: ";
 	private static final String FIELD_ISSUES = "Issues: ";
+	private static final String FIELD_LABELS = "Labels: ";
 	
 	//For JSON parsing
 	private static final String KEY_REPONAME = "name";
@@ -215,6 +218,8 @@ public class Repository {
 				strBuilder = strBuilder.append(CONTRIBUTOR_SEPARATOR);
 			}
 		}
+		strBuilder = strBuilder.append(FIELD_LABELS).append(LINE_DELIM);
+		strBuilder = strBuilder.append(Util.convertToString(labels)).append(LINE_DELIM);
 		strBuilder = strBuilder.append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_ISSUES).append(LINE_DELIM);
 		int numIssues = issueList.size();

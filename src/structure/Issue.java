@@ -6,6 +6,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import Misc.Util;
+
 /**
  * Defines the data structure to represent an issue on GitHub.
  * @author ZiXian92
@@ -218,20 +220,6 @@ public class Issue {
 		}
 	}
 	
-	private String convertLabelsToString(ArrayList<String> labels){
-		if(!labels.isEmpty()){
-			StringBuilder strBuilder = new StringBuilder(labels.get(0));
-			int size = labels.size();
-			for(int i=1; i<size; i++){
-				strBuilder = strBuilder.append(LABEL_DELIM).append(labels.get(i));
-			}
-			return strBuilder.toString();
-		} else{
-			return "";
-		}
-		
-	}
-	
 	@Override
 	public String toString(){
 		StringBuilder strBuilder =  new StringBuilder(FIELD_TITLE);
@@ -239,7 +227,7 @@ public class Issue {
 		strBuilder = strBuilder.append(FIELD_NUMBER).append(number).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_STATUS).append(status).append(SEPARATOR);
 		strBuilder = strBuilder.append(FIELD_ASSIGNEE).append(assignee).append(LINE_DELIM);
-		strBuilder = strBuilder.append(FIELD_LABELS).append(convertLabelsToString(labels)).append(LINE_DELIM);
+		strBuilder = strBuilder.append(FIELD_LABELS).append(Util.convertToString(labels)).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_CONTENT).append(content).append(LINE_DELIM);;
 		return strBuilder.toString();
 	}
