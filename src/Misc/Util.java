@@ -47,7 +47,7 @@ public class Util {
 			return "";
 		}
 		StringBuilder strBuilder = new StringBuilder(list.get(0));
-		for(int i=0; i<numElem; i++){
+		for(int i=1; i<numElem; i++){
 			strBuilder = strBuilder.append(ITEM_DELIM).append(list.get(i));
 		}
 		return strBuilder.toString();
