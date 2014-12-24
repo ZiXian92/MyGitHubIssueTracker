@@ -1,9 +1,6 @@
 package model;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,6 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import Misc.Util;
 import controller.Observer;
 import structure.Issue;
 import structure.Repository;
@@ -151,7 +149,7 @@ public class Model {
 			HttpEntity messageBody = response.getEntity();
 
 			//Parse the JSON string into Repository instances.
-			JSONArray arr = new JSONArray(getJSONString(messageBody.getContent()));
+			JSONArray arr = new JSONArray(Util.getJSONString(messageBody.getContent()));
 			response.close();
 			int size = arr.length();
 			Repository temp;
@@ -233,7 +231,7 @@ public class Model {
 			//Loads issues from GitHub repository into this repository instance.
 			HttpEntity messageBody = response.getEntity();
 			JSONObject temp;
-			JSONArray arr = new JSONArray(getJSONString(messageBody.getContent()));
+			JSONArray arr = new JSONArray(Util.getJSONString(messageBody.getContent()));
 			response.close();
 			loadLabelsThread.join();
 			int size = arr.length();
@@ -250,26 +248,6 @@ public class Model {
 			return null;
 		}
 		
-	}
-	
-	/**
-	 * Reads the JSON string from the message body of the given HTTP response.
-	 * @param in The input stream of the HTTP response's message body.
-	 * @return The JSON string contained in the given message body or whatever is read if an error occurs.
-	 */
-	private String getJSONString(InputStream in){
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-		StringBuilder strBuilder = new StringBuilder();
-		String input;
-		try{
-			while((input = reader.readLine())!=null){
-				strBuilder = strBuilder.append(input);
-			}
-			reader.close();
-		} catch(IOException e){
-			
-		}
-		return strBuilder.toString();
 	}
 	
 	/**
@@ -365,7 +343,7 @@ public class Model {
 				return null;
 			}
 			HttpEntity messageBody = response.getEntity();
-			JSONObject obj = new JSONObject(getJSONString(messageBody.getContent()));
+			JSONObject obj = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			response.close();
 			Issue issue = Issue.makeInstance(obj, repo.getLabels());
 			repo.addIssue(issue);
@@ -441,7 +419,7 @@ public class Model {
 			}
 			HttpEntity messageBody = response.getEntity();	//Will not be null, as defined in GitHub API response.
 			assert messageBody!=null;
-			JSONObject obj = new JSONObject(getJSONString(messageBody.getContent()));
+			JSONObject obj = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			response.close();
 			Issue editedIssue = Issue.makeInstance(obj, repo.getLabels());
 			repo.replaceIssue(issue.getTitle(), editedIssue);
