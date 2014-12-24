@@ -218,9 +218,9 @@ public class Repository {
 				strBuilder = strBuilder.append(CONTRIBUTOR_SEPARATOR);
 			}
 		}
+		strBuilder = strBuilder.append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_LABELS).append(LINE_DELIM);
 		strBuilder = strBuilder.append(Util.convertToString(labels)).append(LINE_DELIM);
-		strBuilder = strBuilder.append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_ISSUES).append(LINE_DELIM);
 		int numIssues = issueList.size();
 		for(int i=0; i<numIssues; i++){
