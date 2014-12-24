@@ -42,11 +42,14 @@ public class IssueTest {
 			labels.add(labelsObj.getJSONObject(i).getString("name"));
 		}
 		Issue issue = Issue.makeInstance(issueObj);
+		issue.setApplicableLabels(labels);
 		assertTrue(issue!=null);
 		assertEquals(7, issue.getNumber());
 		assertEquals("ZiXian92", issue.getAssignee());
 		assertEquals(1, issue.getLabels().length);
 		assertEquals("bug", issue.getLabels()[0]);
+		assertTrue(issue.getApplicableLabels()!=null);
+		assertEquals(labelsObj.length(), issue.getApplicableLabels().length);
 	}
 
 }
