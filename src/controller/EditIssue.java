@@ -20,10 +20,13 @@ public class EditIssue extends Command {
 	private static final String KEY_LABELS = "labels";
 	
 	//Prompt messages
-	private static final String PROMPT_TITLE = "New title(Enter nothing to retain current title): ";
-	private static final String PROMPT_CONTENT = "New content(Enter nothing to skip, space to remove content): ";
-	private static final String PROMPT_ASSIGNEE = "New assignee(Enter nothing to skip, space to remove assignee): ";
-	private static final String PROMPT_LABELS = "Labels(Enter nothing to skip, comma-separated labels to replace current labels): ";
+	private static final String PROMPT_MESSAGE = "For the following fields, enter nothing to retain current "+
+												"value, empty spaces(only) to erase, new values to "+
+												"replace current value.";
+	private static final String PROMPT_TITLE = "New title: ";
+	private static final String PROMPT_CONTENT = "New content: ";
+	private static final String PROMPT_ASSIGNEE = "New assignee: ";
+	private static final String PROMPT_LABELS = "Labels(comma-separated): ";
 	
 	private static final String LABEL_DELIM = ",";
 	
@@ -50,6 +53,7 @@ public class EditIssue extends Command {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		JSONObject obj = new JSONObject();
 		String input;
+		view.updateView(PROMPT_MESSAGE);
 		try{
 			printPrompt(PROMPT_TITLE);
 			input = reader.readLine().trim();
