@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
@@ -54,6 +56,9 @@ public class Model {
 	private static final String MSG_REQUESTERROR = "An error occurred while trying to send request. Please try again.";
 	
 	private static Model instance = null;	//The single instance of this class
+	
+	//For logging
+	private static final Logger logger = Logger.getLogger("com.MyGitHubIssueTracker.model");
 
 	//Data members
 	private String authCode;
@@ -69,6 +74,7 @@ public class Model {
 		observerList = new ArrayList<Observer>();
 		indexList = new HashMap<String, Integer>();
 		numRepos = 0;
+		logger.setUseParentHandlers(true);
 	}
 
 	/**
@@ -118,6 +124,7 @@ public class Model {
 				return true;
 			}
 		} catch(IOException e){
+			logger.log(Level.SEVERE, "Failed to execute authentication request.");
 			throw new IOException(MSG_CONNECTIONERROR);
 		}
 		return false;
@@ -161,12 +168,13 @@ public class Model {
 						indexList.put(temp.getName(), ++numRepos);
 					}
 				} catch(JSONException e){
-					//Fail silently
+					logger.log(Level.WARNING, "Failed to parse a repository.");
 				}
 			}
 		} catch(JSONException e){
-			//Fail silently
+			logger.log(Level.SEVERE, "Failed to parse response message.");
 		} catch(IOException e){
+			logger.log(Level.SEVERE, "Failed to execute request for repositories.");
 			throw new IOException(MSG_REQUESTERROR);
 		}
 	}

@@ -1,7 +1,9 @@
 package controller;
 
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import view.View;
 import model.Model;
@@ -14,9 +16,10 @@ public class Controller implements Observer {
 	//Error messages
 	private static final String MSG_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
 	private static final String MSG_LOGGEDIN = "Logged in as %1$s.\nLoading data from GitHub...";
+	private static final String MSG_FAILEDLOGGING = "Failed to open file for logging.";
 	
-	//For logging
-	private static final Logger logger = Logger.getLogger("com.MyGitHubIssueTracker.controller");
+	//For logging. Also the main logger for the program.
+	private static final Logger logger = Logger.getLogger("com.MyGitHubIssueTracker");
 	
 	//Data members
 	private String selectedRepository = null, selectedIssue = null;
@@ -34,6 +37,14 @@ public class Controller implements Observer {
 		parser = new Parser();
 		logger.setLevel(Level.INFO);
 		logger.setUseParentHandlers(false);
+		try {
+			FileHandler fh = new FileHandler("MyGitHubIssueTracker-log.txt");
+			fh.setFormatter(new SimpleFormatter());
+			logger.addHandler(fh);
+		} catch (Exception e) {
+			view.updateView(MSG_FAILEDLOGGING);
+		}
+		
 	}
 
 	/**
@@ -60,11 +71,15 @@ public class Controller implements Observer {
 
 	/**
 	 * Executes the given input command.
-	 * @param input The input command to execute. Cannot be null or an empty string.
+	 * @param input The input command to execute.
 	 */
 	public void processInput(String input){
+		if(input==null){
+			input = "";
+		}
 		try{
 			Command cmd = parser.parse(input, selectedRepository, selectedIssue);
+			logger.log(Level.INFO, "Executing {0}", input);
 			cmd.execute();
 		} catch(Exception e){
 			view.updateView(e.getMessage());
