@@ -105,7 +105,8 @@ public class Model {
 	 * @throws IOException if an IO error occurs during the request.
 	 */
 	public boolean loginUser(String username, String password) throws IOException {
-		if(username==null || username.isEmpty() || password==null || password.isEmpty()){
+		assert username!=null && password!=null;
+		if(username.isEmpty() || password.isEmpty()){
 			return false;
 		}
 		
@@ -148,7 +149,9 @@ public class Model {
 		try{
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			if(!response.getStatusLine().toString().equals(RESPONSE_OK) || response.getEntity()==null){
-				logger.log(Level.SEVERE, "Initialization failed.\n Response: {0}\nResponse message is null: {1}", new Object[] {response.getStatusLine().toString(), response.getEntity()==null});
+				logger.log(Level.SEVERE,
+						"Initialization failed.\n Response: {0}\nResponse message is null: {1}",
+						new Object[] {response.getStatusLine().toString(), response.getEntity()==null});
 				response.close();
 				return;
 			}
@@ -202,37 +205,45 @@ public class Model {
 	/**
 	 * Fetches issues under the specified repository and stores them in
 	 * a Repository instance.
-	 * @param obj The JSONObject representation of the repository to be instantiated..
+	 * @param obj The JSONObject representation of the repository to be instantiated.
 	 * @return A Repository representing the specified GitHub repository. Returns null if any error
 	 * 			occurs when executing the requests or parsing the response objects.
 	 */
 	public Repository makeRepository(JSONObject obj){
 		assert obj!=null;
 		
+		Repository repo = Repository.makeInstance(obj);
+		if(repo==null){
+			logger.log(Level.WARNING, "Failed to create repository locally.");
+			return null;
+		}
+		String repoName = repo.getName();
+		String owner = repo.getOwner();
+		
+		//Gets the list of contributors concurrently.
+		HttpGet contributorRequest = new HttpGet(API_URL+String.format(EXT_CONTRIBUTORS, owner, repoName));
+		contributorRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+		contributorRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		Thread loadContribThread = new Thread(new LoadContributorsThread(repo, contributorRequest));
+		loadContribThread.run();
+		
+		//Gets the list of labels used in this repository.
+		HttpGet labelsRequest = new HttpGet(API_URL+String.format(EXT_REPOLABELS, owner, repoName));
+		labelsRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+		labelsRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		Thread loadLabelsThread = new Thread(new LoadLabelsThread(repo, labelsRequest));
+		loadLabelsThread.run();
+		
+		//Sends request for issues under this repository.
+		HttpGet issueRequest = new HttpGet(API_URL+String.format(EXT_REPOISSUES, owner, repoName));
+		issueRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+		issueRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 		try{
-			Repository repo = Repository.makeInstance(obj);
-			String repoName = repo.getName();
-			String owner = repo.getOwner();
-			
-			//Gets the list of contributors concurrently.
-			HttpGet contributorRequest = new HttpGet(API_URL+String.format(EXT_CONTRIBUTORS, owner, repoName));
-			contributorRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-			contributorRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-			Thread loadContribThread = new Thread(new LoadContributorsThread(repo, contributorRequest));
-			loadContribThread.run();
-			
-			HttpGet labelsRequest = new HttpGet(API_URL+String.format(EXT_REPOLABELS, owner, repoName));
-			labelsRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-			labelsRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-			Thread loadLabelsThread = new Thread(new LoadLabelsThread(repo, labelsRequest));
-			loadLabelsThread.run();
-			
-			//Sends request for issues under this repository.
-			HttpGet issueRequest = new HttpGet(API_URL+String.format(EXT_REPOISSUES, owner, repoName));
-			issueRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-			issueRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 			CloseableHttpResponse response = HttpClients.createDefault().execute(issueRequest);
 			if(!response.getStatusLine().toString().equals(RESPONSE_OK) || response.getEntity()==null){
+				logger.log(Level.WARNING,
+						"Failed to get issues for repository {0}.\nResponse: {1}\nResponse message is null: {2}",
+						new Object[] {repoName, response.getStatusLine().toString(), response.getEntity()==null});
 				response.close();
 				return null;
 			}
@@ -242,9 +253,9 @@ public class Model {
 			JSONObject temp;
 			JSONArray arr = new JSONArray(Util.getJSONString(messageBody.getContent()));
 			response.close();
-			loadLabelsThread.join();
+			loadLabelsThread.join();	//Wait for labels to be loaded.
 			int size = arr.length();
-			for(int i=0; i<size; i++){
+			for(int i=0; i<size; i++){	//Parse as many issues as possible.
 				temp = arr.getJSONObject(i);
 				repo.addIssue(Issue.makeInstance(temp));
 			}
@@ -253,7 +264,11 @@ public class Model {
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			return null;
-		} catch(Exception e){
+		} catch(JSONException e){	//repo has no issue here.
+			logger.log(Level.WARNING, "Failed to parse response to request for issues of {0}.", repoName);
+			return null;
+		} catch(IOException e){	//repo has no issue here.
+			logger.log(Level.SEVERE, "Failed to execute request for issues of {0}.", repoName);
 			return null;
 		}
 		
@@ -300,7 +315,8 @@ public class Model {
 	 * @return The Repository with the given name or null if the given repository cannot be found.
 	 */
 	public Repository getRepository(String repoName){
-		if(repoName==null || repoName.isEmpty() || !indexList.containsKey(repoName)){
+		assert repoName!=null && !repoName.isEmpty();
+		if(!indexList.containsKey(repoName)){
 			return null;
 		}
 		return getRepository(indexList.get(repoName));
@@ -310,16 +326,15 @@ public class Model {
 	 * Gets the specified issue from the given repository.
 	 * @param issueName The name of the issue to be selected or the index of the issue in the repository,
 	 * 					starting from 1.
-	 * @param repoName The name of the repository that contains the issue to be selected.
+	 * @param repoName The name of the repository that contains the issue to be selected. Cannot be null or empty.
 	 * @return The issue with the given issue name from the given repository or null
 	 * 			if the repository and/or issue cannot be found. 
 	 */
 	public Issue getIssue(String issueName, String repoName){
-		if(issueName==null || issueName.isEmpty() || repoName==null || repoName.isEmpty()){
-			return null;
-		}
+		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
 		Repository repo = getRepository(repoName);
 		if(repo==null){
+			logger.log(Level.SEVERE, "Failed to get repository {0}.", repoName);
 			return null;
 		}
 		Issue selectedIssue;
@@ -344,17 +359,27 @@ public class Model {
 	public Issue addIssue(JSONObject jsonIssue, String repoName) throws JSONException {
 		assert jsonIssue!=null && repoName!=null && !repoName.isEmpty();
 		Repository repo = getRepository(repoName);
+		if(repo==null){
+			logger.log(Level.SEVERE, "Failed to get repository {0}.", repoName);
+			return null;
+		}
 		HttpPost request = new HttpPost(API_URL+String.format(EXT_REPOISSUES, repo.getOwner(), repo.getName()));
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 		try{
 			request.setEntity(new StringEntity(jsonIssue.toString()));
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-			if(!response.getStatusLine().toString().equals(RESPONSE_CREATED) || response.getEntity()==null){
+			if(!response.getStatusLine().toString().equals(RESPONSE_CREATED)){
+				logger.log(Level.SEVERE, "Request to add new issue failed. Response: {0}", response.getStatusLine().toString());
 				response.close();
 				return null;
 			}
 			HttpEntity messageBody = response.getEntity();
+			if(messageBody==null){
+				response.close();
+				logger.log(Level.SEVERE, "Missing response message. Check with Github or restart to confirm creation of issue.");
+				return null;
+			}
 			JSONObject obj = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			response.close();
 			Issue issue = Issue.makeInstance(obj);
@@ -362,25 +387,26 @@ public class Model {
 			notifyObservers(repoName, issue.getTitle());
 			return issue;
 		} catch (JSONException e) {
+			logger.log(Level.WARNING, "Failed to parse created issue.");
 			throw new JSONException(MSG_LOCALISSUEPARSINGERROR);
 		} catch(IOException e){
+			logger.log(Level.SEVERE, "Failed to execute request to create issue.");
 			return null;
 		}
 	}
 	
 	/**
 	 * Closes the given issue from the given repository.
-	 * Does nothing if issueName and/or repoName are invalid or represent non-existent items,
+	 * Does nothing if issueName and/or repoName are represent non-existent items,
 	 * an error occurs during parsing or request, or if the request is unsuccessful.
 	 * @param issueName The name or 1-based index of the issue in the given repository's list of issues.
 	 * @param repoName The name of the repository to close the issue.
 	 */
 	public void closeIssue(String issueName, String repoName){
-		if(issueName==null || issueName.isEmpty() || repoName==null || repoName.isEmpty()){
-			return;
-		}
+		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
 		Repository repo = getRepository(repoName);
 		if(repo==null){
+			logger.log(Level.SEVERE, "Unable to find repository {0}.", repoName);
 			return;
 		}
 		Issue issue, temp;
@@ -390,6 +416,7 @@ public class Model {
 			issue = repo.getIssue(issueName);
 		}
 		if(issue==null){
+			logger.log(Level.SEVERE, "Unable to find issue {0}.", issueName);
 			return;
 		}
 		
@@ -405,12 +432,14 @@ public class Model {
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			if(response.getStatusLine().toString().equals(RESPONSE_OK)){
 				issue.close();
+			} else{
+				logger.log(Level.WARNING, "Request to close issue {0} failed.", issue.getTitle());
 			}
 			response.close();
 		} catch (JSONException e) {
-			//Log error
+			logger.log(Level.WARNING, "Failed to parse issue into JSON.");
 		} catch(IOException e){
-			//Log error
+			logger.log(Level.SEVERE, "Failed to execute request to close issue.");
 		}
 	}
 	
@@ -428,10 +457,12 @@ public class Model {
 		
 		Repository repo = getRepository(repoName);
 		if(repo==null){
+			logger.log(Level.SEVERE, "Failed to get repository {0}.", repoName);
 			return null;
 		}
 		Issue issue = repo.getIssue(issueName);
 		if(issue==null){
+			logger.log(Level.SEVERE, "Failed to get issue {0}.", issueName);
 			return null;
 		}
 		
@@ -442,17 +473,27 @@ public class Model {
 			request.setEntity(new StringEntity(changes.toString()));
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			if(!response.getStatusLine().toString().equals(RESPONSE_OK) || response.getEntity()==null){
+				logger.log(Level.SEVERE, "Request to edit issue failed.\nResponse: {0}", response.getStatusLine().toString());
 				response.close();
 				return issue;
 			}
 			HttpEntity messageBody = response.getEntity();	//Will not be null, as defined in GitHub API response.
+			if(messageBody==null){
+				logger.log(Level.SEVERE, "Missing response message. Check with GitHub or restart to confirm changes.");
+				response.close();
+				return null;
+			}
 			JSONObject obj = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			response.close();
 			Issue editedIssue = Issue.makeInstance(obj);
 			repo.replaceIssue(issue.getTitle(), editedIssue);
 			notifyObservers(repoName, editedIssue.getTitle());
 			return editedIssue;
+		} catch(JSONException e){
+			logger.log(Level.WARNING, "Failed to parse edited issue from JSON in response message. Check GitHub to confirm changes.");
+			throw e;
 		} catch(IOException e){	//If error occurs during request.
+			logger.log(Level.SEVERE, "Failed to execute request to edit issue.");
 			return issue;
 		}
 	}

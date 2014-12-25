@@ -55,11 +55,17 @@ public class Repository {
 	 * Creates a repository instance from the JSON object.
 	 * @param obj The JSON object to convert into Repository.
 	 * @return The repository represented by the given JSON object.
-	 * @throws JSONException If the JSON format is not correct.
+	 * 			Returns null if obj is null or an error occurred while parsing JSON object.
 	 */
-	public static Repository makeInstance(JSONObject obj) throws JSONException {
-		assert obj!=null;
-		return new Repository(obj.getString(KEY_REPONAME), obj.getJSONObject(KEY_OWNER).getString(KEY_OWNERLOGIN));
+	public static Repository makeInstance(JSONObject obj){
+		if(obj==null){
+			return null;
+		}
+		try{
+			return new Repository(obj.getString(KEY_REPONAME), obj.getJSONObject(KEY_OWNER).getString(KEY_OWNERLOGIN));
+		} catch(JSONException e){
+			return null;
+		}
 	}
 	
 	/**
@@ -167,9 +173,7 @@ public class Repository {
 	 * @param editedIssue The new issue to replace the target issue. Cannot be null.
 	 */
 	public void replaceIssue(String issueName, Issue editedIssue){
-		if(issueName==null || issueName.isEmpty() || editedIssue==null){
-			return;
-		}
+		assert issueName!=null && !issueName.isEmpty() && editedIssue!=null;
 		if(indexList.containsKey(issueName)){
 			int index = indexList.get(issueName);
 			issueList.set(index-1, editedIssue);
