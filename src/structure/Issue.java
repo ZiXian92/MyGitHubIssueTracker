@@ -157,7 +157,7 @@ public class Issue {
 	 * @return An array of label names or null if no label is assigned to this issue.
 	 */
 	public String[] getLabels(){
-		int size = labels.size();;
+		int size = labels.size();
 		if(size==0){
 			return null;
 		}

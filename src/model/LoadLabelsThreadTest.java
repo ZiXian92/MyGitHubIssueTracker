@@ -20,7 +20,7 @@ public class LoadLabelsThreadTest {
 		req.addHeader("Accept", "application/vnd.github.v3+json");
 		LoadLabelsThread thread = new LoadLabelsThread(repo, req);
 		thread.run();
-		assertEquals(11, repo.getLabels().size());
+		assertEquals(12, repo.getLabels().size());
 	}
 
 }
