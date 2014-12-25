@@ -50,6 +50,8 @@ public class Controller implements Observer {
 	/**
 	 * Logs the user with the given username into GitHub.
 	 * @param username The user's GitHub username.
+	 * @param password The password for the given username.
+	 * @return true on successful login and false otherwise.
 	 */
 	public boolean executeLogin(String username, String password){
 		try{

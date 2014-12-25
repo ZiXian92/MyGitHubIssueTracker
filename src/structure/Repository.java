@@ -38,6 +38,7 @@ public class Repository {
 	/**
 	 * Creates a new repository instance.
 	 * @param name The name of the repository.
+	 * @param owner The name of this repository's owner.
 	 */
 	public Repository(String name, String owner){
 		assert name!=null && !name.isEmpty() && owner!=null && !owner.isEmpty();
@@ -53,6 +54,7 @@ public class Repository {
 	/**
 	 * Creates a repository instance from the JSON object.
 	 * @param obj The JSON object to convert into Repository.
+	 * @return The repository represented by the given JSON object.
 	 * @throws JSONException If the JSON format is not correct.
 	 */
 	public static Repository makeInstance(JSONObject obj) throws JSONException {
@@ -92,7 +94,9 @@ public class Repository {
 	}
 	
 	/**
-	 * Gets the list of labels in this repository.*/
+	 * Gets the list of labels in this repository.
+	 * @return An ArrayList of labels that are applicable to issues under it.
+	 */
 	public ArrayList<String> getLabels(){
 		return labels;
 	}

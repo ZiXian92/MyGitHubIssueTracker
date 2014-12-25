@@ -19,6 +19,7 @@ public class Parser {
 	 * @param input The user input to execute. Cannot be null or an empty string.
 	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
 	 * @param selectedIssue The currently selected issue. Cannot be an empty string.
+	 * @return The appropriate Command object based on the given command and the program's state.
 	 * @throws IllegalArgumentException if input is an invalid command.
 	 * @throws InvalidContextException If the command is invalid for the context.
 	 */

@@ -7,7 +7,7 @@ package controller;
 public interface Observer {
     /**
      * Updates the status of the currently selected project.
-     * @param projectName The name of the currently selected project or null if no project is selected.
+     * @param repo The name of the currently selected project or null if no project is selected.
      */
     void updateSelectedRepository(String repo);
     

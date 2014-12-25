@@ -45,7 +45,7 @@ public class Issue {
 	/**
 	 * Creates a new issue instance.
 	 * @param title The title of the issue.
-	 * @param int number This issue's number.
+	 * @param number This issue's number.
 	 */
 	public Issue(String title, int number){
 		assert title!=null && !title.isEmpty();
@@ -86,6 +86,7 @@ public class Issue {
 	/**
 	 * Creates an Issue instance from the given JSON object.
 	 * @param obj The JSON object to be converted to an issue.
+	 * @return The issue represented by the given JSON object.
 	 * @throws JSONException If the JSON format is wrong.
 	 */
 	public static Issue makeInstance(JSONObject obj) throws JSONException{
@@ -262,6 +263,7 @@ public class Issue {
 	
 	/**
 	 * Gets the JSONObject representation of this issue.
+	 * @return The JSON object representation of this issue.
 	 * @throws JSONException If error during JSON parsing occurs.
 	 */
 	public JSONObject toJSONObject() throws JSONException {

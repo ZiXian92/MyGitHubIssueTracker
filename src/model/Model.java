@@ -26,7 +26,7 @@ import structure.Repository;
 
 /**
  * Defines the component that manages the in-memory storage of GitHub issues,
- * as well as synchronizing data with GitHub.
+ * as well as synchronizing data with GitHub. There is only 1 instance of Model for the entire session.
  * @author ZiXian92
  */
 public class Model {
@@ -79,6 +79,7 @@ public class Model {
 
 	/**
 	 * Gets the only instance of Model.
+	 * @return The only instance of this class.
 	 */
 	public static Model getInstance(){
 		if(instance==null){
@@ -99,6 +100,7 @@ public class Model {
 	/**
 	 * Authenticates the user with the given username with GitHub API.
 	 * @param username The username of the user to log in.
+	 * @param password The password for the givne username.
 	 * @return true if authentication is successful and false otherwise.
 	 * @throws IOException if an IO error occurs during the request.
 	 */

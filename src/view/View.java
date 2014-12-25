@@ -21,6 +21,7 @@ public class View {
 	
 	/**
 	 * Gets the only instance of the View class.
+	 * @return The only instance of this class.
 	 */
 	public static View getInstance(){
 		if(view==null){

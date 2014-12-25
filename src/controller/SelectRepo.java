@@ -15,7 +15,7 @@ public class SelectRepo extends Command {
 
 	/**
 	 * Creates a new instance of this command.
-	 * @param repoName
+	 * @param repoName The name of the repository to be selected.
 	 */
 	public SelectRepo(String repoName){
 		assert repoName!=null && !repoName.isEmpty();
