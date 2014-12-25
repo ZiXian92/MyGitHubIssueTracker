@@ -148,6 +148,7 @@ public class Model {
 		try{
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			if(!response.getStatusLine().toString().equals(RESPONSE_OK) || response.getEntity()==null){
+				logger.log(Level.SEVERE, "Initialization failed.\n Response: {0}\nResponse message is null: {1}", new Object[] {response.getStatusLine().toString(), response.getEntity()==null});
 				response.close();
 				return;
 			}
