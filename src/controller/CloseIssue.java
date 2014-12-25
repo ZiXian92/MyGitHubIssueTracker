@@ -1,5 +1,9 @@
 package controller;
 
+/**
+ * Defines the command to close the selected issue.
+ * @author ZiXian92
+ */
 public class CloseIssue extends Command {
 	//Data members
 	private String repoName, issueName;

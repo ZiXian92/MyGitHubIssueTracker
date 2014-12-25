@@ -359,22 +359,29 @@ public class Model {
 	
 	/**
 	 * Closes the given issue from the given repository.
-	 * Does nothing if an error occurs during parsing or request, or if the request is unsuccessful.
+	 * Does nothing if issueName and/or repoName are invalid or represent non-existent items,
+	 * an error occurs during parsing or request, or if the request is unsuccessful.
 	 * @param issueName The name or 1-based index of the issue in the given repository's list of issues.
 	 * @param repoName The name of the repository to close the issue.
-	 * @throws IllegalArgumentException If the issue and/or repository cannot be found.
-	 * @throws IOException If an error occurs in the process of sending request.
-	 * @throws IllegalArgumentException If the given issue/repository does not exist.
 	 */
-	public void closeIssue(String issueName, String repoName) throws IllegalArgumentException, IOException {
-		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
+	public void closeIssue(String issueName, String repoName){
+		if(issueName==null || issueName.isEmpty() || repoName==null || repoName.isEmpty()){
+			return;
+		}
 		Repository repo = getRepository(repoName);
+		if(repo==null){
+			return;
+		}
 		Issue issue, temp;
 		try{
 			issue = repo.getIssue(Integer.parseInt(issueName));
 		} catch(NumberFormatException e){
 			issue = repo.getIssue(issueName);
 		}
+		if(issue==null){
+			return;
+		}
+		
 		HttpPatch request = new HttpPatch(API_URL+String.format(EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber()));
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
@@ -389,8 +396,10 @@ public class Model {
 				issue.close();
 			}
 			response.close();
-		} catch (Exception e) {
-			throw new IOException(MSG_REQUESTERROR);
+		} catch (JSONException e) {
+			//Log error
+		} catch(IOException e){
+			//Log error
 		}
 	}
 	

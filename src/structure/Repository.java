@@ -14,10 +14,6 @@ import Misc.Util;
  * @author ZiXian92
  */
 public class Repository {
-	//Error messages
-	private static final String MSG_INVALIDINDEX = "Invalid index.";
-	private static final String MSG_NOSUCHELEMENT = "The issue does not exist in this repository.";
-	
 	//For use in output formatting
 	private static final String LINE_DELIM = "\n";
 	private static final String CONTRIBUTOR_SEPARATOR = ", ";
@@ -104,13 +100,11 @@ public class Repository {
 	/**
 	 * Gets the index-th issue in this repository.
 	 * @param index The index of the issue on this repository.
-	 * @return The index-th issue in this repository's issue list.
-	 * @throws IllegalArgumentException If index is less than 1 or is greater than the number of
-	 * 									issues in this repository.
+	 * @return The index-th issue in this repository's issue list or null if the index is invalid.
 	 */
-	public Issue getIssue(int index) throws IllegalArgumentException {
+	public Issue getIssue(int index){
 		if(index<1 || index>numIssues){
-			throw new IllegalArgumentException(MSG_INVALIDINDEX);
+			return null;
 		}
 		return issueList.get(index-1);
 	}
@@ -118,13 +112,12 @@ public class Repository {
 	/**
 	 * Gets the issue with the given name in this repository.
 	 * @param issueName The name of the issue to get. Cannot be null or empty.
-	 * @return The issue with the given name in this repository.
-	 * @throws IllegalArgumentException If no such issue with the given name exists.
+	 * @return The issue with the given name in this repository. Returns null if the issue cannot be found or
+	 * 			if issueName is invalid.
 	 */
-	public Issue getIssue(String issueName) throws IllegalArgumentException {
-		assert issueName!=null && !issueName.isEmpty();
-		if(!indexList.containsKey(issueName)){
-			throw new IllegalArgumentException(MSG_NOSUCHELEMENT);
+	public Issue getIssue(String issueName){
+		if(issueName==null || issueName.isEmpty() || !indexList.containsKey(issueName)){
+			return null;
 		}
 		int index = indexList.get(issueName);
 		return getIssue(index);
@@ -159,33 +152,6 @@ public class Repository {
 	public void addLabel(String label){
 		if(label!=null && !label.isEmpty()){
 			labels.add(label);
-		}
-	}
-	
-	/**
-	 * Marks the issue with the given index as closed.
-	 * @param index The 1-based index of the issue to close in this repository's issue list.
-	 * @throws IllegalArgumentException If index is invalid.
-	 */
-	public void closeIssue(int index) throws IllegalArgumentException {
-		if(index<1 || index>issueList.size()){
-			throw new IllegalArgumentException(MSG_INVALIDINDEX);
-		}
-		issueList.get(index-1).close();
-	}
-	
-	/**
-	 * Closes the issue with the given name.
-	 * @param issueName The name of the issue to close.
-	 * @throws IllegalArgumentException If there is no issue with the given name.
-	 */
-	public void closeIssue(String issueName) throws IllegalArgumentException {
-		if(issueName!=null && !issueName.isEmpty()){
-			if(!indexList.containsKey(issueName)){
-				throw new IllegalArgumentException(MSG_NOSUCHELEMENT);
-			}
-			int index = indexList.get(issueName);
-			closeIssue(index);
 		}
 	}
 	

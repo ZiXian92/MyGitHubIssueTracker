@@ -67,6 +67,16 @@ public class Issue {
 		this.status = issue.getStatus();
 		this.content = issue.getContent();
 		this.assignee = issue.getAssignee();
+		this.labels = new ArrayList<String>();
+		this.applicableLabels = new ArrayList<String>();
+		String[] arr = issue.getLabels();
+		for(String str: arr){
+			labels.add(str);
+		}
+		arr = issue.getApplicableLabels();
+		for(String str: arr){
+			applicableLabels.add(str);
+		}
 	}
 	
 	/**
@@ -181,6 +191,9 @@ public class Issue {
 	 * @param content The content of this issue.
 	 */
 	public void setContent(String content){
+		if(content==null){
+			content = "";
+		}
 		this.content = content;
 	}
 	
