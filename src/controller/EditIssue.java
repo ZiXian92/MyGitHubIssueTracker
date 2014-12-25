@@ -1,11 +1,13 @@
 package controller;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import structure.Issue;
 
 /**
  * Defines the command to edit the given issue.
@@ -16,15 +18,24 @@ public class EditIssue extends Command {
 	private static final String KEY_TITLE = "title";
 	private static final String KEY_BODY = "body";
 	private static final String KEY_ASSIGNEE = "assignee";
+	private static final String KEY_LABELS = "labels";
 	
 	//Prompt messages
-	private static final String PROMPT_TITLE = "New title(Enter nothing to retain current title): ";
-	private static final String PROMPT_CONTENT = "New content(Enter nothing to skip, space to remove content): ";
-	private static final String PROMPT_ASSIGNEE = "New assignee(Enter nothing to skip, space to remove assignee): ";
+	private static final String PROMPT_MESSAGE = "For the following fields, enter nothing to retain current "+
+												"value, empty spaces(only) to erase, new values to "+
+												"replace current value.";
+	private static final String PROMPT_TITLE = "New title: ";
+	private static final String PROMPT_CONTENT = "New content: ";
+	private static final String PROMPT_ASSIGNEE = "New assignee: ";
+	private static final String PROMPT_LABELS = "Labels(comma-separated): ";
+	
+	//For labels processing
+	private static final String LABEL_DELIM = ",";
 	
 	//Error messages
-	private static final String MSG_PARSEERROR = "Error parsing changes.";
-	private static final String MSG_IOERROR = "An IO error occurred.";
+	private static final String MSG_INPUTERROR = "AN error occurred while reading/parsing input.";
+	private static final String MSG_LOCALPARSINGERROR = "Request successful. Error parsing local copy of issue.";
+	private static final String MSG_NOSUCHITEM = "Repository/Issue not found.";
 	
 	//Data members
 	private String repoName, issueName;
@@ -41,32 +52,58 @@ public class EditIssue extends Command {
 	}
 
 	@Override
-	public void execute() throws Exception {
+	public void execute() {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		JSONObject obj = new JSONObject();
 		String input;
-		try{
+		view.updateView(PROMPT_MESSAGE);
+		try{	//Gets details from user input
 			printPrompt(PROMPT_TITLE);
 			input = reader.readLine().trim();
 			if(!input.isEmpty()){
 				obj.put(KEY_TITLE, input);
 			}
+			
 			printPrompt(PROMPT_CONTENT);
 			input = reader.readLine();
 			if(!input.isEmpty()){
 				obj.put(KEY_BODY, input.trim());
 			}
+			
 			printPrompt(PROMPT_ASSIGNEE);
 			if(!(input = reader.readLine()).isEmpty()){
 				input = input.trim();
 				obj.put(KEY_ASSIGNEE, input.isEmpty()? JSONObject.NULL: input);
 			}
-		} catch(JSONException e){
-			throw new JSONException(MSG_PARSEERROR);
-		} catch(IOException e){
-			throw new IOException(MSG_IOERROR);
+			
+			printPrompt(PROMPT_LABELS);
+			if(!(input = reader.readLine()).isEmpty()){
+				obj.put(KEY_LABELS, new JSONArray());
+				if(!(input = input.trim()).isEmpty()){
+					String[] labels = input.split(LABEL_DELIM);
+					int numLabels = labels.length;
+					for(int i=0; i<numLabels; i++){
+						obj.append(KEY_LABELS, labels[i].trim());
+					}
+				}
+			}
+		} catch(Exception e){
+			view.updateView(MSG_INPUTERROR);
+			new SelectIssue(issueName, repoName).execute();
+			return;
 		}
-		view.updateView(model.editIssue(obj, repoName, issueName));
+		try {	//Main execution
+			Issue issue = model.editIssue(obj, repoName, issueName);
+			if(issue!=null){
+				view.updateView(issue);
+			} else{	//Either repository or issue is invalid
+				view.updateView(MSG_NOSUCHITEM);
+				new ListCommand().execute();
+			}
+		} catch (JSONException e) {
+			view.updateView(MSG_LOCALPARSINGERROR);
+			new SelectIssue(issueName, repoName).execute();
+		}
 	}
 	
 	private void printPrompt(String msg){

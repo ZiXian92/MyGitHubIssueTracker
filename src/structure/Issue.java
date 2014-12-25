@@ -26,6 +26,7 @@ public class Issue {
 	private static final String FIELD_ASSIGNEE = "Assignee: ";
 	private static final String FIELD_NUMBER = "Number: ";
 	private static final String FIELD_LABELS = "Labels: ";
+
 	//For JSON parsing
 	private static final String KEY_ISSUENUMBER = "number";
 	private static final String KEY_ISSUETITLE = "title";
@@ -66,6 +67,16 @@ public class Issue {
 		this.status = issue.getStatus();
 		this.content = issue.getContent();
 		this.assignee = issue.getAssignee();
+		this.labels = new ArrayList<String>();
+		this.applicableLabels = new ArrayList<String>();
+		String[] arr = issue.getLabels();
+		for(String str: arr){
+			labels.add(str);
+		}
+		arr = issue.getApplicableLabels();
+		for(String str: arr){
+			applicableLabels.add(str);
+		}
 	}
 	
 	/**
@@ -180,6 +191,9 @@ public class Issue {
 	 * @param content The content of this issue.
 	 */
 	public void setContent(String content){
+		if(content==null){
+			content = "";
+		}
 		this.content = content;
 	}
 	
@@ -256,6 +270,7 @@ public class Issue {
 		} else{
 			obj.put(KEY_ASSIGNEE, assignee);
 		}
+		obj.put(KEY_LABELS, labels.isEmpty()? new JSONArray(): new JSONArray(labels.toArray(new String[labels.size()])));
 		return obj;
 	}
 }

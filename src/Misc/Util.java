@@ -15,6 +15,11 @@ public class Util {
 	private static final String ITEM_DELIM = ", ";
 	
 	/**
+	 * List of allowed Http requests for this class.
+	 */
+	public enum HttpRequestType{ GET, POST, PATCH };
+	
+	/**
 	 * Reads the JSON string from the message body of the given HTTP response.
 	 * @param in The input stream of the HTTP response's message body. Cannot be null.
 	 * @return The JSON string contained in the given message body or whatever is read if an error occurs.

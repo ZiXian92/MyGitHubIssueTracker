@@ -7,7 +7,7 @@ public class CommentIssue extends Command {
 	}
 	
 	@Override
-	public void execute() throws Exception {
+	public void execute() {
 		// TODO Auto-generated method stub
 
 	}

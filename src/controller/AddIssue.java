@@ -3,6 +3,7 @@ package controller;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import structure.Issue;
@@ -22,6 +23,11 @@ public class AddIssue extends Command {
 	private static final String PROMPT_ASSIGNEE = "Enter assignee: ";
 	private static final String PROMPT_LABELS = "Enter label(s)(comma-separated): ";
 	
+	//Error messages
+	private static final String MSG_INPUTERROR = "An error occurred while reading/parsing input.";
+	private static final String MSG_LOCALPARSINGERROR = "Request successful. Error parsing local copy of issue.";
+	private static final String MSG_REQUESTERROR = "Failed to create issue.";
+	
 	//For separating labels
 	private static final String LABEL_SEPARATOR = ",";
 	
@@ -40,32 +46,47 @@ public class AddIssue extends Command {
 	}
 
 	@Override
-	public void execute() throws Exception {
+	public void execute() {
 		JSONObject obj = new JSONObject();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-		obj.put(KEY_TITLE, title);
-		printPrompt(PROMPT_BODY);
-		String input = reader.readLine();
-		obj.put(KEY_BODY, input);
-		printPrompt(PROMPT_ASSIGNEE);
-		input = reader.readLine();
-		if(input.trim().isEmpty()){
-			obj.put(KEY_ASSIGNEE, JSONObject.NULL);
-		} else{
-			obj.put(KEY_ASSIGNEE, input);
+		try{
+			obj.put(KEY_TITLE, title);
+
+			printPrompt(PROMPT_BODY);
+			String input = reader.readLine();
+			obj.put(KEY_BODY, input);
+
+			printPrompt(PROMPT_ASSIGNEE);
+			input = reader.readLine();
+			if(input.trim().isEmpty()){
+				obj.put(KEY_ASSIGNEE, JSONObject.NULL);
+			} else{
+				obj.put(KEY_ASSIGNEE, input);
+			}
+
+			printPrompt(PROMPT_LABELS);
+			input = reader.readLine();
+			String[] labels = input.split(LABEL_SEPARATOR);
+			int numLabels = labels.length;
+			for(int i=0; i<numLabels; i++){
+				obj.append(KEY_LABELS, labels[i].trim());
+			}
+		} catch(Exception e){
+			view.updateView(MSG_INPUTERROR);
+			new SelectRepo(repoName).execute();
+			return;
 		}
-		printPrompt(PROMPT_LABELS);
-		input = reader.readLine();
-		String[] labels = input.split(LABEL_SEPARATOR);
-		int numLabels = labels.length;
-		for(int i=0; i<numLabels; i++){
-			obj.append(KEY_LABELS, labels[i].trim());
-		}
-		Issue issue = model.addIssue(obj, repoName);
-		if(issue==null){
-			view.updateView(model.getRepository(repoName));
-		} else{
-			view.updateView(issue);
+		try{
+			Issue issue = model.addIssue(obj, repoName);
+			if(issue==null){
+				view.updateView(MSG_REQUESTERROR);
+				new SelectRepo(repoName).execute();
+			} else{
+				view.updateView(issue);
+			}
+		}  catch(JSONException e){
+			view.updateView(MSG_LOCALPARSINGERROR);
+			new SelectRepo(repoName).execute();
 		}
 		
 	}

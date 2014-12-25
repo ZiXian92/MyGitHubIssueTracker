@@ -1,5 +1,8 @@
 package controller;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import view.View;
 import model.Model;
 
@@ -11,6 +14,9 @@ public class Controller implements Observer {
 	//Error messages
 	private static final String MSG_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
 	private static final String MSG_LOGGEDIN = "Logged in as %1$s.\nLoading data from GitHub...";
+	
+	//For logging
+	private static final Logger logger = Logger.getLogger("com.MyGitHubIssueTracker.controller");
 	
 	//Data members
 	private String selectedRepository = null, selectedIssue = null;
@@ -26,6 +32,8 @@ public class Controller implements Observer {
 		model.addObserver(this);
 		view = View.getInstance();
 		parser = new Parser();
+		logger.setLevel(Level.INFO);
+		logger.setUseParentHandlers(false);
 	}
 
 	/**
@@ -35,6 +43,7 @@ public class Controller implements Observer {
 	public boolean executeLogin(String username, String password){
 		try{
 			if(model.loginUser(username, password)){
+				logger.log(Level.INFO, "Login success!");
 				view.updateView(String.format(MSG_LOGGEDIN, username));
 				model.initialise();
 				new ListCommand().execute();

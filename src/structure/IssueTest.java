@@ -50,6 +50,7 @@ public class IssueTest {
 		assertEquals("bug", issue.getLabels()[0]);
 		assertTrue(issue.getApplicableLabels()!=null);
 		assertEquals(labelsObj.length(), issue.getApplicableLabels().length);
+		System.out.println(issue.toJSONObject().toString());
 	}
 
 }

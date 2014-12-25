@@ -1,5 +1,9 @@
 package controller;
 
+/**
+ * Defines the command to close the selected issue.
+ * @author ZiXian92
+ */
 public class CloseIssue extends Command {
 	//Data members
 	private String repoName, issueName;
@@ -16,7 +20,7 @@ public class CloseIssue extends Command {
 	}
 
 	@Override
-	public void execute() throws Exception {
+	public void execute() {
 		model.closeIssue(issueName, repoName);
 		new SelectRepo(repoName).execute();
 	}
