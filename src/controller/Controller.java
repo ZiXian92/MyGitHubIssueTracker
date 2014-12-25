@@ -38,7 +38,7 @@ public class Controller implements Observer {
 		logger.setLevel(Level.INFO);
 		logger.setUseParentHandlers(false);
 		try {
-			FileHandler fh = new FileHandler("MyGitHubIssueTracker-log.txt");
+			FileHandler fh = new FileHandler("MyGitHubIssueTracker-log.txt", true);
 			fh.setFormatter(new SimpleFormatter());
 			logger.addHandler(fh);
 		} catch (Exception e) {
