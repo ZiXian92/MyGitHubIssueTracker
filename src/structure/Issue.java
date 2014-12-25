@@ -70,12 +70,16 @@ public class Issue {
 		this.labels = new ArrayList<String>();
 		this.applicableLabels = new ArrayList<String>();
 		String[] arr = issue.getLabels();
-		for(String str: arr){
-			labels.add(str);
+		if(arr!=null){
+			for(String str: arr){
+				labels.add(str);
+			}
 		}
 		arr = issue.getApplicableLabels();
-		for(String str: arr){
-			applicableLabels.add(str);
+		if(arr!=null){
+			for(String str: arr){
+				applicableLabels.add(str);
+			}
 		}
 	}
 	

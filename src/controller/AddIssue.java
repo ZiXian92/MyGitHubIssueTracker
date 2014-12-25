@@ -3,6 +3,7 @@ package controller;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -65,11 +66,14 @@ public class AddIssue extends Command {
 			}
 
 			printPrompt(PROMPT_LABELS);
-			input = reader.readLine();
-			String[] labels = input.split(LABEL_SEPARATOR);
-			int numLabels = labels.length;
-			for(int i=0; i<numLabels; i++){
-				obj.append(KEY_LABELS, labels[i].trim());
+			input = reader.readLine().trim();
+			obj.put(KEY_LABELS, new JSONArray());
+			if(!input.isEmpty()){
+				String[] labels = input.split(LABEL_SEPARATOR);
+				int numLabels = labels.length;
+				for(int i=0; i<numLabels; i++){
+					obj.append(KEY_LABELS, labels[i].trim());
+				}
 			}
 		} catch(Exception e){
 			view.updateView(MSG_INPUTERROR);
