@@ -76,6 +76,24 @@ public class Issue {
 		public String getContent(){
 			return message;
 		}
+		
+		/**
+		 * Sets this comment's author.
+		 * @param author The login name of this comment's author. Cannot be null or empty string.
+		 */
+		public void setAuthor(String author){
+			assert author!=null && !author.isEmpty();
+			this.author = author;
+		}
+		
+		/**
+		 * Sets the content of this comment.
+		 * @param content The content of this comment. Cannot be null.
+		 */
+		public void setContent(String content){
+			assert content!=null;
+			this.message = content;
+		}
 	}
 	
 	/**
