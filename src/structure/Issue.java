@@ -36,11 +36,13 @@ public class Issue {
 	private static final String KEY_USERNAME = "login";
 	private static final String KEY_LABELS = "labels";
 	private static final String KEY_LABELNAME = "name";
+	private static final String KEY_COMMENTOR = "user";
 	
 	//Data members
 	private String title, status, content, assignee;
 	private int number;
 	private ArrayList<String> labels, applicableLabels;
+	private ArrayList<Comment> comments;
 	
 	/**
 	 * Defines each Issue's comment.
@@ -108,6 +110,7 @@ public class Issue {
 		this.status = STATE_OPEN;
 		this.applicableLabels = new ArrayList<String>();
 		this.labels = new ArrayList<String>();
+		this.comments = new ArrayList<Comment>();
 	}
 	
 	/**
@@ -175,6 +178,14 @@ public class Issue {
 	}
 	
 	/**
+	 * Gets this issue's number.
+	 * @return This issue's number.
+	 */
+	public int getNumber(){
+		return number;
+	}
+	
+	/**
 	 * Gets the body content of this issue.
 	 * @return The body content of this issue.
 	 */
@@ -196,14 +207,6 @@ public class Issue {
 	 */
 	public String getAssignee(){
 		return assignee;
-	}
-	
-	/**
-	 * Gets this issue's number.
-	 * @return This issue's number.
-	 */
-	public int getNumber(){
-		return number;
 	}
 	
 	/**
@@ -233,6 +236,29 @@ public class Issue {
 	}
 	
 	/**
+	 * Gets the list of comments for this issue.
+	 * @return AN array of comments for this issue or null if there is none.
+	 */
+	public Comment[] getComments(){
+		if(comments.isEmpty()){
+			return null;
+		}
+		return comments.toArray(new Comment[comments.size()]);
+	}
+	
+	/**
+	 * Gets the comment indexed at the given 1-based index.
+	 * @param index The 1-based index of the comment in this issue's comment list.
+	 * @return The index-th comment in this issue, or null if the given index is invalid.
+	 */
+	public Comment getComment(int index){
+		if(index<1 || index>comments.size()){
+			return null;
+		}
+		return comments.get(index-1);
+	}
+	
+	/**
 	 * Sets the title for this issue.
 	 * @param title The new title for this issue. Cannot be null or empty string.
 	 */
@@ -240,13 +266,6 @@ public class Issue {
 		if(title!=null && !title.isEmpty()){
 			this.title = title;
 		}
-	}
-	
-	/**
-	 * Closes this issue.
-	 */
-	public void close(){
-		status = STATE_CLOSED;
 	}
 	
 	/**
@@ -259,6 +278,8 @@ public class Issue {
 		}
 		this.content = content;
 	}
+	
+	
 	
 	/**
 	 * Sets the assignee for this issue.
@@ -283,8 +304,6 @@ public class Issue {
 		}
 	}
 	
-	
-	
 	/**
 	 * Adds the given label to this issue only if the label is applicable to this issue.
 	 * @param label The name of the label to be added to this issue.
@@ -293,6 +312,44 @@ public class Issue {
 		if(label!=null && !label.isEmpty()){
 			labels.add(label);
 		}
+	}
+	
+	/**
+	 * Adds the given comment. Does nothing if the given JSON object is not formatted correctly.
+	 * @param jsonComment The JSON representation of the comment as provided by GitHub API.
+	 */
+	public void addComment(JSONObject jsonComment){
+		assert jsonComment!=null;
+		try{
+			String author = jsonComment.getJSONObject(KEY_COMMENTOR).getString(KEY_USERNAME);
+			String message = jsonComment.getString(KEY_CONTENT);
+			comments.add(new Comment(author, message));
+		} catch(JSONException e){
+			
+		}
+	}
+	
+	/**
+	 * Adds the given comments. Does nothing if the JSON array is not formatted properly.
+	 * @param jsonComments The JSON array representation of the comments to add as provided by GitHub API.
+	 */
+	public void addComments(JSONArray jsonComments){
+		assert jsonComments!=null;
+		try{
+			int numComments = jsonComments.length();
+			for(int i=0; i<numComments; i++){
+				addComment(jsonComments.getJSONObject(i));
+			}
+		} catch(JSONException e){
+			
+		}
+	}
+	
+	/**
+	 * Closes this issue.
+	 */
+	public void close(){
+		status = STATE_CLOSED;
 	}
 	
 	@Override

@@ -52,5 +52,17 @@ public class IssueTest {
 		assertEquals(labelsObj.length(), issue.getApplicableLabels().length);
 		System.out.println(issue.toJSONObject().toString());
 	}
-
+	
+	@Test
+	public void testAddComment() throws JSONException{
+		Issue issue = new Issue("new issue", 7);
+		assertTrue(issue.getComments()==null);
+		String commentString = "{\"user\":{\"login\": \"author1\"}, \"body\": \"New comment.\"}";
+		issue.addComment(new JSONObject(commentString));
+		Issue.Comment[] comments = issue.getComments();
+		assertFalse(comments==null);
+		assertEquals(1, comments.length);
+		assertEquals("author1", comments[0].getAuthor());
+		assertEquals("New comment.", comments[0].getContent());
+	}
 }
