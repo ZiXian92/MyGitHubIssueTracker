@@ -43,6 +43,42 @@ public class Issue {
 	private ArrayList<String> labels, applicableLabels;
 	
 	/**
+	 * Defines each Issue's comment.
+	 * @author ZiXian92
+	 */
+	class Comment{
+		//Data members
+		private String author, message;
+		
+		/**
+		 * Creates a new comment instance for this issue.
+		 * @param author The login name of this comment's author. Cannot be null or empty string.
+		 * @param message The content of the comment. Can be empty but not null.
+		 */
+		public Comment(String author, String message){
+			assert author!=null && !author.isEmpty() && message!=null;
+			this.author = author;
+			this.message = message;
+		}
+		
+		/**
+		 * Gets the author of this comment.
+		 * @return The login name of this comment's author.
+		 */
+		public String getAuthor(){
+			return author;
+		}
+		
+		/**
+		 * Gets the content of this comment.
+		 * @return The contents of this comment.
+		 */
+		public String getContent(){
+			return message;
+		}
+	}
+	
+	/**
 	 * Creates a new issue instance.
 	 * @param title The title of the issue.
 	 * @param number This issue's number.
