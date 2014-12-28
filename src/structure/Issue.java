@@ -26,6 +26,7 @@ public class Issue {
 	private static final String FIELD_ASSIGNEE = "Assignee: ";
 	private static final String FIELD_NUMBER = "Number: ";
 	private static final String FIELD_LABELS = "Labels: ";
+	private static final String FIELD_COMMENTS = "Comments: ";
 
 	//For JSON parsing
 	private static final String KEY_ISSUENUMBER = "number";
@@ -37,6 +38,7 @@ public class Issue {
 	private static final String KEY_LABELS = "labels";
 	private static final String KEY_LABELNAME = "name";
 	private static final String KEY_COMMENTOR = "user";
+	private static final String KEY_ID = "id";
 	
 	//Data members
 	private String title, status, content, assignee;
@@ -50,17 +52,20 @@ public class Issue {
 	 */
 	class Comment{
 		//Data members
+		private int id;
 		private String author, message;
 		
 		/**
 		 * Creates a new comment instance for this issue.
 		 * @param author The login name of this comment's author. Cannot be null or empty string.
 		 * @param message The content of the comment. Can be empty but not null.
+		 * @param id This comment's ID.
 		 */
-		public Comment(String author, String message){
+		public Comment(String author, String message, int id){
 			assert author!=null && !author.isEmpty() && message!=null;
 			this.author = author;
 			this.message = message;
+			this.id = id;
 		}
 		
 		/**
@@ -80,6 +85,14 @@ public class Issue {
 		}
 		
 		/**
+		 * Gets this comment's ID.
+		 * @return This comment's ID.
+		 */
+		public int getId(){
+			return id;
+		}
+		
+		/**
 		 * Sets this comment's author.
 		 * @param author The login name of this comment's author. Cannot be null or empty string.
 		 */
@@ -95,6 +108,21 @@ public class Issue {
 		public void setContent(String content){
 			assert content!=null;
 			this.message = content;
+		}
+		
+		/**
+		 * Sets this comment's ID.
+		 * @param id This comment's ID.
+		 */
+		public void setId(int id){
+			this.id = id;
+		}
+		
+		@Override
+		public String toString(){
+			StringBuilder strBuilder = new StringBuilder(author).append(LINE_DELIM);
+			strBuilder.append(message);
+			return strBuilder.toString();
 		}
 	}
 	
@@ -317,31 +345,26 @@ public class Issue {
 	/**
 	 * Adds the given comment. Does nothing if the given JSON object is not formatted correctly.
 	 * @param jsonComment The JSON representation of the comment as provided by GitHub API.
+	 * @throws JSONException If jsonComment does not contain required keys or values.
 	 */
-	public void addComment(JSONObject jsonComment){
+	public void addComment(JSONObject jsonComment) throws JSONException{
 		assert jsonComment!=null;
-		try{
-			String author = jsonComment.getJSONObject(KEY_COMMENTOR).getString(KEY_USERNAME);
-			String message = jsonComment.getString(KEY_CONTENT);
-			comments.add(new Comment(author, message));
-		} catch(JSONException e){
-			
-		}
+		String author = jsonComment.getJSONObject(KEY_COMMENTOR).getString(KEY_USERNAME);
+		String message = jsonComment.getString(KEY_CONTENT);
+		int id = jsonComment.getInt(KEY_ID);
+		comments.add(new Comment(author, message, id));
 	}
 	
 	/**
 	 * Adds the given comments. Does nothing if the JSON array is not formatted properly.
 	 * @param jsonComments The JSON array representation of the comments to add as provided by GitHub API.
+	 * @throws JSONException If an error occurs while parsing jsonComments.
 	 */
-	public void addComments(JSONArray jsonComments){
+	public void addComments(JSONArray jsonComments) throws JSONException{
 		assert jsonComments!=null;
-		try{
-			int numComments = jsonComments.length();
-			for(int i=0; i<numComments; i++){
-				addComment(jsonComments.getJSONObject(i));
-			}
-		} catch(JSONException e){
-			
+		int numComments = jsonComments.length();
+		for(int i=0; i<numComments; i++){
+			addComment(jsonComments.getJSONObject(i));
 		}
 	}
 	
@@ -360,7 +383,12 @@ public class Issue {
 		strBuilder = strBuilder.append(FIELD_STATUS).append(status).append(SEPARATOR);
 		strBuilder = strBuilder.append(FIELD_ASSIGNEE).append(assignee).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_LABELS).append(Util.convertToString(labels)).append(LINE_DELIM);
-		strBuilder = strBuilder.append(FIELD_CONTENT).append(content).append(LINE_DELIM);;
+		strBuilder = strBuilder.append(FIELD_CONTENT).append(content).append(LINE_DELIM);
+		strBuilder = strBuilder.append(FIELD_COMMENTS).append(LINE_DELIM);
+		int numComments = comments.size();
+		for(int i=0; i<numComments; i++){
+			strBuilder = strBuilder.append(comments.get(i)).append(LINE_DELIM);
+		}
 		return strBuilder.toString();
 	}
 	

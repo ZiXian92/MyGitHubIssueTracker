@@ -19,6 +19,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import Misc.Constants;
+import Misc.FailedRequestException;
+import Misc.MissingMessageException;
+import Misc.RequestException;
 import Misc.Util;
 import controller.Observer;
 import structure.Issue;
@@ -38,6 +42,8 @@ public class Model {
 	private static final String EXT_REPOLABELS = "/repos/%1$s/%2$s/labels";
 	private static final String EXT_CONTRIBUTORS = "/repos/%1$s/%2$s/contributors";
 	private static final String EXT_EDITISSUE = "/repos/%1$s/%2$s/issues/%3$d";
+	private static final String EXT_ISSUECOMMENTS = "/repos/%1$s/%2$s/issues/%3$d/comments";
+	private static final String EXT_COMMENTS = "/repos/%1$s/%2$s/issues/comments/%3$d";
 
 	//Request headers and values
 	private static final String HEADER_ACCEPT = "Accept";
@@ -50,15 +56,11 @@ public class Model {
 	private static final String RESPONSE_OK = "HTTP/1.1 200 OK";
 	private static final String RESPONSE_CREATED = "HTTP/1.1 201 Created";
 
-	//Error messages
-	private static final String MSG_CONNECTIONERROR = "Error executing request. Connect to the Internet and try again.";
-	private static final String MSG_LOCALISSUEPARSINGERROR = "Failed to create local instance issue. You may want to restart the program.";
-	private static final String MSG_REQUESTERROR = "An error occurred while trying to send request. Please try again.";
-	
 	private static Model instance = null;	//The single instance of this class
 	
 	//For logging
 	private static final Logger logger = Logger.getLogger("com.MyGitHubIssueTracker.model");
+	
 
 	//Data members
 	private String authCode;
@@ -102,9 +104,9 @@ public class Model {
 	 * @param username The username of the user to log in.
 	 * @param password The password for the givne username.
 	 * @return true if authentication is successful and false otherwise.
-	 * @throws IOException if an IO error occurs during the request.
+	 * @throws RequestException If an error occurs while connecting to GitHub API.
 	 */
-	public boolean loginUser(String username, String password) throws IOException {
+	public boolean loginUser(String username, String password) throws RequestException {
 		assert username!=null && password!=null;
 		if(username.isEmpty() || password.isEmpty()){
 			return false;
@@ -128,7 +130,7 @@ public class Model {
 			}
 		} catch(IOException e){
 			logger.log(Level.SEVERE, "Failed to execute authentication request.");
-			throw new IOException(MSG_CONNECTIONERROR);
+			throw new RequestException();
 		}
 		return false;
 	}
@@ -138,8 +140,12 @@ public class Model {
 	 * Best effort to fetch and parse all data. If an error occurs while parsing an entity, the current entity
 	 * is dropped. Probability of this happening is low as the JSON object is produced by GitHub API.
 	 * @throws IOException if an error occurred during the request.
+	 * @throws RequestException If an error occurs when sending the request.
+	 * @throws FailedRequestException If the request fails.
+	 * @throws MissingMessageException If the message is missing from the response.
+	 * @throws JSONException If an error occurs when parsing the list of repositories.
 	 */
-	public void initialise() throws IOException {
+	public void initialise() throws IOException, RequestException, FailedRequestException, MissingMessageException, JSONException {
 		assert authCode!=null && !authCode.isEmpty();
 
 		//Send request to get list of repositories.
@@ -148,16 +154,19 @@ public class Model {
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 		try{
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-			if(!response.getStatusLine().toString().equals(RESPONSE_OK) || response.getEntity()==null){
-				logger.log(Level.SEVERE,
-						"Initialization failed.\n Response: {0}\nResponse message is null: {1}",
-						new Object[] {response.getStatusLine().toString(), response.getEntity()==null});
+			if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
+				logger.log(Level.SEVERE, "Initialization failed.\n Response: {0}", response.getStatusLine().toString());
 				response.close();
-				return;
+				throw new FailedRequestException();
 			}
 
 			//Get the message body of the response.
 			HttpEntity messageBody = response.getEntity();
+			if(messageBody==null){
+				logger.log(Level.WARNING, "Request successful. Response message missing.");
+				response.close();
+				throw new MissingMessageException();
+			}
 
 			//Parse the JSON string into Repository instances.
 			JSONArray arr = new JSONArray(Util.getJSONString(messageBody.getContent()));
@@ -166,22 +175,17 @@ public class Model {
 			Repository temp;
 			JSONObject obj;
 			for(int i=0; i<size; i++){	//Add repository to list.
-				try{
-					obj = arr.getJSONObject(i);
-					temp = makeRepository(obj);
-					if(temp!=null){
-						repoList.add(temp);
-						indexList.put(temp.getName(), ++numRepos);
-					}
-				} catch(JSONException e){
-					logger.log(Level.WARNING, "Failed to parse a repository.");
-				}
+				obj = arr.getJSONObject(i);
+				temp = Repository.makeInstance(obj);
+				repoList.add(temp);
+				indexList.put(temp.getName(), ++numRepos);
 			}
 		} catch(JSONException e){
 			logger.log(Level.SEVERE, "Failed to parse response message.");
+			throw new JSONException(Constants.ERROR_INITIALIZEDATA);
 		} catch(IOException e){
 			logger.log(Level.SEVERE, "Failed to execute request for repositories.");
-			throw new IOException(MSG_REQUESTERROR);
+			throw new RequestException();
 		}
 	}
 	
@@ -495,6 +499,55 @@ public class Model {
 		} catch(IOException e){	//If error occurs during request.
 			logger.log(Level.SEVERE, "Failed to execute request to edit issue.");
 			return issue;
+		}
+	}
+	
+	/**
+	 * Adds the given comment to the given issue.
+	 * @param comment The JSON representation of comment to add.
+	 * @param issueName The name of the issue to add comment to.
+	 * @param repoName The name of the repository holding the issue to be commented on.
+	 * @throws FailedRequestException If the request was unsuccessful.
+	 * @throws MissingMessageException If the response does not have any message.
+	 * @throws RequestException If an error occurred while executing the request.
+	 * @throws JSONException If an error occurs while parsing the newly created comment.
+	 */
+	public Issue addComment(JSONObject comment, String issueName, String repoName) throws FailedRequestException, MissingMessageException, RequestException, JSONException{
+		assert comment!=null && issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
+		Repository repo = getRepository(repoName);
+		if(repo==null){
+			return null;
+		}
+		Issue issue = repo.getIssue(issueName);
+		if(issue==null){
+			return null;
+		}
+		HttpPost request = new HttpPost(API_URL+String.format(EXT_ISSUECOMMENTS, repo.getOwner(), repo.getName(), issue.getNumber()));
+		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		try{
+			request.setEntity(new StringEntity(comment.toString()));
+			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			if(!response.getStatusLine().toString().equals(RESPONSE_CREATED)){
+				logger.log(Level.WARNING, "Request to comment issue failed.Response: {0}", response.getStatusLine().toString());
+				response.close();
+				throw new FailedRequestException();
+			}
+			HttpEntity messageBody = response.getEntity();
+			if(messageBody==null){
+				logger.log(Level.WARNING, "Request successful. Response message missing.");
+				response.close();
+				throw new MissingMessageException();
+			}
+			comment = new JSONObject(Util.getJSONString(messageBody.getContent()));
+			issue.addComment(comment);
+			return issue;
+		}  catch (JSONException e) {
+			logger.log(Level.WARNING, "Failed to parse comment from JSON in response message. Check GitHub to confirm changes.");
+			throw new JSONException(Constants.ERROR_UPDATELOCALCOPY);
+		} catch(IOException e){
+			logger.log(Level.SEVERE, "Failed to execute request to add comment to issue.");
+			throw new RequestException();
 		}
 	}
 }

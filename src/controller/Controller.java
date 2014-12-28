@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import Misc.Constants;
 import view.View;
 import model.Model;
 
@@ -14,8 +15,6 @@ import model.Model;
  */
 public class Controller implements Observer {
 	//Error messages
-	private static final String MSG_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
-	private static final String MSG_LOGGEDIN = "Logged in as %1$s.\nLoading data from GitHub...";
 	private static final String MSG_FAILEDLOGGING = "Failed to open file for logging.";
 	
 	//For logging. Also the main logger for the program.
@@ -57,12 +56,12 @@ public class Controller implements Observer {
 		try{
 			if(model.loginUser(username, password)){
 				logger.log(Level.INFO, "Login success!");
-				view.updateView(String.format(MSG_LOGGEDIN, username));
+				view.updateView(String.format(Constants.MSG_LOGGEDIN, username));
 				model.initialise();
 				new ListCommand().execute();
 				return true;
 			} else{
-				view.updateView(MSG_FAILEDLOGIN);
+				view.updateView(Constants.ERROR_FAILEDLOGIN);
 				return false;
 			}
 		} catch(Exception e){

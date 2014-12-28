@@ -57,7 +57,7 @@ public class IssueTest {
 	public void testAddComment() throws JSONException{
 		Issue issue = new Issue("new issue", 7);
 		assertTrue(issue.getComments()==null);
-		String commentString = "{\"user\":{\"login\": \"author1\"}, \"body\": \"New comment.\"}";
+		String commentString = "{\"id\": 3, \"user\":{\"login\": \"author1\"}, \"body\": \"New comment.\"}";
 		issue.addComment(new JSONObject(commentString));
 		Issue.Comment[] comments = issue.getComments();
 		assertFalse(comments==null);

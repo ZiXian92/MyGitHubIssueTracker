@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import Misc.Constants;
 import structure.Issue;
 
 /**
@@ -33,8 +34,6 @@ public class EditIssue extends Command {
 	private static final String LABEL_DELIM = ",";
 	
 	//Error messages
-	private static final String MSG_INPUTERROR = "AN error occurred while reading/parsing input.";
-	private static final String MSG_LOCALPARSINGERROR = "Request successful. Error parsing local copy of issue.";
 	private static final String MSG_NOSUCHITEM = "Repository/Issue not found.";
 	
 	//Data members
@@ -88,7 +87,7 @@ public class EditIssue extends Command {
 				}
 			}
 		} catch(Exception e){
-			view.updateView(MSG_INPUTERROR);
+			view.updateView(Constants.ERROR_PARSEINPUTTOJSON);
 			new SelectIssue(issueName, repoName).execute();
 			return;
 		}
@@ -101,7 +100,7 @@ public class EditIssue extends Command {
 				new ListCommand().execute();
 			}
 		} catch (JSONException e) {
-			view.updateView(MSG_LOCALPARSINGERROR);
+			view.updateView(Constants.ERROR_UPDATELOCALCOPY);
 			new SelectIssue(issueName, repoName).execute();
 		}
 	}
