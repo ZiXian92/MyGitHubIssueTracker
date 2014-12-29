@@ -43,7 +43,7 @@ public class Model {
 	private static final String EXT_CONTRIBUTORS = "/repos/%1$s/%2$s/contributors";
 	private static final String EXT_EDITISSUE = "/repos/%1$s/%2$s/issues/%3$d";
 	private static final String EXT_ISSUECOMMENTS = "/repos/%1$s/%2$s/issues/%3$d/comments";
-	private static final String EXT_COMMENTS = "/repos/%1$s/%2$s/issues/comments/%3$d";
+	private static final String EXT_COMMENTS = "/repos/%1$s/%2$s/issues/%3$d/comments";
 
 	//Request headers and values
 	private static final String HEADER_ACCEPT = "Accept";
