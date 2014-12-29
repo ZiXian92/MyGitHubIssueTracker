@@ -27,11 +27,16 @@ public class SelectIssue extends Command {
 	
 	@Override
 	public void execute() {
-		Issue issue = model.getIssue(issueName, repoName);
-		if(issue!=null){
-			view.updateView(issue);
-		} else{
-			view.updateView(MSG_NOSUCHISSUE);
+		try{
+			Issue issue = model.getIssue(issueName, repoName);
+			if(issue!=null){
+				view.updateView(issue);
+			} else{
+				view.updateView(MSG_NOSUCHISSUE);
+				new SelectRepo(repoName).execute();
+			}
+		} catch(Exception e){
+			view.updateView(e.getMessage());
 			new SelectRepo(repoName).execute();
 		}
 	}

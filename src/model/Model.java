@@ -377,8 +377,9 @@ public class Model {
 	 * @param repoName The name of the repository that contains the issue to be selected. Cannot be null or empty.
 	 * @return The issue with the given issue name from the given repository or null
 	 * 			if the repository and/or issue cannot be found. 
+	 * @throws Exception If an error occurs while updating the issue.
 	 */
-	public Issue getIssue(String issueName, String repoName){
+	public Issue getIssue(String issueName, String repoName) throws Exception{
 		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
 		Repository repo = null;
 		try{

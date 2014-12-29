@@ -5,9 +5,6 @@ package Misc;
  * @author ZiXian92
  */
 public class Constants {
-	//Retry policy
-	public static final int MAX_TRIES = 3;
-	
 	//Http responses
 	public static final String RESPONSE_CREATED = "HTTP/1.1 201 Created";
 	public static final String RESPONSE_OK = "HTTP/1.1 200 OK";
