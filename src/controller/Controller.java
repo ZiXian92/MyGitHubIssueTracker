@@ -6,6 +6,8 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import Misc.Constants;
+import Misc.InvalidContextException;
+import Misc.RequestException;
 import view.View;
 import model.Model;
 
@@ -57,16 +59,25 @@ public class Controller implements Observer {
 			if(model.loginUser(username, password)){
 				logger.log(Level.INFO, "Login success!");
 				view.updateView(String.format(Constants.MSG_LOGGEDIN, username));
-				model.initialise();
-				new ListCommand().execute();
-				return true;
-			} else{
-				view.updateView(Constants.ERROR_FAILEDLOGIN);
-				return false;
 			}
-		} catch(Exception e){
+			return true;
+		} catch(RequestException e){
 			view.updateView(e.getMessage());
 			return false;
+		}
+	}
+	
+	/**
+	 * Loads data from GitHub into the Model and displays the list of repositories on success.
+	 * @throws Exception If an error occurs during the initialization process.
+	 */
+	public void loadData() throws Exception{
+		try{
+			model.initialise();
+			new ListCommand().execute();
+		} catch(Exception e){
+			view.updateView(Constants.ERROR_INITIALIZEDATA);
+			throw new Exception();
 		}
 	}
 
@@ -82,7 +93,7 @@ public class Controller implements Observer {
 			Command cmd = parser.parse(input, selectedRepository, selectedIssue);
 			logger.log(Level.INFO, "Executing {0}", input);
 			cmd.execute();
-		} catch(Exception e){
+		} catch(IllegalArgumentException | InvalidContextException e){
 			view.updateView(e.getMessage());
 		}
 	}

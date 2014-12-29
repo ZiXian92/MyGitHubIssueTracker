@@ -1,5 +1,6 @@
 package controller;
 
+import Misc.Constants;
 import structure.Repository;
 
 /**
@@ -7,9 +8,6 @@ import structure.Repository;
  * @author ZiXian92
  */
 public class SelectRepo extends Command {
-	//Error message
-	private static final String MSG_NOSUCHREPO = "Repository does not exist.";
-	
 	//Data members
 	private String repoName;
 
@@ -26,16 +24,22 @@ public class SelectRepo extends Command {
 	public void execute() {
 		Repository repo;
 		try{
-			repo = model.getRepository(Integer.parseInt(repoName));
-		} catch(NumberFormatException e){
-			repo = model.getRepository(repoName);
-		}
-		if(repo==null){
-			view.updateView(MSG_NOSUCHREPO);
+			try{
+				repo = model.getRepository(Integer.parseInt(repoName));
+			} catch(NumberFormatException e){
+				repo = model.getRepository(repoName);
+			}
+			if(repo==null){
+				view.updateView(Constants.ERROR_REPONOTFOUND);
+				new ListCommand().execute();
+			} else{
+				view.updateView(repo);
+			}
+		} catch(Exception e){
+			view.updateView(e.getMessage());
 			new ListCommand().execute();
-		} else{
-			view.updateView(repo);
 		}
+		
 	}
 
 }

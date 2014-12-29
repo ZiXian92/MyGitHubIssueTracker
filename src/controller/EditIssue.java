@@ -100,7 +100,7 @@ public class EditIssue extends Command {
 				new ListCommand().execute();
 			}
 		} catch (JSONException e) {
-			view.updateView(Constants.ERROR_UPDATELOCALCOPY);
+			view.updateView(Constants.ERROR_JSONPARSING);
 			new SelectIssue(issueName, repoName).execute();
 		}
 	}

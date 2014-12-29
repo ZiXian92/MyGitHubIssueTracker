@@ -6,6 +6,7 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import Misc.Constants;
 import Misc.Util;
 
 /**
@@ -23,32 +24,30 @@ public class Repository {
 	private static final String FIELD_ISSUES = "Issues: ";
 	private static final String FIELD_LABELS = "Labels: ";
 	
-	//For JSON parsing
-	private static final String KEY_REPONAME = "name";
-	private static final String KEY_OWNER = "owner";
-	private static final String KEY_OWNERLOGIN = "login";
-	
 	//Data members
 	private String name, owner;	//To be extracted by Model to update GitHub.
 	private ArrayList<Issue> issueList;
 	private ArrayList<String> assignees, labels;
 	private HashMap<String, Integer> indexList;
 	private int numIssues;
+	private boolean hasIssues, hasLocalIssues;
 	
 	/**
 	 * Creates a new repository instance.
 	 * @param name The name of the repository.
 	 * @param owner The name of this repository's owner.
 	 */
-	public Repository(String name, String owner){
+	public Repository(String name, String owner, boolean hasIssues){
 		assert name!=null && !name.isEmpty() && owner!=null && !owner.isEmpty();
 		this.name = name;
 		this.owner = owner;
+		this.hasIssues = hasIssues;
 		issueList = new ArrayList<Issue>();
 		assignees = new ArrayList<String>();
 		indexList = new HashMap<String, Integer>();
 		labels = new ArrayList<String>();
 		numIssues = 0;
+		hasLocalIssues = false;
 	}
 	
 	/**
@@ -60,7 +59,9 @@ public class Repository {
 	 */
 	public static Repository makeInstance(JSONObject obj) throws JSONException{
 		assert obj!=null;
-		return new Repository(obj.getString(KEY_REPONAME), obj.getJSONObject(KEY_OWNER).getString(KEY_OWNERLOGIN));
+		return new Repository(obj.getString(Constants.KEY_REPONAME),
+				obj.getJSONObject(Constants.KEY_OWNER).getString(Constants.KEY_USERLOGIN),
+				obj.getBoolean(Constants.KEY_HASISSUES));
 	}
 	
 	/**
@@ -103,6 +104,14 @@ public class Repository {
 	}
 	
 	/**
+	 * Checks whether this repository's issues should be fetched.
+	 * @return True if this repository has issues and the issues have not been fetched. Returns false otherwise.
+	 */
+	public boolean shouldFetchIssues(){
+		return hasIssues && !hasLocalIssues;
+	}
+	
+	/**
 	 * Gets the index-th issue in this repository.
 	 * @param index The index of the issue on this repository.
 	 * @return The index-th issue in this repository's issue list or null if the index is invalid.
@@ -137,6 +146,7 @@ public class Repository {
 			issueList.add(issue);
 			indexList.put(issue.getTitle(), ++numIssues);
 			issue.setApplicableLabels(labels);
+			hasIssues = hasLocalIssues = true;
 		}
 	}
 	
@@ -186,6 +196,22 @@ public class Repository {
 		if(owner!=null && !owner.isEmpty()){
 			this.owner = owner;
 		}
+	}
+	
+	/**
+	 * Sets the issues for this repository.
+	 * @param list The list of issues to replace this repository's issues.
+	 */
+	public void setIssues(ArrayList<Issue> list){
+		assert list!=null;
+		this.issueList = list;
+		numIssues = 0;
+		int size = list.size();
+		for(int i=0; i<size; i++){
+			indexList.put(list.get(i).getTitle(), ++numIssues);
+			list.get(i).setApplicableLabels(labels);
+		}
+		hasIssues = hasLocalIssues = true;
 	}
 	
 	@Override

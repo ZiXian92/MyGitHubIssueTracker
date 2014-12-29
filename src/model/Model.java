@@ -52,15 +52,10 @@ public class Model {
 	private static final String HEADER_AUTH = "Authorization";
 	private static final String VAL_AUTH = "Basic %1$s";
 
-	//HTTP response
-	private static final String RESPONSE_OK = "HTTP/1.1 200 OK";
-	private static final String RESPONSE_CREATED = "HTTP/1.1 201 Created";
-
 	private static Model instance = null;	//The single instance of this class
 	
 	//For logging
 	private static final Logger logger = Logger.getLogger("com.MyGitHubIssueTracker.model");
-	
 
 	//Data members
 	private String authCode;
@@ -124,15 +119,15 @@ public class Model {
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			String responseStatus = response.getStatusLine().toString();
 			response.close();
-			if(responseStatus.equals(RESPONSE_OK)){
+			if(responseStatus.equals(Constants.RESPONSE_OK)){
 				this.authCode = code;
 				return true;
 			}
+			return false;
 		} catch(IOException e){
 			logger.log(Level.SEVERE, "Failed to execute authentication request.");
 			throw new RequestException();
 		}
-		return false;
 	}
 
 	/**
@@ -154,7 +149,7 @@ public class Model {
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 		try{
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-			if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
+			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
 				logger.log(Level.SEVERE, "Initialization failed.\n Response: {0}", response.getStatusLine().toString());
 				response.close();
 				throw new FailedRequestException();
@@ -209,34 +204,33 @@ public class Model {
 	/**
 	 * Fetches issues under the specified repository and stores them in
 	 * a Repository instance.
-	 * @param obj The JSONObject representation of the repository to be instantiated.
+	 * @param repo The repository to update from GitHub.
 	 * @return A Repository representing the specified GitHub repository. Returns null if any error
 	 * 			occurs when executing the requests or parsing the response objects.
+	 * @throws FailedRequestException If the request fails.
+	 * @throws MissingMessageException If the message is missing in the response.
+	 * @throws JSONException If an error occurs when parsing the response object.
+	 * @throws RequestException If an error occurs when sending the request.
 	 */
-	public Repository makeRepository(JSONObject obj){
-		assert obj!=null;
+	public void updateRepo(Repository repo) throws FailedRequestException, MissingMessageException, JSONException, RequestException{
+		assert repo!=null;
 		
-		Repository repo = Repository.makeInstance(obj);
-		if(repo==null){
-			logger.log(Level.WARNING, "Failed to create repository locally.");
-			return null;
-		}
 		String repoName = repo.getName();
 		String owner = repo.getOwner();
 		
 		//Gets the list of contributors concurrently.
-		HttpGet contributorRequest = new HttpGet(API_URL+String.format(EXT_CONTRIBUTORS, owner, repoName));
+		/*HttpGet contributorRequest = new HttpGet(API_URL+String.format(EXT_CONTRIBUTORS, owner, repoName));
 		contributorRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 		contributorRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 		Thread loadContribThread = new Thread(new LoadContributorsThread(repo, contributorRequest));
-		loadContribThread.run();
+		loadContribThread.run();*/
 		
 		//Gets the list of labels used in this repository.
-		HttpGet labelsRequest = new HttpGet(API_URL+String.format(EXT_REPOLABELS, owner, repoName));
+		/*HttpGet labelsRequest = new HttpGet(API_URL+String.format(EXT_REPOLABELS, owner, repoName));
 		labelsRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 		labelsRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 		Thread loadLabelsThread = new Thread(new LoadLabelsThread(repo, labelsRequest));
-		loadLabelsThread.run();
+		loadLabelsThread.run();*/
 		
 		//Sends request for issues under this repository.
 		HttpGet issueRequest = new HttpGet(API_URL+String.format(EXT_REPOISSUES, owner, repoName));
@@ -244,36 +238,40 @@ public class Model {
 		issueRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 		try{
 			CloseableHttpResponse response = HttpClients.createDefault().execute(issueRequest);
-			if(!response.getStatusLine().toString().equals(RESPONSE_OK) || response.getEntity()==null){
-				logger.log(Level.WARNING,
-						"Failed to get issues for repository {0}.\nResponse: {1}\nResponse message is null: {2}",
-						new Object[] {repoName, response.getStatusLine().toString(), response.getEntity()==null});
+			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
+				logger.log(Level.WARNING, "Failed to get issues for repository {0}.\nResponse: {1}",
+						new Object[] {repoName, response.getStatusLine().toString()});
 				response.close();
-				return null;
+				throw new FailedRequestException();
 			}
 			
 			//Loads issues from GitHub repository into this repository instance.
 			HttpEntity messageBody = response.getEntity();
+			if(messageBody==null){
+				logger.log(Level.WARNING, "Request successful. Response message missing.");
+				response.close();
+				throw new MissingMessageException();
+			}
 			JSONObject temp;
 			JSONArray arr = new JSONArray(Util.getJSONString(messageBody.getContent()));
 			response.close();
-			loadLabelsThread.join();	//Wait for labels to be loaded.
+			//loadLabelsThread.join();	//Wait for labels to be loaded.
 			int size = arr.length();
-			for(int i=0; i<size; i++){	//Parse as many issues as possible.
+			ArrayList<Issue> tempIssueList = new ArrayList<Issue>();
+			for(int i=0; i<size; i++){	//If JSON exception occurs here, no issue is added to repo.
 				temp = arr.getJSONObject(i);
-				repo.addIssue(Issue.makeInstance(temp));
+				tempIssueList.add(Issue.makeInstance(temp));
 			}
-			loadContribThread.join();
-			return repo;
-		} catch (InterruptedException e) {
+			repo.setIssues(tempIssueList);
+			//loadContribThread.join();
+		} /*catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			return null;
-		} catch(JSONException e){	//repo has no issue here.
-			logger.log(Level.WARNING, "Failed to parse response to request for issues of {0}.", repoName);
-			return null;
+		}*/ catch(JSONException e){	//repo has no issue here.
+			logger.log(Level.SEVERE, "Failed to parse JSON object(s)");
+			throw e;
 		} catch(IOException e){	//repo has no issue here.
 			logger.log(Level.SEVERE, "Failed to execute request for issues of {0}.", repoName);
-			return null;
+			throw new RequestException();
 		}
 		
 	}
@@ -300,25 +298,34 @@ public class Model {
 	}
 	
 	/**
-	 * Gets the repository based on its index in the list.
+	 * Gets the repository based on its index in the list. Updates with information from GitHub on first access.
 	 * @param index An integer between 1 and the number of repositories in the list.
 	 * @return The index-th Repository instance in the list or null if index is invalid.
+	 * @throws Exception If an error occurred while updating the repository.
 	 */
-	public Repository getRepository(int index){
+	public Repository getRepository(int index) throws Exception{
 		if(index<1 || index>repoList.size()){
 			return null;
 		}
-		Repository selectedRepo = repoList.get(index-1);
-		notifyObservers(selectedRepo.getName(), null);
-		return selectedRepo;
+		Repository repo = repoList.get(index-1);
+		if(repo.shouldFetchIssues()){
+			try{
+				updateRepo(repo);
+			} catch(Exception e){
+				throw new Exception(Constants.ERROR_UPDATEREPO);
+			}
+		}
+		notifyObservers(repo.getName(), null);
+		return repo;
 	}
 	
 	/**
 	 * Gets the repository from the list given the repository name.
 	 * @param repoName The name of the repository to retrieve. Cannot be null or empty.
 	 * @return The Repository with the given name or null if the given repository cannot be found.
+	 * @throws Exception 
 	 */
-	public Repository getRepository(String repoName){
+	public Repository getRepository(String repoName) throws Exception{
 		assert repoName!=null && !repoName.isEmpty();
 		if(!indexList.containsKey(repoName)){
 			return null;

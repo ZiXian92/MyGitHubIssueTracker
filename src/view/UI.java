@@ -41,6 +41,11 @@ public class UI {
 			promptPassword();
 			password = readPassword();
 		} while(!controller.executeLogin(username, password));
+		try{
+			controller.loadData();
+		} catch(Exception e){
+			System.exit(0);
+		}
 		promptUserInput();
 		while(!(input = readInput()).equals(COMMAND_EXIT)){
 			controller.processInput(input);

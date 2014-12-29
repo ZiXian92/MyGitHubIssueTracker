@@ -173,28 +173,25 @@ public class Issue {
 	 * @param obj The JSON object to be converted to an issue.
 	 * @return The issue represented by the given JSON object.
 	 * 			Returns null if obj is null or an error occurred while parsing the JSON object.
+	 * @throws JSONException If an error occurs when parsing JSON data.
 	 */
-	public static Issue makeInstance(JSONObject obj){
+	public static Issue makeInstance(JSONObject obj) throws JSONException{
 		assert obj!=null;
-		try{
-			Issue issue = new Issue(obj.getString(KEY_ISSUETITLE), obj.getInt(KEY_ISSUENUMBER));
-			issue.setContent(obj.getString(KEY_CONTENT));
-			if(obj.isNull(KEY_ASSIGNEE)){
-				issue.setAssignee(null);
-			} else{
-				issue.setAssignee(obj.getJSONObject(KEY_ASSIGNEE).getString(KEY_USERNAME));
-			}
-			JSONArray labelArray = obj.getJSONArray(KEY_LABELS);
-			int numLabels = labelArray.length();
-			String label;
-			for(int i=0; i<numLabels; i++){
-				label = labelArray.getJSONObject(i).getString(KEY_LABELNAME);
-				issue.addLabel(label);
-			}
-			return issue;
-		} catch(JSONException e){
-			return null;
+		Issue issue = new Issue(obj.getString(KEY_ISSUETITLE), obj.getInt(KEY_ISSUENUMBER));
+		issue.setContent(obj.getString(KEY_CONTENT));
+		if(obj.isNull(KEY_ASSIGNEE)){
+			issue.setAssignee(null);
+		} else{
+			issue.setAssignee(obj.getJSONObject(KEY_ASSIGNEE).getString(KEY_USERNAME));
 		}
+		JSONArray labelArray = obj.getJSONArray(KEY_LABELS);
+		int numLabels = labelArray.length();
+		String label;
+		for(int i=0; i<numLabels; i++){
+			label = labelArray.getJSONObject(i).getString(KEY_LABELNAME);
+			issue.addLabel(label);
+		}
+		return issue;
 	}
 	
 	/**

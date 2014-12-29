@@ -5,6 +5,18 @@ package Misc;
  * @author ZiXian92
  */
 public class Constants {
+	//Retry policy
+	public static final int MAX_TRIES = 3;
+	
+	//Http responses
+	public static final String RESPONSE_CREATED = "HTTP/1.1 201 Created";
+	public static final String RESPONSE_OK = "HTTP/1.1 200 OK";
+	
+	//JSON keys
+	public static final String KEY_HASISSUES = "has_issues";
+	public static final String KEY_OWNER = "owner";
+	public static final String KEY_REPONAME = "name";
+	public static final String KEY_USERLOGIN = "login";
 	
 	//Messages
 	public static final String MSG_LOGGEDIN = "Logged in as %1$s.\nLoading data from GitHub...";
@@ -18,6 +30,7 @@ public class Constants {
 	public static final String ERROR_PARSEINPUTTOJSON = "Error converting input to request.";
 	public static final String ERROR_REPONOTFOUND = "Repository not found.";
 	public static final String ERROR_SENDINGREQUEST = "Error sending request.";
-	public static final String ERROR_UPDATELOCALCOPY = "Error updating local data. Check GitHub to confirm changes.";
+	public static final String ERROR_UPDATEREPO = "An error occurred while updating the repository.";
+	public static final String ERROR_JSONPARSING = "Error parsing response data. Please file a report regarding this issue.";
 	
 }
