@@ -47,6 +47,7 @@ public class Issue {
 	private ArrayList<String> labels, applicableLabels;
 	private ArrayList<Comment> comments;
 	private boolean isInitialized;
+	private Repository repository;
 	
 	/**
 	 * Defines each Issue's comment.
@@ -132,9 +133,10 @@ public class Issue {
 	 * Creates a new issue instance.
 	 * @param title The title of the issue.
 	 * @param number This issue's number.
+	 * @param repo The repository this issue belongs to.
 	 */
-	public Issue(String title, int number){
-		assert title!=null && !title.isEmpty();
+	public Issue(String title, int number, Repository repo){
+		assert title!=null && !title.isEmpty() && repo!=null;
 		this.title = title;
 		this.number = number;
 		this.status = STATE_OPEN;
@@ -142,6 +144,7 @@ public class Issue {
 		this.labels = new ArrayList<String>();
 		this.comments = new ArrayList<Comment>();
 		this.isInitialized = false;
+		this.repository = repo;
 	}
 	
 	/**
@@ -157,6 +160,7 @@ public class Issue {
 		this.assignee = issue.getAssignee();
 		this.labels = new ArrayList<String>();
 		this.applicableLabels = new ArrayList<String>();
+		this.repository = issue.getRepository();
 		String[] arr = issue.getLabels();
 		if(arr!=null){
 			for(String str: arr){
@@ -174,13 +178,14 @@ public class Issue {
 	/**
 	 * Creates an Issue instance from the given JSON object.
 	 * @param obj The JSON object to be converted to an issue.
+	 * @param repo The repository this issue belongs to.
 	 * @return The issue represented by the given JSON object.
 	 * 			Returns null if obj is null or an error occurred while parsing the JSON object.
 	 * @throws JSONException If an error occurs when parsing JSON data.
 	 */
-	public static Issue makeInstance(JSONObject obj) throws JSONException{
-		assert obj!=null;
-		Issue issue = new Issue(obj.getString(KEY_ISSUETITLE), obj.getInt(KEY_ISSUENUMBER));
+	public static Issue makeInstance(JSONObject obj, Repository repo) throws JSONException{
+		assert obj!=null && repo!=null;
+		Issue issue = new Issue(obj.getString(KEY_ISSUETITLE), obj.getInt(KEY_ISSUENUMBER), repo);
 		issue.setContent(obj.getString(KEY_CONTENT));
 		if(obj.isNull(KEY_ASSIGNEE)){
 			issue.setAssignee(null);
@@ -296,6 +301,14 @@ public class Issue {
 	}
 	
 	/**
+	 * Gets the repository this issue belongs to.
+	 * @return The repository this issue belongs to.
+	 */
+	public Repository getRepository(){
+		return repository;
+	}
+	
+	/**
 	 * Sets the title for this issue.
 	 * @param title The new title for this issue. Cannot be null or empty string.
 	 */
@@ -396,6 +409,14 @@ public class Issue {
 	 */
 	public void setIsInitialized(boolean isInitialized){
 		this.isInitialized = isInitialized;
+	}
+	
+	/**
+	 * Sets the repository this issue belongs to.
+	 * @param repo The repository that this issue belongs to.
+	 */
+	public void setRepository(Repository repo){
+		this.repository = repo;
 	}
 	
 	@Override

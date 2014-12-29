@@ -274,7 +274,14 @@ public class Model {
 			logger.log(Level.SEVERE, "Failed to execute request for issues of {0}.", repoName);
 			throw new RequestException();
 		}
-		
+	}
+	
+	/**
+	 * Updates the given issue with comments from GitHub website.
+	 * @param issue The issue to fetch comments for.
+	 */
+	public void updateIssue(Issue issue, Repository repo){
+		assert repo!=null && issue!=null;
 	}
 	
 	/**
@@ -363,9 +370,9 @@ public class Model {
 			issue = repo.getIssue(issueName);
 		}
 		if(issue!=null){
-			if(issue.isInitialized()){
+			if(!issue.isInitialized()){
 				try{
-					loadCommentsOfIssue(issue);
+					updateIssue(issue, repo);
 				} catch(Exception e){
 					
 				}
