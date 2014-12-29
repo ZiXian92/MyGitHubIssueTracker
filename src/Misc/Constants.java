@@ -13,12 +13,18 @@ public class Constants {
 	public static final String RESPONSE_OK = "HTTP/1.1 200 OK";
 	
 	//JSON keys
+	public static final String KEY_ASSIGNEE = "assignee";
 	public static final String KEY_COMMENTS = "comments";
 	public static final String KEY_CONTENT = "body";
 	public static final String KEY_HASISSUES = "has_issues";
 	public static final String KEY_ID = "id";
+	public static final String KEY_ISSUENUMBER = "number";
+	public static final String KEY_ISSUETITLE = "title";
+	public static final String KEY_LABELNAME = "name";
+	public static final String KEY_LABELS = "labels";
 	public static final String KEY_OWNER = "owner";
 	public static final String KEY_REPONAME = "name";
+	public static final String KEY_STATUS = "state";
 	public static final String KEY_USER = "user";
 	public static final String KEY_USERLOGIN = "login";
 	
@@ -34,6 +40,7 @@ public class Constants {
 	public static final String ERROR_PARSEINPUTTOJSON = "Error converting input to request.";
 	public static final String ERROR_REPONOTFOUND = "Repository not found.";
 	public static final String ERROR_SENDINGREQUEST = "Error sending request.";
+	public static final String ERROR_UPDATEISSUE = "An error occurred while updating the issue.";
 	public static final String ERROR_UPDATEREPO = "An error occurred while updating the repository.";
 	public static final String ERROR_JSONPARSING = "Error parsing response data. Please file a report regarding this issue.";
 	

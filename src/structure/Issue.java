@@ -29,18 +29,6 @@ public class Issue {
 	private static final String FIELD_LABELS = "Labels: ";
 	private static final String FIELD_COMMENTS = "Comments: ";
 
-	//For JSON parsing
-	private static final String KEY_ISSUENUMBER = "number";
-	private static final String KEY_ISSUETITLE = "title";
-	private static final String KEY_STATUS = "state";
-	private static final String KEY_CONTENT = "body";
-	private static final String KEY_ASSIGNEE = "assignee";
-	private static final String KEY_USERNAME = "login";
-	private static final String KEY_LABELS = "labels";
-	private static final String KEY_LABELNAME = "name";
-	private static final String KEY_COMMENTOR = "user";
-	private static final String KEY_ID = "id";
-	
 	//Data members
 	private String title, status, content, assignee;
 	private int number;
@@ -185,18 +173,18 @@ public class Issue {
 	 */
 	public static Issue makeInstance(JSONObject obj, Repository repo) throws JSONException{
 		assert obj!=null && repo!=null;
-		Issue issue = new Issue(obj.getString(KEY_ISSUETITLE), obj.getInt(KEY_ISSUENUMBER), repo);
-		issue.setContent(obj.getString(KEY_CONTENT));
-		if(obj.isNull(KEY_ASSIGNEE)){
+		Issue issue = new Issue(obj.getString(Constants.KEY_ISSUETITLE), obj.getInt(Constants.KEY_ISSUENUMBER), repo);
+		issue.setContent(obj.getString(Constants.KEY_CONTENT));
+		if(obj.isNull(Constants.KEY_ASSIGNEE)){
 			issue.setAssignee(null);
 		} else{
-			issue.setAssignee(obj.getJSONObject(KEY_ASSIGNEE).getString(KEY_USERNAME));
+			issue.setAssignee(obj.getJSONObject(Constants.KEY_ASSIGNEE).getString(Constants.KEY_USERLOGIN));
 		}
-		JSONArray labelArray = obj.getJSONArray(KEY_LABELS);
+		JSONArray labelArray = obj.getJSONArray(Constants.KEY_LABELS);
 		int numLabels = labelArray.length();
 		String label;
 		for(int i=0; i<numLabels; i++){
-			label = labelArray.getJSONObject(i).getString(KEY_LABELNAME);
+			label = labelArray.getJSONObject(i).getString(Constants.KEY_LABELNAME);
 			issue.addLabel(label);
 		}
 		issue.setNumComments(obj.getInt(Constants.KEY_COMMENTS));
@@ -377,9 +365,9 @@ public class Issue {
 	 */
 	public void addComment(JSONObject jsonComment) throws JSONException{
 		assert jsonComment!=null;
-		String author = jsonComment.getJSONObject(KEY_COMMENTOR).getString(KEY_USERNAME);
-		String message = jsonComment.getString(KEY_CONTENT);
-		int id = jsonComment.getInt(KEY_ID);
+		String author = jsonComment.getJSONObject(Constants.KEY_USER).getString(Constants.KEY_USERLOGIN);
+		String message = jsonComment.getString(Constants.KEY_CONTENT);
+		int id = jsonComment.getInt(Constants.KEY_ID);
 		comments.add(new Comment(author, message, id));
 	}
 	
@@ -466,15 +454,15 @@ public class Issue {
 	 */
 	public JSONObject toJSONObject() throws JSONException {
 		JSONObject obj = new JSONObject();
-		obj.put(KEY_ISSUETITLE, title);
-		obj.put(KEY_CONTENT, content);
-		obj.put(KEY_STATUS, status);
+		obj.put(Constants.KEY_ISSUETITLE, title);
+		obj.put(Constants.KEY_CONTENT, content);
+		obj.put(Constants.KEY_STATUS, status);
 		if(assignee==null){
-			obj.put(KEY_ASSIGNEE, JSONObject.NULL);
+			obj.put(Constants.KEY_ASSIGNEE, JSONObject.NULL);
 		} else{
-			obj.put(KEY_ASSIGNEE, assignee);
+			obj.put(Constants.KEY_ASSIGNEE, assignee);
 		}
-		obj.put(KEY_LABELS, labels.isEmpty()? new JSONArray(): new JSONArray(labels.toArray(new String[labels.size()])));
+		obj.put(Constants.KEY_LABELS, labels.isEmpty()? new JSONArray(): new JSONArray(labels.toArray(new String[labels.size()])));
 		return obj;
 	}
 }

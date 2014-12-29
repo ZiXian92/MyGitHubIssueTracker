@@ -402,8 +402,9 @@ public class Model {
 			if(!issue.isInitialized()){
 				try{
 					updateIssue(issue, repo);
+					issue.setIsInitialized(true);
 				} catch(Exception e){
-					
+					throw new Exception(Constants.ERROR_UPDATEISSUE);
 				}
 			}
 			notifyObservers(repoName, issue.getTitle());
