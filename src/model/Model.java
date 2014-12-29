@@ -263,6 +263,7 @@ public class Model {
 				tempIssueList.add(Issue.makeInstance(temp));
 			}
 			repo.setIssues(tempIssueList);
+			repo.setIsInitialized(true);
 			//loadContribThread.join();
 		} /*catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
@@ -308,7 +309,7 @@ public class Model {
 			return null;
 		}
 		Repository repo = repoList.get(index-1);
-		if(repo.shouldFetchIssues()){
+		if(!repo.isInitialized()){
 			try{
 				updateRepo(repo);
 			} catch(Exception e){
@@ -343,21 +344,35 @@ public class Model {
 	 */
 	public Issue getIssue(String issueName, String repoName){
 		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
-		Repository repo = getRepository(repoName);
-		if(repo==null){
-			logger.log(Level.SEVERE, "Failed to get repository {0}.", repoName);
+		Repository repo = null;
+		try{
+			repo = getRepository(repoName);
+			if(repo==null){
+				logger.log(Level.SEVERE, "Failed to get repository {0}.", repoName);
+				return null;
+			}
+		} catch(Exception e){
+			//This will not happen as user is unable to select issue when repository cannot be selected.
 			return null;
 		}
-		Issue selectedIssue;
+		
+		Issue issue;
 		try{
-			selectedIssue = repo.getIssue(Integer.parseInt(issueName));
+			issue = repo.getIssue(Integer.parseInt(issueName));
 		} catch(NumberFormatException e){
-			selectedIssue = repo.getIssue(issueName);
+			issue = repo.getIssue(issueName);
 		}
-		if(selectedIssue!=null){
-			notifyObservers(repoName, selectedIssue.getTitle());
+		if(issue!=null){
+			if(issue.isInitialized()){
+				try{
+					loadCommentsOfIssue(issue);
+				} catch(Exception e){
+					
+				}
+			}
+			notifyObservers(repoName, issue.getTitle());
 		}
-		return selectedIssue;
+		return issue;
 	}
 	
 	/**

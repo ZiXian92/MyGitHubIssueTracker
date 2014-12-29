@@ -13,6 +13,8 @@ public class Constants {
 	public static final String RESPONSE_OK = "HTTP/1.1 200 OK";
 	
 	//JSON keys
+	public static final String KEY_COMMENTS = "comments";
+	public static final String KEY_CONTENT = "body";
 	public static final String KEY_HASISSUES = "has_issues";
 	public static final String KEY_OWNER = "owner";
 	public static final String KEY_REPONAME = "name";

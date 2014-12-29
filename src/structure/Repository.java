@@ -30,24 +30,23 @@ public class Repository {
 	private ArrayList<String> assignees, labels;
 	private HashMap<String, Integer> indexList;
 	private int numIssues;
-	private boolean hasIssues, hasLocalIssues;
+	private boolean isInitialized;
 	
 	/**
 	 * Creates a new repository instance.
 	 * @param name The name of the repository.
 	 * @param owner The name of this repository's owner.
 	 */
-	public Repository(String name, String owner, boolean hasIssues){
+	public Repository(String name, String owner){
 		assert name!=null && !name.isEmpty() && owner!=null && !owner.isEmpty();
 		this.name = name;
 		this.owner = owner;
-		this.hasIssues = hasIssues;
 		issueList = new ArrayList<Issue>();
 		assignees = new ArrayList<String>();
 		indexList = new HashMap<String, Integer>();
 		labels = new ArrayList<String>();
 		numIssues = 0;
-		hasLocalIssues = false;
+		isInitialized = false;
 	}
 	
 	/**
@@ -60,8 +59,7 @@ public class Repository {
 	public static Repository makeInstance(JSONObject obj) throws JSONException{
 		assert obj!=null;
 		return new Repository(obj.getString(Constants.KEY_REPONAME),
-				obj.getJSONObject(Constants.KEY_OWNER).getString(Constants.KEY_USERLOGIN),
-				obj.getBoolean(Constants.KEY_HASISSUES));
+				obj.getJSONObject(Constants.KEY_OWNER).getString(Constants.KEY_USERLOGIN));
 	}
 	
 	/**
@@ -104,11 +102,12 @@ public class Repository {
 	}
 	
 	/**
-	 * Checks whether this repository's issues should be fetched.
-	 * @return True if this repository has issues and the issues have not been fetched. Returns false otherwise.
+	 * Checks if data for this repository has been fetched.
+	 * If this is true, there is no need to fetch data for this issue from GitHub and otherwise.
+	 * @return True if this repository is properly set up and false otherwise.
 	 */
-	public boolean shouldFetchIssues(){
-		return hasIssues && !hasLocalIssues;
+	public boolean isInitialized(){
+		return isInitialized;
 	}
 	
 	/**
@@ -146,7 +145,6 @@ public class Repository {
 			issueList.add(issue);
 			indexList.put(issue.getTitle(), ++numIssues);
 			issue.setApplicableLabels(labels);
-			hasIssues = hasLocalIssues = true;
 		}
 	}
 	
@@ -211,7 +209,14 @@ public class Repository {
 			indexList.put(list.get(i).getTitle(), ++numIssues);
 			list.get(i).setApplicableLabels(labels);
 		}
-		hasIssues = hasLocalIssues = true;
+	}
+	
+	/**
+	 * Marks this repository as initialized or uninitialized.
+	 * @param isInitialized True if no data is to be fetched for this repository by Model and false otherwise.
+	 */
+	public void setIsInitialized(boolean isInitialized){
+		this.isInitialized = isInitialized;
 	}
 	
 	@Override

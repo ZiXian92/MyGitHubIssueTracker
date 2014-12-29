@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import Misc.Constants;
 import Misc.Util;
 
 /**
@@ -45,6 +46,7 @@ public class Issue {
 	private int number;
 	private ArrayList<String> labels, applicableLabels;
 	private ArrayList<Comment> comments;
+	private boolean isInitialized;
 	
 	/**
 	 * Defines each Issue's comment.
@@ -139,6 +141,7 @@ public class Issue {
 		this.applicableLabels = new ArrayList<String>();
 		this.labels = new ArrayList<String>();
 		this.comments = new ArrayList<Comment>();
+		this.isInitialized = false;
 	}
 	
 	/**
@@ -191,6 +194,7 @@ public class Issue {
 			label = labelArray.getJSONObject(i).getString(KEY_LABELNAME);
 			issue.addLabel(label);
 		}
+		issue.setNumComments(obj.getInt(Constants.KEY_COMMENTS));
 		return issue;
 	}
 	
@@ -261,6 +265,14 @@ public class Issue {
 	}
 	
 	/**
+	 * Checks whether this issue requires fetching of comments from GitHub.
+	 * @return True if there exists comments to be fetched and false otherwise.
+	 */
+	public boolean isInitialized(){
+		return isInitialized;
+	}
+	
+	/**
 	 * Gets the list of comments for this issue.
 	 * @return AN array of comments for this issue or null if there is none.
 	 */
@@ -304,7 +316,13 @@ public class Issue {
 		this.content = content;
 	}
 	
-	
+	/**
+	 * Sets the number of comments this issue has.
+	 * @param numComments An integer not less than 0.
+	 */
+	public void setNumComments(int numComments){
+		assert numComments>=0;
+	}
 	
 	/**
 	 * Sets the assignee for this issue.
@@ -370,6 +388,14 @@ public class Issue {
 	 */
 	public void close(){
 		status = STATE_CLOSED;
+	}
+	
+	/**
+	 * Marks this issue as initialized or uninitialized.
+	 * @param isInitialized True if data should not be fetched by Model for this issue and false otherwise.
+	 */
+	public void setIsInitialized(boolean isInitialized){
+		this.isInitialized = isInitialized;
 	}
 	
 	@Override
