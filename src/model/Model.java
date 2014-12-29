@@ -260,7 +260,7 @@ public class Model {
 			ArrayList<Issue> tempIssueList = new ArrayList<Issue>();
 			for(int i=0; i<size; i++){	//If JSON exception occurs here, no issue is added to repo.
 				temp = arr.getJSONObject(i);
-				tempIssueList.add(Issue.makeInstance(temp));
+				tempIssueList.add(Issue.makeInstance(temp, repo));
 			}
 			repo.setIssues(tempIssueList);
 			repo.setIsInitialized(true);
@@ -277,11 +277,40 @@ public class Model {
 	}
 	
 	/**
-	 * Updates the given issue with comments from GitHub website.
+	 * Completes the update of the given issue.
 	 * @param issue The issue to fetch comments for.
+	 * @throws FailedRequestException If the request fails.
+	 * @throws RequestException If an error occurred when sending the request.
+	 * @throws MissingMessageException If the JSON contents are missing from the response.
+	 * @throws JSONException If an error occurred when parsing the response JSON object.
 	 */
-	public void updateIssue(Issue issue, Repository repo){
+	public void updateIssue(Issue issue, Repository repo) throws FailedRequestException, RequestException, MissingMessageException, JSONException{
 		assert repo!=null && issue!=null;
+		HttpGet request = new HttpGet(API_URL+String.format(EXT_COMMENTS, repo.getOwner(), repo.getName(), issue.getNumber()));
+		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+		try{
+			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
+				logger.log(Level.WARNING, "Failed to get comments.");
+				response.close();
+				throw new FailedRequestException();
+			}
+			HttpEntity messageBody = response.getEntity();
+			if(messageBody==null){
+				logger.log(Level.WARNING, "Request successful. Response message missing.");
+				response.close();
+				throw new MissingMessageException();
+			}
+			JSONArray commentArray = new JSONArray(Util.getJSONString(messageBody.getContent()));
+			issue.addComments(commentArray);
+		} catch(JSONException e){
+			logger.log(Level.SEVERE, "Failed to parse JSON object(s)");
+			throw e;
+		} catch(IOException e){
+			logger.log(Level.SEVERE, "Failed to execute request for comments.");
+			throw new RequestException();
+		}
 	}
 	
 	/**

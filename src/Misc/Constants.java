@@ -16,8 +16,10 @@ public class Constants {
 	public static final String KEY_COMMENTS = "comments";
 	public static final String KEY_CONTENT = "body";
 	public static final String KEY_HASISSUES = "has_issues";
+	public static final String KEY_ID = "id";
 	public static final String KEY_OWNER = "owner";
 	public static final String KEY_REPONAME = "name";
+	public static final String KEY_USER = "user";
 	public static final String KEY_USERLOGIN = "login";
 	
 	//Messages

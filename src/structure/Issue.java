@@ -384,15 +384,26 @@ public class Issue {
 	}
 	
 	/**
-	 * Adds the given comments. Does nothing if the JSON array is not formatted properly.
+	 * Adds the given comments.
 	 * @param jsonComments The JSON array representation of the comments to add as provided by GitHub API.
 	 * @throws JSONException If an error occurs while parsing jsonComments.
 	 */
 	public void addComments(JSONArray jsonComments) throws JSONException{
 		assert jsonComments!=null;
 		int numComments = jsonComments.length();
+		ArrayList<Comment> temp = new ArrayList<Comment>();
+		String author, message;
+		int id;
+		JSONObject obj;
 		for(int i=0; i<numComments; i++){
-			addComment(jsonComments.getJSONObject(i));
+			obj = jsonComments.getJSONObject(i);
+			author = obj.getJSONObject(Constants.KEY_USER).getString(Constants.KEY_USERLOGIN);
+			message = obj.getString(Constants.KEY_CONTENT);
+			id = obj.getInt(Constants.KEY_ID);
+			temp.add(new Comment(author, message, id));
+		}
+		for(int i=0; i<numComments; i++){
+			comments.add(temp.get(i));
 		}
 	}
 	
