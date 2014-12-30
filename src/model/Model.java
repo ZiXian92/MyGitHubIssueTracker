@@ -304,6 +304,7 @@ public class Model {
 			}
 			JSONArray commentArray = new JSONArray(Util.getJSONString(messageBody.getContent()));
 			issue.addComments(commentArray);
+			issue.setIsInitialized(true);
 		} catch(JSONException e){
 			logger.log(Level.SEVERE, "Failed to parse JSON object(s)");
 			throw e;
@@ -365,6 +366,7 @@ public class Model {
 	public Repository getRepository(String repoName) throws Exception{
 		assert repoName!=null && !repoName.isEmpty();
 		if(!indexList.containsKey(repoName)){
+			logger.log(Level.SEVERE, "Repository {0} not found.", repoName);
 			return null;
 		}
 		return getRepository(indexList.get(repoName));
@@ -403,7 +405,6 @@ public class Model {
 			if(!issue.isInitialized()){
 				try{
 					updateIssue(issue, repo);
-					issue.setIsInitialized(true);
 				} catch(Exception e){
 					throw new Exception(Constants.ERROR_UPDATEISSUE);
 				}
@@ -417,45 +418,54 @@ public class Model {
 	 * Adds the given issue(in JSON string format) to the given repository.
 	 * @param jsonIssue The JSON representation of the issue to be added. Cannot be null or empty.
 	 * @param repoName The name of the repository to add the issue to.
-	 * @return The created issue. Returns null if the request fails or an error occurred during the request..
+	 * @return The created issue. Returns null if the repository is not found or cannot be updated.
 	 * @throws JSONException If an error occurs when parsing the JSON representation of the new issue.
+	 * @throws FailedRequestException If the request fails.
+	 * @throws MissingMessageException If the message is missing from the response.
+	 * @throws RequestException If an error occurred while sending the request.
 	 */
-	public Issue addIssue(JSONObject jsonIssue, String repoName) throws JSONException {
+	public Issue addIssue(JSONObject jsonIssue, String repoName) throws JSONException, FailedRequestException, MissingMessageException, RequestException {
 		assert jsonIssue!=null && repoName!=null && !repoName.isEmpty();
-		Repository repo = getRepository(repoName);
-		if(repo==null){
-			logger.log(Level.SEVERE, "Failed to get repository {0}.", repoName);
+		Repository repo = null;
+		try{
+			repo = getRepository(repoName);
+			if(repo==null){
+				return null;
+			}
+		} catch(Exception e){
+			logger.log(Level.SEVERE, e.getMessage());
 			return null;
 		}
+		
 		HttpPost request = new HttpPost(API_URL+String.format(EXT_REPOISSUES, repo.getOwner(), repo.getName()));
 		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
 		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
 		try{
 			request.setEntity(new StringEntity(jsonIssue.toString()));
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-			if(!response.getStatusLine().toString().equals(RESPONSE_CREATED)){
+			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_CREATED)){
 				logger.log(Level.SEVERE, "Request to add new issue failed. Response: {0}", response.getStatusLine().toString());
 				response.close();
-				return null;
+				throw new FailedRequestException();
 			}
 			HttpEntity messageBody = response.getEntity();
 			if(messageBody==null){
 				response.close();
 				logger.log(Level.SEVERE, "Missing response message. Check with Github or restart to confirm creation of issue.");
-				return null;
+				throw new MissingMessageException();
 			}
 			JSONObject obj = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			response.close();
-			Issue issue = Issue.makeInstance(obj);
+			Issue issue = Issue.makeInstance(obj, repo);
 			repo.addIssue(issue);
 			notifyObservers(repoName, issue.getTitle());
 			return issue;
 		} catch (JSONException e) {
 			logger.log(Level.WARNING, "Failed to parse created issue.");
-			throw new JSONException(MSG_LOCALISSUEPARSINGERROR);
+			throw e;
 		} catch(IOException e){
 			logger.log(Level.SEVERE, "Failed to execute request to create issue.");
-			return null;
+			throw new RequestException();
 		}
 	}
 	

@@ -7,27 +7,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import Misc.Constants;
+import Misc.FailedRequestException;
+import Misc.MissingMessageException;
+import Misc.RequestException;
 import structure.Issue;
 
 /**Defines the command to add a new issue.
  * @author ZiXian92
  */
 public class AddIssue extends Command {
-	//JSON parameter key values.
-	private static final String KEY_TITLE = "title";
-	private static final String KEY_BODY = "body";
-	private static final String KEY_ASSIGNEE = "assignee";
-	private static final String KEY_LABELS = "labels";
-	
 	//Prompt messages
 	private static final String PROMPT_BODY = "Please enter body message(terminate with Enter button): ";
 	private static final String PROMPT_ASSIGNEE = "Enter assignee: ";
 	private static final String PROMPT_LABELS = "Enter label(s)(comma-separated): ";
-	
-	//Error messages
-	private static final String MSG_INPUTERROR = "An error occurred while reading/parsing input.";
-	private static final String MSG_LOCALPARSINGERROR = "Request successful. Error parsing local copy of issue.";
-	private static final String MSG_REQUESTERROR = "Failed to create issue.";
 	
 	//For separating labels
 	private static final String LABEL_SEPARATOR = ",";
@@ -51,45 +44,48 @@ public class AddIssue extends Command {
 		JSONObject obj = new JSONObject();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		try{
-			obj.put(KEY_TITLE, title);
+			obj.put(Constants.KEY_ISSUETITLE, title);
 
 			printPrompt(PROMPT_BODY);
 			String input = reader.readLine();
-			obj.put(KEY_BODY, input);
+			obj.put(Constants.KEY_CONTENT, input);
 
 			printPrompt(PROMPT_ASSIGNEE);
 			input = reader.readLine();
 			if(input.trim().isEmpty()){
-				obj.put(KEY_ASSIGNEE, JSONObject.NULL);
+				obj.put(Constants.KEY_ASSIGNEE, JSONObject.NULL);
 			} else{
-				obj.put(KEY_ASSIGNEE, input);
+				obj.put(Constants.KEY_ASSIGNEE, input);
 			}
 
 			printPrompt(PROMPT_LABELS);
 			input = reader.readLine().trim();
-			obj.put(KEY_LABELS, new JSONArray());
+			obj.put(Constants.KEY_LABELS, new JSONArray());
 			if(!input.isEmpty()){
 				String[] labels = input.split(LABEL_SEPARATOR);
 				int numLabels = labels.length;
 				for(int i=0; i<numLabels; i++){
-					obj.append(KEY_LABELS, labels[i].trim());
+					obj.append(Constants.KEY_LABELS, labels[i].trim());
 				}
 			}
 		} catch(Exception e){
-			view.updateView(MSG_INPUTERROR);
+			view.updateView(Constants.ERROR_INPUTPARSING);
 			new SelectRepo(repoName).execute();
 			return;
 		}
 		try{
 			Issue issue = model.addIssue(obj, repoName);
 			if(issue==null){
-				view.updateView(MSG_REQUESTERROR);
+				view.updateView(Constants.ERROR_REPOERROR);
 				new SelectRepo(repoName).execute();
 			} else{
 				view.updateView(issue);
 			}
-		}  catch(JSONException e){
-			view.updateView(MSG_LOCALPARSINGERROR);
+		} catch(RequestException | FailedRequestException e){
+			view.updateView(Constants.ERROR_ADDISSUE);
+			new SelectRepo(repoName).execute();
+		} catch(MissingMessageException | JSONException e){
+			view.updateView(Constants.ERROR_UPDATELOCALDATA);
 			new SelectRepo(repoName).execute();
 		}
 		

@@ -1,5 +1,6 @@
 package controller;
 
+import Misc.Constants;
 import structure.Issue;
 
 /**
@@ -7,9 +8,6 @@ import structure.Issue;
  * @author ZiXian92
  */
 public class SelectIssue extends Command {
-	//Error message
-	private static final String MSG_NOSUCHISSUE = "Issue not found.";
-	
 	//Data members
 	private String issueName, repoName;
 	
@@ -32,7 +30,7 @@ public class SelectIssue extends Command {
 			if(issue!=null){
 				view.updateView(issue);
 			} else{
-				view.updateView(MSG_NOSUCHISSUE);
+				view.updateView(Constants.ERROR_ISSUENOTFOUND);
 				new SelectRepo(repoName).execute();
 			}
 		} catch(Exception e){
