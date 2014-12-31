@@ -31,6 +31,7 @@ public class Constants {
 	
 	//Error messages
 	public static final String ERROR_ADDISSUE = "Error creating issue.";
+	public static final String ERROR_EDITISSUE = "Error editing issue.";
 	public static final String ERROR_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
 	public static final String ERROR_FAILEDREQUEST = "Request failed.";
 	public static final String ERROR_INITIALIZEDATA  = "Error updating local data. Restart to try again.";

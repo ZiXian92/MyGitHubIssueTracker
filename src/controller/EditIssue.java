@@ -8,6 +8,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import Misc.Constants;
+import Misc.FailedRequestException;
+import Misc.MissingMessageException;
+import Misc.RequestException;
 import structure.Issue;
 
 /**
@@ -99,8 +102,11 @@ public class EditIssue extends Command {
 				view.updateView(MSG_NOSUCHITEM);
 				new ListCommand().execute();
 			}
-		} catch (JSONException e) {
-			view.updateView(Constants.ERROR_JSONPARSING);
+		} catch(RequestException | FailedRequestException e){	//Issue is not edited on GitHub
+			view.updateView(Constants.ERROR_EDITISSUE);
+			new SelectIssue(issueName, repoName).execute();
+		} catch (MissingMessageException | JSONException e) {	//Issue is edited on GitHub
+			view.updateView(Constants.ERROR_UPDATELOCALDATA);
 			new SelectIssue(issueName, repoName).execute();
 		}
 	}

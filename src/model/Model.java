@@ -67,10 +67,7 @@ public class Model {
 	private HashMap<String, Integer> indexList;
 
 	private Model(){
-		repoList = new ArrayList<Repository>();
 		observerList = new ArrayList<Observer>();
-		indexList = new HashMap<String, Integer>();
-		numRepos = 0;
 		logger.setUseParentHandlers(true);
 	}
 
@@ -131,9 +128,7 @@ public class Model {
 	}
 
 	/**
-	 * Loads the repositories and issues from GitHub.
-	 * Best effort to fetch and parse all data. If an error occurs while parsing an entity, the current entity
-	 * is dropped. Probability of this happening is low as the JSON object is produced by GitHub API.
+	 * Loads the repositories and issues from GitHub. Clears all current data in the process.
 	 * @throws IOException if an error occurred during the request.
 	 * @throws RequestException If an error occurs when sending the request.
 	 * @throws FailedRequestException If the request fails.
@@ -143,6 +138,11 @@ public class Model {
 	public void initialise() throws IOException, RequestException, FailedRequestException, MissingMessageException, JSONException {
 		assert authCode!=null && !authCode.isEmpty();
 
+		//Clears all data members
+		repoList = new ArrayList<Repository>();
+		indexList = new HashMap<String, Integer>();
+		numRepos = 0;
+		
 		//Send request to get list of repositories.
 		HttpGet request = new HttpGet(API_URL+EXT_REPOS);
 		request.addHeader(HEADER_ACCEPT, VAL_PREVIEWACCEPT);
@@ -391,6 +391,7 @@ public class Model {
 			}
 		} catch(Exception e){
 			//This will not happen as user is unable to select issue when repository cannot be selected.
+			//May happen if developer call this method directly without going through the user interface.
 			return null;
 		}
 		
@@ -466,6 +467,8 @@ public class Model {
 				logger.log(Level.SEVERE, "Missing response message. Check with Github or restart to confirm creation of issue.");
 				throw new MissingMessageException();
 			}
+			
+			//Updates repository with new issue locally.
 			JSONObject obj = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			response.close();
 			Issue issue = Issue.makeInstance(obj, repo);
@@ -536,19 +539,26 @@ public class Model {
 	 * @param issueName The name of the issue to be edited.
 	 * @return The edited issue. Returns the original issue if the request fails or the response message does not exist.
 	 * 			Returns null if the given issue and/or repository cannot be found.
-	 * @throws JSONException if an error occurs while parsing the JSON object in the response.
+	 * @throws JSONException If an error occurs while parsing the JSON object in the response.
+	 * @throws RequestException If an error occurs while sending the request.
+	 * @throws FailedRequestException If the request fails
+	 * @throws MissingMessageException If the message containing the edited issue is missing from the response.
 	 */
-	public Issue editIssue(JSONObject changes, String repoName, String issueName) throws JSONException {
+	public Issue editIssue(JSONObject changes, String repoName, String issueName) throws JSONException, RequestException, FailedRequestException, MissingMessageException {
 		assert changes!=null && repoName!=null && !repoName.isEmpty() && issueName!=null && !issueName.isEmpty();
 		
-		Repository repo = getRepository(repoName);
-		if(repo==null){
-			logger.log(Level.SEVERE, "Failed to get repository {0}.", repoName);
-			return null;
-		}
-		Issue issue = repo.getIssue(issueName);
-		if(issue==null){
-			logger.log(Level.SEVERE, "Failed to get issue {0}.", issueName);
+		Repository repo;
+		Issue issue = null;
+		try{
+			issue = getIssue(issueName, repoName);
+			if(issue==null){
+				logger.log(Level.SEVERE, "Failed to get issue {0} from repository {1}.",
+						new Object[] {issueName, repoName});
+				return null;
+			}
+			repo = issue.getRepository();
+		} catch(Exception e){
+			//Will not happen if this method is called using the workflow.
 			return null;
 		}
 		
@@ -558,20 +568,20 @@ public class Model {
 		try {
 			request.setEntity(new StringEntity(changes.toString()));
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-			if(!response.getStatusLine().toString().equals(RESPONSE_OK) || response.getEntity()==null){
+			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK) || response.getEntity()==null){
 				logger.log(Level.SEVERE, "Request to edit issue failed.\nResponse: {0}", response.getStatusLine().toString());
 				response.close();
-				return issue;
+				throw new FailedRequestException();
 			}
 			HttpEntity messageBody = response.getEntity();	//Will not be null, as defined in GitHub API response.
 			if(messageBody==null){
 				logger.log(Level.SEVERE, "Missing response message. Check with GitHub or restart to confirm changes.");
 				response.close();
-				return null;
+				throw new MissingMessageException();
 			}
 			JSONObject obj = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			response.close();
-			Issue editedIssue = Issue.makeInstance(obj);
+			Issue editedIssue = Issue.makeInstance(obj, repo);
 			repo.replaceIssue(issue.getTitle(), editedIssue);
 			notifyObservers(repoName, editedIssue.getTitle());
 			return editedIssue;
@@ -580,7 +590,7 @@ public class Model {
 			throw e;
 		} catch(IOException e){	//If error occurs during request.
 			logger.log(Level.SEVERE, "Failed to execute request to edit issue.");
-			return issue;
+			throw new RequestException();
 		}
 	}
 	
