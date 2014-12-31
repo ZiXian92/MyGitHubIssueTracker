@@ -187,10 +187,19 @@ public class Repository {
 		assert issueName!=null && !issueName.isEmpty() && editedIssue!=null;
 		if(indexList.containsKey(issueName)){
 			int index = indexList.get(issueName);
+			Issue issue = issueList.get(index-1);
+			Issue.Comment[] comments = issue.getComments();
+			if(comments!=null){
+				int numComments = comments.length;
+				for(int i=0; i<numComments; i++){
+					editedIssue.addComment(comments[i]);
+				}
+			}
 			issueList.set(index-1, editedIssue);
 			indexList.remove(issueName);
 			indexList.put(editedIssue.getTitle(), index);
 			editedIssue.setApplicableLabels(labels);
+			
 		}
 	}
 	

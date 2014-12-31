@@ -359,6 +359,15 @@ public class Issue {
 	}
 	
 	/**
+	 * Adds the given comment to this issue.
+	 * @param comment The comment to add to this issue.
+	 */
+	public void addComment(Comment comment){
+		assert comment!=null;
+		comments.add(comment);
+	}
+	
+	/**
 	 * Adds the given comment. Does nothing if the given JSON object is not formatted correctly.
 	 * @param jsonComment The JSON representation of the comment as provided by GitHub API.
 	 * @throws JSONException If jsonComment does not contain required keys or values.
