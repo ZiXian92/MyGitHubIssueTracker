@@ -268,7 +268,7 @@ public class Issue {
 	
 	/**
 	 * Gets the list of comments for this issue.
-	 * @return AN array of comments for this issue or null if there is none.
+	 * @return An array of comments for this issue or null if there is none.
 	 */
 	public Comment[] getComments(){
 		if(comments.isEmpty()){
@@ -373,11 +373,11 @@ public class Issue {
 	}
 	
 	/**
-	 * Adds the given comments.
-	 * @param jsonComments The JSON array representation of the comments to add as provided by GitHub API.
+	 * Sets the comments for this issue..
+	 * @param jsonComments The JSON array representation of the comments for this issue as provided by GitHub API.
 	 * @throws JSONException If an error occurs while parsing jsonComments.
 	 */
-	public void addComments(JSONArray jsonComments) throws JSONException{
+	public void setComments(JSONArray jsonComments) throws JSONException{
 		assert jsonComments!=null;
 		int numComments = jsonComments.length();
 		ArrayList<Comment> temp = new ArrayList<Comment>();
@@ -391,9 +391,7 @@ public class Issue {
 			id = obj.getInt(Constants.KEY_ID);
 			temp.add(new Comment(author, message, id));
 		}
-		for(int i=0; i<numComments; i++){
-			comments.add(temp.get(i));
-		}
+		comments = temp;
 	}
 	
 	/**

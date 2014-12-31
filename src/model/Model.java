@@ -302,7 +302,7 @@ public class Model {
 				throw new MissingMessageException();
 			}
 			JSONArray commentArray = new JSONArray(Util.getJSONString(messageBody.getContent()));
-			issue.addComments(commentArray);
+			issue.setComments(commentArray);
 			issue.setIsInitialized(true);
 		} catch(JSONException e){
 			logger.log(Level.SEVERE, "Failed to parse JSON object(s)");
