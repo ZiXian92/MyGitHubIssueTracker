@@ -2,10 +2,10 @@ package model;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import Misc.RequestException;
 
 /**
  * JUnit tezt class for Model.
@@ -19,9 +19,9 @@ public class ModelTest {
 	public static void setup(){
 		Model model = Model.getInstance();
 		try {
-			model.loginUser("ZiXian92", "");
+			model.loginUser("ZiXian92", "Nana7Nana");
 			model.initialise();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -35,10 +35,10 @@ public class ModelTest {
 	public void testLoginUser() {
 		Model model = Model.getInstance();
 		try {
-			assertFalse(model.loginUser("zixian", ""));
-			assertFalse(model.loginUser("ZiXian92", ""));
-			assertTrue(model.loginUser("ZiXian92", ""));	//correct password
-		} catch (IOException e) {
+			assertFalse(model.loginUser("zixian", "Nana7Nana"));
+			assertFalse(model.loginUser("ZiXian92", "nana7nana"));
+			assertTrue(model.loginUser("ZiXian92", "Nana7Nana"));	//correct password
+		} catch (RequestException e) {
 			e.printStackTrace();
 		}
 	}
@@ -50,27 +50,30 @@ public class ModelTest {
 		Model model = Model.getInstance();
 		String[] list = model.listRepositories();
 		assertTrue(list!=null);
+		assertEquals(5, list.length);
 	}
 	
-	@Test(expected=IllegalArgumentException.class)
 	//As each person's repository listng is different and Repository does not have an ID in this application,
 	//it is almost impossible to automate testing of success use cases.
 	//Thus this tests only for fail cases.
 	//To test correctness of success cases, do it using exploratory testing.
 	//Once query for a few repositories are correct, it should be correct for general cases.
-	public void testGetRepository(){
+	@Test
+	public void testGetRepository() throws Exception{
 		Model model = Model.getInstance();
-		model.getRepository(-1);
-		model.getRepository(100);	//Change if you have at least 100 repositories
-		model.getRepository("some repository");
+		assertTrue(model.getRepository(-1)==null);
+		assertTrue(model.getRepository(100)==null);	//Change if you have at least 100 repositories
+		assertTrue(model.getRepository("some repository")==null);
+		assertFalse(model.getRepository("ZiXian92/MyGitHubIssueTracker")==null);
 	}
 	
-	@Test(expected=IllegalArgumentException.class)
 	//Reasoning for testing fail cases is the same as that of testing of selecting repository.
 	//Change the repository name to one of your own
-	public void testGetIssue(){
+	@Test
+	public void testGetIssue() throws Exception{
 		Model model = Model.getInstance();
-		model.getIssue("-1", "Orbital");
-		model.getIssue("1000000", "Orbital");
+		assertTrue(model.getIssue("-1", "ZiXian92/Orbital")==null);
+		assertTrue(model.getIssue("1000000", "ZiXian92/Orbital")==null);
+		assertFalse(model.getIssue("1", "ZiXian92/MyGitHubIssueTracker")==null);
 	}
 }
