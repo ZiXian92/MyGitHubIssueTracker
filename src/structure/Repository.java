@@ -25,7 +25,7 @@ public class Repository {
 	private static final String FIELD_LABELS = "Labels: ";
 	
 	//Data members
-	private String name, owner;	//To be extracted by Model to update GitHub.
+	private String name, owner, fullName;	//To be extracted by Model to update GitHub.
 	private ArrayList<Issue> issueList;
 	private ArrayList<String> assignees, labels;
 	private HashMap<String, Integer> indexList;
@@ -41,6 +41,7 @@ public class Repository {
 		assert name!=null && !name.isEmpty() && owner!=null && !owner.isEmpty();
 		this.name = name;
 		this.owner = owner;
+		fullName = String.format(Constants.REPOFULLNAME, owner, name);
 		issueList = new ArrayList<Issue>();
 		assignees = new ArrayList<String>();
 		indexList = new HashMap<String, Integer>();
@@ -76,6 +77,14 @@ public class Repository {
 	 */
 	public String getOwner(){
 		return owner;
+	}
+	
+	/**
+	 * Gets the full name of this repository.
+	 * @return The full name of this repository.
+	 */
+	public String getFullName(){
+		return fullName;
 	}
 	
 	/**

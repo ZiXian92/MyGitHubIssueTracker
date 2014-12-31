@@ -13,6 +13,7 @@ public class Constants {
 	public static final String KEY_ASSIGNEE = "assignee";
 	public static final String KEY_COMMENTS = "comments";
 	public static final String KEY_CONTENT = "body";
+	public static final String KEY_FULLNAME = "full_name";
 	public static final String KEY_HASISSUES = "has_issues";
 	public static final String KEY_ID = "id";
 	public static final String KEY_ISSUENUMBER = "number";
@@ -44,5 +45,6 @@ public class Constants {
 	public static final String ERROR_UPDATELOCALDATA = "Error updating data locally.";
 	public static final String ERROR_UPDATEREPO = "An error occurred while updating the repository.";
 	
-	
+	//Others
+	public static final String REPOFULLNAME = "%1$s/%2$s";
 }

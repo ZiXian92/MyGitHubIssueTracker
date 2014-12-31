@@ -172,8 +172,7 @@ public class Model {
 			for(int i=0; i<size; i++){	//Add repository to list.
 				obj = arr.getJSONObject(i);
 				temp = Repository.makeInstance(obj);
-				repoList.add(temp);
-				indexList.put(temp.getName(), ++numRepos);
+				addRepository(temp);
 			}
 		} catch(JSONException e){
 			logger.log(Level.SEVERE, "Failed to parse response message.");
@@ -415,6 +414,19 @@ public class Model {
 	}
 	
 	/**
+	 * Adds the given repository locally only if there is no repository with the same full name.
+	 * @param repo The repository to be added.
+	 */
+	public void addRepository(Repository repo){
+		assert repo!=null;
+		String fullName = repo.getFullName();
+		if(!indexList.containsKey(fullName)){
+			repoList.add(repo);
+			indexList.put(fullName, ++numRepos);
+		}
+	}
+	
+	/**
 	 * Adds the given issue(in JSON string format) to the given repository.
 	 * @param jsonIssue The JSON representation of the issue to be added. Cannot be null or empty.
 	 * @param repoName The name of the repository to add the issue to.
@@ -504,7 +516,7 @@ public class Model {
 			JSONObject obj = temp.toJSONObject();
 			request.setEntity(new StringEntity(obj.toString()));
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-			if(response.getStatusLine().toString().equals(RESPONSE_OK)){
+			if(response.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
 				issue.close();
 			} else{
 				logger.log(Level.WARNING, "Request to close issue {0} failed.", issue.getTitle());
