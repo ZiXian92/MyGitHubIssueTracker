@@ -352,13 +352,13 @@ public class Model {
 				throw new Exception(Constants.ERROR_UPDATEREPO);
 			}
 		}
-		notifyObservers(repo.getName(), null);
+		notifyObservers(repo.getFullName(), null);
 		return repo;
 	}
 	
 	/**
 	 * Gets the repository from the list given the repository name.
-	 * @param repoName The name of the repository to retrieve. Cannot be null or empty.
+	 * @param repoName The full name of the repository to retrieve. Cannot be null or empty.
 	 * @return The Repository with the given name or null if the given repository cannot be found.
 	 * @throws Exception 
 	 */
@@ -375,7 +375,7 @@ public class Model {
 	 * Gets the specified issue from the given repository.
 	 * @param issueName The name of the issue to be selected or the index of the issue in the repository,
 	 * 					starting from 1.
-	 * @param repoName The name of the repository that contains the issue to be selected. Cannot be null or empty.
+	 * @param repoName The full name of the repository that contains the issue to be selected. Cannot be null or empty.
 	 * @return The issue with the given issue name from the given repository or null
 	 * 			if the repository and/or issue cannot be found. 
 	 * @throws Exception If an error occurs while updating the issue.
