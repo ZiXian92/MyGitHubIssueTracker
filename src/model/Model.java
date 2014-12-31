@@ -473,6 +473,7 @@ public class Model {
 			response.close();
 			Issue issue = Issue.makeInstance(obj, repo);
 			repo.addIssue(issue);
+			issue.setIsInitialized(true);
 			notifyObservers(repoName, issue.getTitle());
 			return issue;
 		} catch (JSONException e) {
@@ -534,6 +535,7 @@ public class Model {
 			JSONObject obj = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			response.close();
 			Issue editedIssue = Issue.makeInstance(obj, repo);
+			editedIssue.setIsInitialized(true);
 			repo.replaceIssue(issue.getTitle(), editedIssue);
 			notifyObservers(repoName, editedIssue.getTitle());
 			return editedIssue;
