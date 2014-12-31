@@ -5,6 +5,13 @@ package Misc;
  * @author ZiXian92
  */
 public class Constants {
+	//Http headers and values
+	public static final String HEADER_ACCEPT = "Accept";
+	public static final String HEADER_AUTH = "Authorization";
+	public static final String VAL_ACCEPT = "application/vnd.github.v3+json";
+	public static final String VAL_AUTH = "Basic %1$s";
+	public static final String VAL_PREVIEWACCEPT = "application/vnd.github.moondragon-preview+json";
+	
 	//Http responses
 	public static final String RESPONSE_CREATED = "HTTP/1.1 201 Created";
 	public static final String RESPONSE_OK = "HTTP/1.1 200 OK";
@@ -30,6 +37,7 @@ public class Constants {
 	public static final String MSG_LOGGEDIN = "Logged in as %1$s.\nLoading data from GitHub...";
 	
 	//Error messages
+	public static final String ERROR_ADDCOMMENT = "Failed to add comment to issue.";
 	public static final String ERROR_ADDISSUE = "Error creating issue.";
 	public static final String ERROR_CLOSEISSUE = "Error closing issue.";
 	public static final String ERROR_EDITISSUE = "Error editing issue.";

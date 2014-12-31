@@ -3,6 +3,7 @@ package controller;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import Misc.Constants;
 import Misc.FailedRequestException;
 import Misc.MissingMessageException;
 import Misc.RequestException;
@@ -42,10 +43,17 @@ public class CommentIssue extends Command {
 		}
 		try {
 			Issue issue = model.addComment(obj, issueName, repoName);
-			view.updateView(issue);
-		} catch (FailedRequestException | MissingMessageException
-				| RequestException | JSONException e) {
-			view.updateView(e.getMessage());
+			if(issue==null){
+				view.updateView(Constants.ERROR_ISSUENOTFOUND);
+				new SelectRepo(repoName).execute();
+			} else{
+				view.updateView(issue);
+			}
+		} catch (RequestException | FailedRequestException e){
+			view.updateView(Constants.ERROR_ADDCOMMENT);
+			new SelectIssue(issueName, repoName).execute();
+		} catch(MissingMessageException | JSONException e) {
+			view.updateView(Constants.ERROR_UPDATELOCALDATA);
 			new SelectIssue(issueName, repoName).execute();
 		}
 	}

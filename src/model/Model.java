@@ -46,11 +46,7 @@ public class Model {
 	private static final String EXT_COMMENTS = "/repos/%1$s/%2$s/issues/%3$d/comments";
 
 	//Request headers and values
-	private static final String HEADER_ACCEPT = "Accept";
-	private static final String VAL_ACCEPT = "application/vnd.github.v3+json";
-	private static final String VAL_PREVIEWACCEPT = "application/vnd.github.moondragon-preview+json";
-	private static final String HEADER_AUTH = "Authorization";
-	private static final String VAL_AUTH = "Basic %1$s";
+	
 
 	private static Model instance = null;	//The single instance of this class
 	
@@ -106,11 +102,11 @@ public class Model {
 		
 		//Creates the request.
 		HttpGet request = new HttpGet(API_URL+EXT_USER);
-		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		request.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_ACCEPT);
 
 		//Encoding for basic authentication is to be done on username:password.
 		String code = new String(Base64.encodeBase64((username+":"+password).getBytes()));
-		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, code));
+		request.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, code));
 
 		try{
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
@@ -145,8 +141,8 @@ public class Model {
 		
 		//Send request to get list of repositories.
 		HttpGet request = new HttpGet(API_URL+EXT_REPOS);
-		request.addHeader(HEADER_ACCEPT, VAL_PREVIEWACCEPT);
-		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+		request.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_PREVIEWACCEPT);
+		request.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
 		try{
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
@@ -233,8 +229,8 @@ public class Model {
 		
 		//Sends request for issues under this repository.
 		HttpGet issueRequest = new HttpGet(API_URL+String.format(EXT_REPOISSUES, owner, repoName));
-		issueRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-		issueRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		issueRequest.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
+		issueRequest.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_ACCEPT);
 		try{
 			CloseableHttpResponse response = HttpClients.createDefault().execute(issueRequest);
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
@@ -286,8 +282,8 @@ public class Model {
 	public void updateIssue(Issue issue, Repository repo) throws FailedRequestException, RequestException, MissingMessageException, JSONException{
 		assert repo!=null && issue!=null;
 		HttpGet request = new HttpGet(API_URL+String.format(EXT_COMMENTS, repo.getOwner(), repo.getName(), issue.getNumber()));
-		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
+		request.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_ACCEPT);
+		request.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
 		try{
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
@@ -342,6 +338,7 @@ public class Model {
 	 */
 	public Repository getRepository(int index) throws Exception{
 		if(index<1 || index>repoList.size()){
+			logger.log(Level.WARNING, "Invalid index {0}.", index);
 			return null;
 		}
 		Repository repo = repoList.get(index-1);
@@ -451,8 +448,8 @@ public class Model {
 		}
 		
 		HttpPost request = new HttpPost(API_URL+String.format(EXT_REPOISSUES, repo.getOwner(), repo.getName()));
-		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		request.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
+		request.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_ACCEPT);
 		try{
 			request.setEntity(new StringEntity(jsonIssue.toString()));
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
@@ -516,8 +513,8 @@ public class Model {
 		}
 		
 		HttpPatch request = new HttpPatch(API_URL+String.format(EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber()));
-		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		request.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
+		request.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_ACCEPT);
 		try {
 			request.setEntity(new StringEntity(changes.toString()));
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
@@ -560,21 +557,27 @@ public class Model {
 	 */
 	public Issue addComment(JSONObject comment, String issueName, String repoName) throws FailedRequestException, MissingMessageException, RequestException, JSONException{
 		assert comment!=null && issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
-		Repository repo = getRepository(repoName);
-		if(repo==null){
+		Issue issue = null;
+		Repository repo;
+		
+		try{
+			issue = this.getIssue(issueName, repoName);
+			if(issue==null){
+				return null;
+			}
+			repo = issue.getRepository();
+		} catch(Exception e){
+			//Will not happen if called through program's workflow.
 			return null;
 		}
-		Issue issue = repo.getIssue(issueName);
-		if(issue==null){
-			return null;
-		}
+		
 		HttpPost request = new HttpPost(API_URL+String.format(EXT_ISSUECOMMENTS, repo.getOwner(), repo.getName(), issue.getNumber()));
-		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
+		request.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
+		request.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_ACCEPT);
 		try{
 			request.setEntity(new StringEntity(comment.toString()));
 			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-			if(!response.getStatusLine().toString().equals(RESPONSE_CREATED)){
+			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_CREATED)){
 				logger.log(Level.WARNING, "Request to comment issue failed.Response: {0}", response.getStatusLine().toString());
 				response.close();
 				throw new FailedRequestException();
@@ -590,7 +593,7 @@ public class Model {
 			return issue;
 		}  catch (JSONException e) {
 			logger.log(Level.WARNING, "Failed to parse comment from JSON in response message. Check GitHub to confirm changes.");
-			throw new JSONException(Constants.ERROR_UPDATELOCALCOPY);
+			throw new JSONException(Constants.ERROR_UPDATELOCALDATA);
 		} catch(IOException e){
 			logger.log(Level.SEVERE, "Failed to execute request to add comment to issue.");
 			throw new RequestException();

@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import structure.Repository;
 import Misc.RequestException;
 
 /**
@@ -75,5 +76,16 @@ public class ModelTest {
 		assertTrue(model.getIssue("-1", "ZiXian92/Orbital")==null);
 		assertTrue(model.getIssue("1000000", "ZiXian92/Orbital")==null);
 		assertFalse(model.getIssue("1", "ZiXian92/MyGitHubIssueTracker")==null);
+	}
+	
+	@Test
+	public void testAddRepository(){
+		Model model = Model.getInstance();
+		int numRepos = model.listRepositories().length;
+		Repository repo = new Repository("repo", "owner");
+		repo.setIsInitialized(true);
+		model.addRepository(repo);
+		assertEquals(numRepos+1, model.listRepositories().length);
+		assertEquals("repo", model.listRepositories()[numRepos]);
 	}
 }

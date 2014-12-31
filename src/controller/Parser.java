@@ -190,7 +190,7 @@ public class Parser {
 			return new SelectIssue(input, selectedRepo);
 		} else{
 			assert !selectedRepo.isEmpty() && !selectedIssue.isEmpty();
-			return new CommentIssue(input, selectedRepo, selectedIssue);
+			return new CommentIssue(input, selectedIssue, selectedRepo);
 		}
 	}
 }
