@@ -168,7 +168,6 @@ public class Issue {
 	 * @param obj The JSON object to be converted to an issue.
 	 * @param repo The repository this issue belongs to.
 	 * @return The issue represented by the given JSON object.
-	 * 			Returns null if obj is null or an error occurred while parsing the JSON object.
 	 * @throws JSONException If an error occurs when parsing JSON data.
 	 */
 	public static Issue makeInstance(JSONObject obj, Repository repo) throws JSONException{

@@ -54,7 +54,6 @@ public class Repository {
 	 * Creates a repository instance from the JSON object.
 	 * @param obj The JSON object to convert into Repository.
 	 * @return The repository represented by the given JSON object.
-	 * 			Returns null if obj is null or an error occurred while parsing JSON object.
 	 * @throws JSONException If an error occurred while parsing the given JSON object.
 	 */
 	public static Repository makeInstance(JSONObject obj) throws JSONException{
