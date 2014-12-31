@@ -2,9 +2,9 @@ package structure;
 
 import static org.junit.Assert.*;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import org.junit.Test;
 
 import Misc.Constants;
+import Misc.Util;
 
 /**
  * JUnit test clsss to test Issue class.
@@ -22,24 +23,14 @@ import Misc.Constants;
 public class IssueTest {
 	@Test
 	public void testMakeInstance() throws IOException, JSONException {
-		File file = new File("testFiles/issue7");
-		BufferedReader reader = new BufferedReader(new FileReader(file));
-		String input;
-		StringBuilder strBuilder = new StringBuilder();
-		while((input = reader.readLine())!=null){
-			strBuilder = strBuilder.append(input);
-		}
-		reader.close();
-		JSONObject issueObj = new JSONObject(strBuilder.toString());
-		File labelFile = new File("testFiles/labels");
-		reader = new BufferedReader(new FileReader(labelFile));
-		strBuilder = new StringBuilder();
-		while((input = reader.readLine())!=null){
-			strBuilder = strBuilder.append(input);
-		}
-		reader.close();
 		Repository repo = new Repository("testRepo", "noOwner");
-		JSONArray labelsObj = new JSONArray(strBuilder.toString());
+		
+		File file = new File("testFiles/issue7");
+		JSONObject issueObj = new JSONObject(Util.getJSONString(new BufferedInputStream(new FileInputStream(file))));
+		
+		File labelFile = new File("testFiles/labels");
+		JSONArray labelsObj = new JSONArray(Util.getJSONString(new BufferedInputStream(new FileInputStream(labelFile))));
+		
 		ArrayList<String> labels = new ArrayList<String>();
 		for(int i=0; i<labelsObj.length(); i++){
 			labels.add(labelsObj.getJSONObject(i).getString("name"));
@@ -49,6 +40,7 @@ public class IssueTest {
 		assertTrue(issue!=null);
 		assertEquals(7, issue.getNumber());
 		assertEquals("ZiXian92", issue.getAssignee());
+		assertFalse(issue.isInitialized());
 		assertEquals(1, issue.getLabels().length);
 		assertEquals("bug", issue.getLabels()[0]);
 		assertTrue(issue.getApplicableLabels()!=null);
