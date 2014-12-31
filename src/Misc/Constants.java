@@ -31,12 +31,13 @@ public class Constants {
 	
 	//Error messages
 	public static final String ERROR_ADDISSUE = "Error creating issue.";
+	public static final String ERROR_CLOSEISSUE = "Error closing issue.";
 	public static final String ERROR_EDITISSUE = "Error editing issue.";
 	public static final String ERROR_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
 	public static final String ERROR_FAILEDREQUEST = "Request failed.";
 	public static final String ERROR_INITIALIZEDATA  = "Error updating local data. Restart to try again.";
 	public static final String ERROR_INPUTPARSING = "Error parsing input. Please try again.";
-	public static final String ERROR_ISSUENOTFOUND = "Issue not found.";
+	public static final String ERROR_ISSUENOTFOUND = "Issue/Repository not found.";
 	public static final String ERROR_MISSINGMESSAGE = "Message missing in response. Unable to update local data.";
 	public static final String ERROR_PARSEINPUTTOJSON = "Error converting input to request.";
 	public static final String ERROR_REPOERROR = "Repository not found or error updating repository.";
@@ -47,5 +48,8 @@ public class Constants {
 	public static final String ERROR_UPDATEREPO = "An error occurred while updating the repository.";
 	
 	//Others
-	public static final String REPOFULLNAME = "%1$s/%2$s";
+	public static final String ISSUE_STATUSCLOSED = "closed";
+	public static final String ISSUE_STATUSOPEN = "open";
+	public static final String REPO_FULLNAME = "%1$s/%2$s";
+	
 }

@@ -188,6 +188,7 @@ public class Issue {
 			issue.addLabel(label);
 		}
 		issue.setNumComments(obj.getInt(Constants.KEY_COMMENTS));
+		issue.setStatus(obj.getString(Constants.KEY_STATUS));
 		return issue;
 	}
 	
@@ -396,10 +397,12 @@ public class Issue {
 	}
 	
 	/**
-	 * Closes this issue.
+	 * Sets the status of this issue.
+	 * @param status The status of this issue. Should only be Constants.ISSUE_STATUSOPEN or Constants.ISSUE_STATUSCLOSED.
 	 */
-	public void close(){
-		status = STATE_CLOSED;
+	public void setStatus(String status){
+		assert status!=null && (status.equals(Constants.ISSUE_STATUSOPEN) || status.equals(Constants.ISSUE_STATUSCLOSED));
+		this.status = status;
 	}
 	
 	/**

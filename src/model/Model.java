@@ -485,54 +485,6 @@ public class Model {
 	}
 	
 	/**
-	 * Closes the given issue from the given repository.
-	 * Does nothing if issueName and/or repoName are represent non-existent items,
-	 * an error occurs during parsing or request, or if the request is unsuccessful.
-	 * @param issueName The name or 1-based index of the issue in the given repository's list of issues.
-	 * @param repoName The name of the repository to close the issue.
-	 */
-	public void closeIssue(String issueName, String repoName){
-		assert issueName!=null && !issueName.isEmpty() && repoName!=null && !repoName.isEmpty();
-		Repository repo = getRepository(repoName);
-		if(repo==null){
-			logger.log(Level.SEVERE, "Unable to find repository {0}.", repoName);
-			return;
-		}
-		Issue issue, temp;
-		try{
-			issue = repo.getIssue(Integer.parseInt(issueName));
-		} catch(NumberFormatException e){
-			issue = repo.getIssue(issueName);
-		}
-		if(issue==null){
-			logger.log(Level.SEVERE, "Unable to find issue {0}.", issueName);
-			return;
-		}
-		
-		HttpPatch request = new HttpPatch(API_URL+String.format(EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber()));
-		request.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-		request.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-		temp = new Issue(issue);
-		temp.close();
-		
-		try {
-			JSONObject obj = temp.toJSONObject();
-			request.setEntity(new StringEntity(obj.toString()));
-			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-			if(response.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
-				issue.close();
-			} else{
-				logger.log(Level.WARNING, "Request to close issue {0} failed.", issue.getTitle());
-			}
-			response.close();
-		} catch (JSONException e) {
-			logger.log(Level.WARNING, "Failed to parse issue into JSON.");
-		} catch(IOException e){
-			logger.log(Level.SEVERE, "Failed to execute request to close issue.");
-		}
-	}
-	
-	/**
 	 * Edits the given issue with the given changes.
 	 * @param changes The JSON object representing the changes to be made.
 	 * @param repoName The name of the repository containing the issue to be edited.

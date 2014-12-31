@@ -41,7 +41,7 @@ public class Repository {
 		assert name!=null && !name.isEmpty() && owner!=null && !owner.isEmpty();
 		this.name = name;
 		this.owner = owner;
-		fullName = String.format(Constants.REPOFULLNAME, owner, name);
+		fullName = String.format(Constants.REPO_FULLNAME, owner, name);
 		issueList = new ArrayList<Issue>();
 		assignees = new ArrayList<String>();
 		indexList = new HashMap<String, Integer>();

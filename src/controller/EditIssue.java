@@ -36,9 +36,6 @@ public class EditIssue extends Command {
 	//For labels processing
 	private static final String LABEL_DELIM = ",";
 	
-	//Error messages
-	private static final String MSG_NOSUCHITEM = "Repository/Issue not found.";
-	
 	//Data members
 	private String repoName, issueName;
 	
@@ -99,8 +96,8 @@ public class EditIssue extends Command {
 			if(issue!=null){
 				view.updateView(issue);
 			} else{	//Either repository or issue is invalid
-				view.updateView(MSG_NOSUCHITEM);
-				new ListCommand().execute();
+				view.updateView(Constants.ERROR_ISSUENOTFOUND);
+				new SelectRepo(repoName).execute();
 			}
 		} catch(RequestException | FailedRequestException e){	//Issue is not edited on GitHub
 			view.updateView(Constants.ERROR_EDITISSUE);

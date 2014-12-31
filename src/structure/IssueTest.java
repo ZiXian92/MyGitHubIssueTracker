@@ -13,6 +13,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import Misc.Constants;
+
 /**
  * JUnit test clsss to test Issue class.
  * @author ZiXian92
@@ -36,12 +38,13 @@ public class IssueTest {
 			strBuilder = strBuilder.append(input);
 		}
 		reader.close();
+		Repository repo = new Repository("testRepo", "noOwner");
 		JSONArray labelsObj = new JSONArray(strBuilder.toString());
 		ArrayList<String> labels = new ArrayList<String>();
 		for(int i=0; i<labelsObj.length(); i++){
 			labels.add(labelsObj.getJSONObject(i).getString("name"));
 		}
-		Issue issue = Issue.makeInstance(issueObj);
+		Issue issue = Issue.makeInstance(issueObj, repo);
 		issue.setApplicableLabels(labels);
 		assertTrue(issue!=null);
 		assertEquals(7, issue.getNumber());
@@ -50,12 +53,14 @@ public class IssueTest {
 		assertEquals("bug", issue.getLabels()[0]);
 		assertTrue(issue.getApplicableLabels()!=null);
 		assertEquals(labelsObj.length(), issue.getApplicableLabels().length);
+		assertEquals(Constants.ISSUE_STATUSOPEN, issue.getStatus());
 		System.out.println(issue.toJSONObject().toString());
 	}
 	
 	@Test
 	public void testAddComment() throws JSONException{
-		Issue issue = new Issue("new issue", 7);
+		Repository repo = new Repository("testRepo", "noOwner");
+		Issue issue = new Issue("new issue", 7, repo);
 		assertTrue(issue.getComments()==null);
 		String commentString = "{\"id\": 3, \"user\":{\"login\": \"author1\"}, \"body\": \"New comment.\"}";
 		issue.addComment(new JSONObject(commentString));

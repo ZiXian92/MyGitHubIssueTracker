@@ -1,5 +1,14 @@
 package controller;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import structure.Issue;
+import Misc.Constants;
+import Misc.FailedRequestException;
+import Misc.MissingMessageException;
+import Misc.RequestException;
+
 /**
  * Defines the command to close the selected issue.
  * @author ZiXian92
@@ -21,8 +30,27 @@ public class CloseIssue extends Command {
 
 	@Override
 	public void execute() {
-		model.closeIssue(issueName, repoName);
-		new SelectRepo(repoName).execute();
+		JSONObject changes = new JSONObject();
+		try{
+			changes.put(Constants.KEY_STATUS, Constants.ISSUE_STATUSCLOSED);
+		} catch(JSONException e){
+			view.updateView(Constants.ERROR_PARSEINPUTTOJSON);
+		}
+		try{
+			Issue issue = model.editIssue(changes, repoName, issueName);
+			if(issue!=null){
+				view.updateView(issue);
+			} else{
+				view.updateView(Constants.ERROR_ISSUENOTFOUND);
+				new SelectRepo(repoName).execute();
+			}
+		} catch(RequestException | FailedRequestException e){
+			view.updateView(Constants.ERROR_CLOSEISSUE);
+			new SelectIssue(issueName, repoName).execute();
+		} catch(MissingMessageException | JSONException e){
+			view.updateView(Constants.ERROR_UPDATELOCALDATA);
+			new SelectIssue(issueName, repoName).execute();
+		}
 	}
 
 }
