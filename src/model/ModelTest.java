@@ -20,7 +20,7 @@ public class ModelTest {
 	public static void setup(){
 		Model model = Model.getInstance();
 		try {
-			model.loginUser("ZiXian92", "Nana7Nana");
+			model.loginUser("username", "password");
 			model.initialise();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -36,9 +36,9 @@ public class ModelTest {
 	public void testLoginUser() {
 		Model model = Model.getInstance();
 		try {
-			assertFalse(model.loginUser("zixian", "Nana7Nana"));
-			assertFalse(model.loginUser("ZiXian92", "nana7nana"));
-			assertTrue(model.loginUser("ZiXian92", "Nana7Nana"));	//correct password
+			assertFalse(model.loginUser("wrong username", "correct password"));
+			assertFalse(model.loginUser("correct username", "wrong password"));
+			assertTrue(model.loginUser("correct username", "correct password"));	//correct password
 		} catch (RequestException e) {
 			e.printStackTrace();
 		}
