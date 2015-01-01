@@ -223,7 +223,7 @@ public class Model {
 			JSONObject temp;
 			JSONArray arr = new JSONArray(Util.getJSONString(messageBody.getContent()));
 			response.close();
-			//loadLabelsThread.join();	//Wait for labels to be loaded.
+			loadLabelsThread.join();	//Wait for labels to be loaded.
 			int size = arr.length();
 			ArrayList<Issue> tempIssueList = new ArrayList<Issue>();
 			for(int i=0; i<size; i++){	//If JSON exception occurs here, no issue is added to repo.
@@ -232,10 +232,10 @@ public class Model {
 			}
 			repo.setIssues(tempIssueList);
 			repo.setIsInitialized(true);
-			//loadContribThread.join();
-		} /*catch (InterruptedException e) {
+			loadContribThread.join();
+		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-		}*/ catch(JSONException e){	//repo has no issue here.
+		} catch(JSONException e){	//repo has no issue here.
 			logger.log(Level.SEVERE, "Failed to parse JSON object(s)");
 			throw e;
 		} catch(IOException e){	//repo has no issue here.
@@ -378,6 +378,9 @@ public class Model {
 				}
 			}
 			notifyObservers(repoName, issue.getTitle());
+		} else{
+			logger.log(Level.SEVERE, "Failed to get issue {0} from repository {1}.",
+					new Object[] {issueName, repoName});
 		}
 		return issue;
 	}
@@ -470,13 +473,12 @@ public class Model {
 		try{
 			issue = getIssue(issueName, repoName);
 			if(issue==null){
-				logger.log(Level.SEVERE, "Failed to get issue {0} from repository {1}.",
-						new Object[] {issueName, repoName});
 				return null;
 			}
 			repo = issue.getRepository();
 		} catch(Exception e){
 			//Will not happen if this method is called using the workflow.
+			logger.log(Level.SEVERE, e.getMessage());
 			return null;
 		}
 		
@@ -533,6 +535,7 @@ public class Model {
 			repo = issue.getRepository();
 		} catch(Exception e){
 			//Will not happen if called through program's workflow.
+			logger.log(Level.SEVERE, e.getMessage());
 			return null;
 		}
 		
