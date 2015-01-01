@@ -435,12 +435,9 @@ public class Model {
 			return null;
 		}
 		
-		HttpPost request = new HttpPost(API_URL+String.format(EXT_REPOISSUES, repo.getOwner(), repo.getName()));
-		request.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
-		request.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_ACCEPT);
+		String url = API_URL+String.format(EXT_REPOISSUES, repo.getOwner(), repo.getName());
 		try{
-			request.setEntity(new StringEntity(jsonIssue.toString()));
-			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			CloseableHttpResponse response = Util.sendPostRequest(url, authCode, new StringEntity(jsonIssue.toString()));
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_CREATED)){
 				logger.log(Level.SEVERE, "Request to add new issue failed. Response: {0}", response.getStatusLine().toString());
 				response.close();
