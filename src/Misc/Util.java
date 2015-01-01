@@ -71,10 +71,40 @@ public class Util {
 	 * @param url The URL of the API method to call. Cannot be null.
 	 * @param authCode The Base64-encoded string of username and password to be used for basic authentication.
 	 * 					Cannot be null.
+	 * @return The corresponding Http response for the request.
 	 * @throws IOException If an error occurred during the request.
 	 * */
 	public static CloseableHttpResponse sendGetRequest(String url, String authCode) throws IOException{
+		assert url!=null && authCode!=null;
 		return sendRequest(HttpRequestType.GET, url, authCode, null);
+	}
+	
+	/**
+	 * Send a Http POST request to the given URL.
+	 * @param url The URL of the API method to call. Cannot be null.
+	 * @param authCode The Base64-encoded string of username and password to be used for basic authentication.
+	 * 					Cannot be null.
+	 * @param msg The message to be sent with the Http request.
+	 * @return The corresponding Http response for the request.
+	 * @throws IOException If an error occurred during the request.
+	 */
+	public static final CloseableHttpResponse sendPostRequest(String url, String authCode, HttpEntity msg) throws IOException{
+		assert url!=null && authCode!=null;
+		return sendRequest(HttpRequestType.POST, url, authCode, msg);
+	}
+	
+	/**
+	 * Send a Http PATCH request to the given URL.
+	 * @param url The URL of the API method to call. Cannot be null.
+	 * @param authCode The Base64-encoded string of username and password to be used for basic authentication.
+	 * 					Cannot be null.
+	 * @param msg The message to be sent with the Http request.
+	 * @return The corresponding Http response for the request.
+	 * @throws IOException If an error occurred during the request.
+	 */
+	public static final CloseableHttpResponse sendPatchRequest(String url, String authCode, HttpEntity msg) throws IOException{
+		assert url!=null && authCode!=null;
+		return sendRequest(HttpRequestType.PATCH, url, authCode, msg);
 	}
 	
 	/**

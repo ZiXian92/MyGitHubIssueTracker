@@ -100,16 +100,11 @@ public class Model {
 			return false;
 		}
 		
-		//Creates the request.
-		HttpGet request = new HttpGet(API_URL+EXT_USER);
-		request.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_ACCEPT);
-
 		//Encoding for basic authentication is to be done on username:password.
 		String code = new String(Base64.encodeBase64((username+":"+password).getBytes()));
-		request.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, code));
 
 		try{
-			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			CloseableHttpResponse response = Util.sendGetRequest(API_URL+EXT_USER, code);
 			String responseStatus = response.getStatusLine().toString();
 			response.close();
 			if(responseStatus.equals(Constants.RESPONSE_OK)){
@@ -227,12 +222,8 @@ public class Model {
 		Thread loadLabelsThread = new Thread(new LoadLabelsThread(repo, labelsRequest));
 		loadLabelsThread.run();*/
 		
-		//Sends request for issues under this repository.
-		HttpGet issueRequest = new HttpGet(API_URL+String.format(EXT_REPOISSUES, owner, repoName));
-		issueRequest.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
-		issueRequest.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_ACCEPT);
 		try{
-			CloseableHttpResponse response = HttpClients.createDefault().execute(issueRequest);
+			CloseableHttpResponse response = Util.sendGetRequest(API_URL+String.format(EXT_REPOISSUES, owner, repoName), authCode);
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
 				logger.log(Level.WARNING, "Failed to get issues for repository {0}.\nResponse: {1}",
 						new Object[] {repoName, response.getStatusLine().toString()});
@@ -281,11 +272,8 @@ public class Model {
 	 */
 	public void updateIssue(Issue issue, Repository repo) throws FailedRequestException, RequestException, MissingMessageException, JSONException{
 		assert repo!=null && issue!=null;
-		HttpGet request = new HttpGet(API_URL+String.format(EXT_COMMENTS, repo.getOwner(), repo.getName(), issue.getNumber()));
-		request.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_ACCEPT);
-		request.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
 		try{
-			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			CloseableHttpResponse response = Util.sendGetRequest(API_URL+String.format(EXT_COMMENTS, repo.getOwner(), repo.getName(), issue.getNumber()), authCode);
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
 				logger.log(Level.WARNING, "Failed to get comments.");
 				response.close();
