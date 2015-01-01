@@ -18,12 +18,6 @@ import structure.Issue;
  * @author ZiXian92
  */
 public class EditIssue extends Command {
-	//JSON key values
-	private static final String KEY_TITLE = "title";
-	private static final String KEY_BODY = "body";
-	private static final String KEY_ASSIGNEE = "assignee";
-	private static final String KEY_LABELS = "labels";
-	
 	//Prompt messages
 	private static final String PROMPT_MESSAGE = "For the following fields, enter nothing to retain current "+
 												"value, empty spaces(only) to erase, new values to "+
@@ -60,29 +54,29 @@ public class EditIssue extends Command {
 			printPrompt(PROMPT_TITLE);
 			input = reader.readLine().trim();
 			if(!input.isEmpty()){
-				obj.put(KEY_TITLE, input);
+				obj.put(Constants.KEY_ISSUETITLE, input);
 			}
 			
 			printPrompt(PROMPT_CONTENT);
 			input = reader.readLine();
 			if(!input.isEmpty()){
-				obj.put(KEY_BODY, input.trim());
+				obj.put(Constants.KEY_CONTENT, input.trim());
 			}
 			
 			printPrompt(PROMPT_ASSIGNEE);
 			if(!(input = reader.readLine()).isEmpty()){
 				input = input.trim();
-				obj.put(KEY_ASSIGNEE, input.isEmpty()? JSONObject.NULL: input);
+				obj.put(Constants.KEY_ASSIGNEE, input.isEmpty()? JSONObject.NULL: input);
 			}
 			
 			printPrompt(PROMPT_LABELS);
 			if(!(input = reader.readLine()).isEmpty()){
-				obj.put(KEY_LABELS, new JSONArray());
+				obj.put(Constants.KEY_LABELS, new JSONArray());
 				if(!(input = input.trim()).isEmpty()){
 					String[] labels = input.split(LABEL_DELIM);
 					int numLabels = labels.length;
 					for(int i=0; i<numLabels; i++){
-						obj.append(KEY_LABELS, labels[i].trim());
+						obj.append(Constants.KEY_LABELS, labels[i].trim());
 					}
 				}
 			}

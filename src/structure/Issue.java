@@ -14,10 +14,6 @@ import Misc.Util;
  * @author ZiXian92
  */
 public class Issue {
-	//Allowable states
-	public static final String STATE_OPEN = "open";
-	public static final String STATE_CLOSED = "closed";
-	
 	//Output formatting
 	private static final String LINE_DELIM = "\n";
 	private static final String SEPARATOR = "\t";
@@ -127,7 +123,7 @@ public class Issue {
 		assert title!=null && !title.isEmpty() && repo!=null;
 		this.title = title;
 		this.number = number;
-		this.status = STATE_OPEN;
+		this.status = Constants.ISSUE_STATUSOPEN;
 		this.applicableLabels = new ArrayList<String>();
 		this.labels = new ArrayList<String>();
 		this.comments = new ArrayList<Comment>();

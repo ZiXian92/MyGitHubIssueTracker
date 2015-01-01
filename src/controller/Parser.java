@@ -1,5 +1,6 @@
 package controller;
 
+import Misc.Constants;
 import Misc.InvalidContextException;
 
 /**
@@ -31,7 +32,7 @@ public class Parser {
 			assert !selectedIssue.isEmpty();
 		}
 		if(input==null || (input = input.trim()).isEmpty()){
-			throw new IllegalArgumentException("Empty command.");
+			throw new IllegalArgumentException(Constants.ERROR_EMPTYCOMMAND);
 		}
 		String commandWord = extractFirstWord(input);
 		switch(CommandType.getCommandType(commandWord)){
@@ -80,12 +81,12 @@ public class Parser {
 	private Command createAddCommand(String input, String selectedRepo) throws IllegalArgumentException, InvalidContextException {
 		assert input!=null && !input.isEmpty();
 		if(selectedRepo==null){
-			throw new InvalidContextException("Inapplicable action. Please select a repository.");
+			throw new InvalidContextException(Constants.ERROR_REPONOTSELECTED);
 		}
 		assert !selectedRepo.isEmpty();
 		input = removeFirstWord(input);
 		if(input==null || input.isEmpty()){
-			throw new IllegalArgumentException("No title given.");
+			throw new IllegalArgumentException(Constants.ERROR_MISSINGTITLE);
 		}
 		return new AddIssue(input, selectedRepo);
 	}
@@ -100,7 +101,7 @@ public class Parser {
 	 */
 	private Command createBackCommand(String selectedRepo, String selectedIssue) throws InvalidContextException {
 		if(selectedRepo==null){
-			throw new InvalidContextException("No repository is selected. Unable to go further up.");
+			throw new InvalidContextException(Constants.ERROR_INAPPLICABLEBACKCOMMAND);
 		} else if(selectedIssue==null){
 			return new ListCommand();
 		} else{
@@ -122,14 +123,14 @@ public class Parser {
 		String parameter;
 		assert input!=null;
 		if((parameter = removeFirstWord(input))==null || parameter.isEmpty()){
-			throw new IllegalArgumentException("Invalid command. No parameter passed.");
+			throw new IllegalArgumentException(Constants.ERROR_NOPARAMETER);
 		} else if(selectedRepo==null){
 			return new SelectRepo(parameter);
 		} else if(selectedIssue==null){
 			assert !selectedRepo.isEmpty();
 			return new SelectIssue(parameter, selectedRepo);
 		} else{
-			throw new InvalidContextException("Select command not allowed when issue is selected.");
+			throw new InvalidContextException(Constants.ERROR_INAPPLICABLESELECT);
 		}
 	}
 	
@@ -146,13 +147,13 @@ public class Parser {
 	private Command createCloseCommand(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException, InvalidContextException {
 		assert input!=null && !input.isEmpty();
 		if(selectedRepo==null){
-			throw new InvalidContextException("No repository selected.");
+			throw new InvalidContextException(Constants.ERROR_REPONOTSELECTED);
 		}
 		assert !selectedRepo.isEmpty();
 		if(selectedIssue==null){
 			input = removeFirstWord(input);
 			if(input==null || input.isEmpty()){
-				throw new IllegalArgumentException("No issue selected.");
+				throw new IllegalArgumentException(Constants.ERROR_ISSUENOTSELECTED);
 			}
 			return new CloseIssue(selectedRepo, input);
 		}
@@ -169,7 +170,7 @@ public class Parser {
 	 */
 	private Command createEditIssueCommand(String selectedRepo, String selectedIssue) throws InvalidContextException{
 		if(selectedRepo==null || selectedIssue==null){
-			throw new InvalidContextException("No issue selected.");
+			throw new InvalidContextException(Constants.ERROR_ISSUENOTSELECTED);
 		}
 		assert !selectedRepo.isEmpty() && !selectedIssue.isEmpty();
 		return new EditIssue(selectedRepo, selectedIssue);

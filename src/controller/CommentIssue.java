@@ -14,8 +14,6 @@ import structure.Issue;
  * @author ZiXian92
  */
 public class CommentIssue extends Command {
-	private static final String KEY_BODY = "body";
-	
 	//Data members
 	private String issueName, repoName, comment;
 
@@ -36,9 +34,9 @@ public class CommentIssue extends Command {
 	public void execute() {
 		JSONObject obj = new JSONObject();
 		try {
-			obj.put(KEY_BODY, comment);
+			obj.put(Constants.KEY_CONTENT, comment);
 		} catch (JSONException e) {
-			view.updateView("Error parsing comment.");
+			view.updateView(Constants.ERROR_INPUTPARSING);
 			return;
 		}
 		try {
@@ -57,5 +55,4 @@ public class CommentIssue extends Command {
 			new SelectIssue(issueName, repoName).execute();
 		}
 	}
-
 }
