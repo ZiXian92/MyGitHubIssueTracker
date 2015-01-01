@@ -90,7 +90,7 @@ public class Controller implements Observer {
 			input = "";
 		}
 		try{
-			Command cmd = parser.parse(input, selectedRepository, selectedIssue);
+			Command cmd = parser.parse(input, selectedIssue, selectedRepository);
 			logger.log(Level.INFO, "Executing {0}", input);
 			cmd.execute();
 		} catch(IllegalArgumentException | InvalidContextException e){

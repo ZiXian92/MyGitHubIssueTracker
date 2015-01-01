@@ -44,6 +44,7 @@ public class Constants {
 	public static final String ERROR_EMPTYCOMMAND = "Empty command.";
 	public static final String ERROR_FAILEDLOGIN = "Login failed. Either the username and/or password is incorrect.";
 	public static final String ERROR_FAILEDREQUEST = "Request failed.";
+	public static final String ERROR_INAPPLICABLEADDCOMMAND = "Adding issue is not allowed while an issue is selected.";
 	public static final String ERROR_INAPPLICABLEBACKCOMMAND = "No repository is selected. Unable to go further up.";
 	public static final String ERROR_INAPPLICABLESELECT = "Select command not allowed when issue is selected.";
 	public static final String ERROR_INITIALIZEDATA  = "Error updating local data. Restart to try again.";

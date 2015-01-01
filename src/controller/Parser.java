@@ -18,13 +18,13 @@ public class Parser {
 	/**
 	 * Parses the given input and generates the appropriate Command object.
 	 * @param input The user input to execute. Cannot be null or an empty string.
-	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
 	 * @param selectedIssue The currently selected issue. Cannot be an empty string.
+	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
 	 * @return The appropriate Command object based on the given command and the program's state.
 	 * @throws IllegalArgumentException if input is an invalid command.
 	 * @throws InvalidContextException If the command is invalid for the context.
 	 */
-	public Command parse(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException, InvalidContextException{
+	public Command parse(String input, String selectedIssue, String selectedRepo) throws IllegalArgumentException, InvalidContextException{
 		if(selectedRepo!=null){
 			assert !selectedRepo.isEmpty();
 		}
@@ -36,13 +36,13 @@ public class Parser {
 		}
 		String commandWord = extractFirstWord(input);
 		switch(CommandType.getCommandType(commandWord)){
-			case ADD: return createAddCommand(input, selectedRepo);
-			case EDIT: return createEditIssueCommand(selectedRepo, selectedIssue);
+			case ADD: return createAddCommand(input, selectedIssue, selectedRepo);
+			case EDIT: return createEditIssueCommand(selectedIssue, selectedRepo);
 			case LIST: return new ListCommand();
-			case SELECT: return createSelectCommand(input, selectedRepo, selectedIssue);
-			case BACK: return createBackCommand(selectedRepo, selectedIssue);
-			case CLOSE: return createCloseCommand(input, selectedRepo, selectedIssue);
-			default: return makeAppropriateCommand(input, selectedRepo, selectedIssue);
+			case SELECT: return createSelectCommand(input, selectedIssue, selectedRepo);
+			case BACK: return createBackCommand(selectedIssue, selectedRepo);
+			case CLOSE: return createCloseCommand(input, selectedIssue, selectedRepo);
+			default: return makeAppropriateCommand(input, selectedIssue, selectedRepo);
 		}
 	}
 
@@ -78,12 +78,15 @@ public class Parser {
 	 * @throws IllegalArgumentException If input only contains the command word.
 	 * @throws InvalidContextException If no repository is selected.
 	 * */
-	private Command createAddCommand(String input, String selectedRepo) throws IllegalArgumentException, InvalidContextException {
+	private Command createAddCommand(String input, String selectedIssue, String selectedRepo) throws IllegalArgumentException, InvalidContextException {
 		assert input!=null && !input.isEmpty();
 		if(selectedRepo==null){
 			throw new InvalidContextException(Constants.ERROR_REPONOTSELECTED);
 		}
 		assert !selectedRepo.isEmpty();
+		if(selectedIssue!=null){
+			throw new InvalidContextException(Constants.ERROR_INAPPLICABLEADDCOMMAND);
+		}
 		input = removeFirstWord(input);
 		if(input==null || input.isEmpty()){
 			throw new IllegalArgumentException(Constants.ERROR_MISSINGTITLE);
@@ -93,13 +96,13 @@ public class Parser {
 
 	/**
 	 * Creates the appropriate command object to execute the back command.
-	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
 	 * @param selectedIssue The currently selected issue. Cannot be an empty string.
+	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
 	 * @return A Command to go up 1 level.
 	 * @throws IllegalArgumentException if the context in which back command is issued is invalid.
 	 * @throws InvalidContextException If no repository is selected.
 	 */
-	private Command createBackCommand(String selectedRepo, String selectedIssue) throws InvalidContextException {
+	private Command createBackCommand(String selectedIssue, String selectedRepo) throws InvalidContextException {
 		if(selectedRepo==null){
 			throw new InvalidContextException(Constants.ERROR_INAPPLICABLEBACKCOMMAND);
 		} else if(selectedIssue==null){
@@ -112,14 +115,14 @@ public class Parser {
 	
 	/**
 	 * Creates the appropriate select command.
-	 * @param input The command input
-	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
+	 * @param input The command input.
 	 * @param selectedIssue The currently selected issue. Cannot be an empty string.
+	 * @param selectedRepo The currently selected repository. Cannot be an empty string.
 	 * @return SelectRepo or SelectIssue comamnd.
 	 * @throws IllegalArgumentException If input contains only the command word.
 	 * @throws InvalidContextException If an issue is already selected.
 	 */
-	private Command createSelectCommand(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException, InvalidContextException {
+	private Command createSelectCommand(String input, String selectedIssue, String selectedRepo) throws IllegalArgumentException, InvalidContextException {
 		String parameter;
 		assert input!=null;
 		if((parameter = removeFirstWord(input))==null || parameter.isEmpty()){
@@ -137,14 +140,14 @@ public class Parser {
 	/**
 	 * Creates the appropriate command for closing an issue.
 	 * @param input The command input. Cannot be null or empty string.
-	 * @param selectedRepo The name of the selected repository. Cannot be an empty string.
 	 * @param selectedIssue The name of the selected issue. Cannot be an empty string.
+	 * @param selectedRepo The name of the selected repository. Cannot be an empty string.
 	 * @return A Command to close the given issue.
 	 * @throws IllegalArgumentException If there is insufficient parameters in input or the context
 	 * 									in which this command is given is invalid.
 	 * @throws InvalidContextException If the context is invalid.
 	 */
-	private Command createCloseCommand(String input, String selectedRepo, String selectedIssue) throws IllegalArgumentException, InvalidContextException {
+	private Command createCloseCommand(String input, String selectedIssue, String selectedRepo) throws IllegalArgumentException, InvalidContextException {
 		assert input!=null && !input.isEmpty();
 		if(selectedRepo==null){
 			throw new InvalidContextException(Constants.ERROR_REPONOTSELECTED);
@@ -155,35 +158,35 @@ public class Parser {
 			if(input==null || input.isEmpty()){
 				throw new IllegalArgumentException(Constants.ERROR_ISSUENOTSELECTED);
 			}
-			return new CloseIssue(selectedRepo, input);
+			return new CloseIssue(input, selectedRepo);
 		}
 		assert !selectedIssue.isEmpty();
-		return new CloseIssue(selectedRepo, selectedIssue);
+		return new CloseIssue(selectedIssue, selectedRepo);
 	}
 	
 	/**
 	 * Creates a command to edit an issue.
-	 * @param selectedRepo The name of the repository in which an issue is to be edited.
 	 * @param selectedIssue The name of the issue to be edited.
+	 * @param selectedRepo The name of the repository in which an issue is to be edited.
 	 * @return A Command to edit the given issue.
 	 * @throws InvalidContextException If no issue is selected.
 	 */
-	private Command createEditIssueCommand(String selectedRepo, String selectedIssue) throws InvalidContextException{
+	private Command createEditIssueCommand(String selectedIssue, String selectedRepo) throws InvalidContextException{
 		if(selectedRepo==null || selectedIssue==null){
 			throw new InvalidContextException(Constants.ERROR_ISSUENOTSELECTED);
 		}
 		assert !selectedRepo.isEmpty() && !selectedIssue.isEmpty();
-		return new EditIssue(selectedRepo, selectedIssue);
+		return new EditIssue(selectedIssue, selectedRepo);
 	}
 	
 	/**
 	 * Makes the appropriate command based on the input parameters.
 	 * @param input The input parameter string.
-	 * @param selectedRepo The name of the currently selected repository. Can be null but not an empty string.
 	 * @param selectedIssue The name of the currently selected issue. Can be null but not an empty string.
+	 * @param selectedRepo The name of the currently selected repository. Can be null but not an empty string.
 	 * @return A Command that is appropriate for the current context.
 	 */
-	private Command makeAppropriateCommand(String input, String selectedRepo, String selectedIssue) {
+	private Command makeAppropriateCommand(String input, String selectedIssue, String selectedRepo) {
 		if(selectedRepo==null){
 			return new SelectRepo(input);
 		} else if(selectedIssue==null){

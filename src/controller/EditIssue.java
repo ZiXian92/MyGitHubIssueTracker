@@ -38,7 +38,7 @@ public class EditIssue extends Command {
 	 * @param repoName The name of the repository from which to edit the issue. Cannot be null or empty string.
 	 * @param issueName The name of the issue to edit. Cannot be null or empty string.
 	 */
-	public EditIssue(String repoName, String issueName){
+	public EditIssue(String issueName, String repoName){
 		assert repoName!=null && !repoName.isEmpty() && issueName!=null && !issueName.isEmpty();
 		this.repoName = repoName;
 		this.issueName = issueName;
@@ -86,7 +86,7 @@ public class EditIssue extends Command {
 			return;
 		}
 		try {	//Main execution
-			Issue issue = model.editIssue(obj, repoName, issueName);
+			Issue issue = model.editIssue(obj, issueName, repoName);
 			if(issue!=null){
 				view.updateView(issue);
 			} else{	//Either repository or issue is invalid

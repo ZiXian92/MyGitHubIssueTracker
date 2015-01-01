@@ -22,7 +22,7 @@ public class CloseIssue extends Command {
 	 * @param repoName The name of the repository in which to close the issue. Cannot be null or an empty string.
 	 * @param issueName The issue to close. Cannot be null or an empty string.
 	 */
-	public CloseIssue(String repoName, String issueName){
+	public CloseIssue(String issueName, String repoName){
 		assert repoName!=null && !repoName.isEmpty() && issueName!=null && !issueName.isEmpty();
 		this.repoName = repoName;
 		this.issueName = issueName;
@@ -37,7 +37,7 @@ public class CloseIssue extends Command {
 			view.updateView(Constants.ERROR_PARSEINPUTTOJSON);
 		}
 		try{
-			Issue issue = model.editIssue(changes, repoName, issueName);
+			Issue issue = model.editIssue(changes, issueName, repoName);
 			if(issue!=null){
 				view.updateView(issue);
 			} else{

@@ -11,8 +11,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
@@ -479,7 +477,7 @@ public class Model {
 	 * @throws FailedRequestException If the request fails
 	 * @throws MissingMessageException If the message containing the edited issue is missing from the response.
 	 */
-	public Issue editIssue(JSONObject changes, String repoName, String issueName) throws JSONException, RequestException, FailedRequestException, MissingMessageException {
+	public Issue editIssue(JSONObject changes, String issueName, String repoName) throws JSONException, RequestException, FailedRequestException, MissingMessageException {
 		assert changes!=null && repoName!=null && !repoName.isEmpty() && issueName!=null && !issueName.isEmpty();
 		
 		Repository repo;
