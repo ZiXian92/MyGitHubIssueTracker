@@ -70,12 +70,12 @@ public class Util {
 	 * Sends a Http GET request to the given URL.
 	 * @param url The URL of the API method to call. Cannot be null.
 	 * @param authCode The Base64-encoded string of username and password to be used for basic authentication.
-	 * 					Cannot be null.
+	 * 					Null represents no authentication.
 	 * @return The corresponding Http response for the request.
 	 * @throws IOException If an error occurred during the request.
 	 * */
 	public static CloseableHttpResponse sendGetRequest(String url, String authCode) throws IOException{
-		assert url!=null && authCode!=null;
+		assert url!=null;
 		return sendRequest(HttpRequestType.GET, url, authCode, null);
 	}
 	
@@ -83,7 +83,7 @@ public class Util {
 	 * Send a Http POST request to the given URL.
 	 * @param url The URL of the API method to call. Cannot be null.
 	 * @param authCode The Base64-encoded string of username and password to be used for basic authentication.
-	 * 					Cannot be null.
+	 * 					Null represents no authentication.
 	 * @param msg The message to be sent with the Http request.
 	 * @return The corresponding Http response for the request.
 	 * @throws IOException If an error occurred during the request.
@@ -97,7 +97,7 @@ public class Util {
 	 * Send a Http PATCH request to the given URL.
 	 * @param url The URL of the API method to call. Cannot be null.
 	 * @param authCode The Base64-encoded string of username and password to be used for basic authentication.
-	 * 					Cannot be null.
+	 * 					Null represents no authentication.
 	 * @param msg The message to be sent with the Http request.
 	 * @return The corresponding Http response for the request.
 	 * @throws IOException If an error occurred during the request.
@@ -118,7 +118,7 @@ public class Util {
 	 */
 	private static CloseableHttpResponse sendRequest(HttpRequestType reqType,
 			String url, String authCode, HttpEntity msg) throws IOException {
-		assert reqType!=null && url!=null && authCode!=null;
+		assert reqType!=null && url!=null;
 		HttpUriRequest req;
 		switch(reqType){
 			case GET: req = new HttpGet(url);
@@ -136,7 +136,9 @@ public class Util {
 			default: return null;	//will not happen
 		}
 		req.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_ACCEPT);
-		req.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
+		if(authCode!=null && !authCode.isEmpty()){
+			req.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
+		}
 		return HttpClients.createDefault().execute(req);
 	}
 }

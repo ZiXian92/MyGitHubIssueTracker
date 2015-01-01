@@ -207,11 +207,8 @@ public class Model {
 		String owner = repo.getOwner();
 		
 		//Gets the list of contributors concurrently.
-		/*HttpGet contributorRequest = new HttpGet(API_URL+String.format(EXT_CONTRIBUTORS, owner, repoName));
-		contributorRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-		contributorRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-		Thread loadContribThread = new Thread(new LoadContributorsThread(repo, contributorRequest));
-		loadContribThread.run();*/
+		Thread loadContribThread = new Thread(new LoadContributorsThread(repo));
+		loadContribThread.run();
 		
 		//Gets the list of labels used in this repository.
 		/*HttpGet labelsRequest = new HttpGet(API_URL+String.format(EXT_REPOLABELS, owner, repoName));

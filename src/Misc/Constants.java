@@ -5,6 +5,17 @@ package Misc;
  * @author ZiXian92
  */
 public class Constants {
+	//API URL and extensions
+	public static final String API_URL = "https://api.github.com";
+	public static final String EXT_USER = "/user";
+	public static final String EXT_REPOS = "/user/repos";
+	public static final String EXT_REPOISSUES = "/repos/%1$s/%2$s/issues";
+	public static final String EXT_REPOLABELS = "/repos/%1$s/%2$s/labels";
+	public static final String EXT_CONTRIBUTORS = "/repos/%1$s/%2$s/contributors";
+	public static final String EXT_EDITISSUE = "/repos/%1$s/%2$s/issues/%3$d";
+	public static final String EXT_ISSUECOMMENTS = "/repos/%1$s/%2$s/issues/%3$d/comments";
+	public static final String EXT_COMMENTS = "/repos/%1$s/%2$s/issues/%3$d/comments";
+	
 	//Http headers and values
 	public static final String HEADER_ACCEPT = "Accept";
 	public static final String HEADER_AUTH = "Authorization";

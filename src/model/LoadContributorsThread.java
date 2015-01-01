@@ -3,14 +3,16 @@ package model;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import Misc.Constants;
+import Misc.Util;
 import structure.Repository;
 
 /**
@@ -18,34 +20,37 @@ import structure.Repository;
  * @author ZiXian92
  */
 public class LoadContributorsThread implements Runnable {
-	private static final String KEY_USERNAME = "login";
-	private static final String RESPONSE_OK = "HTTP/1.1 200 OK";
+	//For logging purpose
+	private static Logger logger = Logger.getLogger("com.MyGitHubIssueTracker.model.LoadContributorsThread");
 	
 	//Data members
 	private Repository repo;
-	private HttpGet request;
 	
 	/**
 	 * Creates a Runnable instance to fetch the given repository's contributors in another thread.
 	 * @param repo The repository to load contributors into.
 	 * @param request The request to be executed to fetch contributor data.
 	 */
-	public LoadContributorsThread(Repository repo, HttpGet request){
-		assert repo!=null && request!=null;
+	public LoadContributorsThread(Repository repo){
+		assert repo!=null;
 		this.repo = repo;
-		this.request = request;
+		logger.setUseParentHandlers(true);
 	}
 
 	@Override
 	public void run() {
+		String url = Constants.API_URL+String.format(Constants.EXT_CONTRIBUTORS, repo.getOwner(), repo.getName());
 		try{
-			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-			if(!response.getStatusLine().toString().equals(RESPONSE_OK)){
+			CloseableHttpResponse response = Util.sendGetRequest(url, null);
+			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
+				logger.log(Level.WARNING, "Request to get contributors failed.\nResponse: {0}",
+						response.getStatusLine().toString());
 				response.close();
 				return;
 			}
 			HttpEntity messageBody = response.getEntity();
 			if(messageBody==null){
+				logger.log(Level.WARNING, "Missing message from response.");
 				response.close();
 				return;
 			}
@@ -60,12 +65,13 @@ public class LoadContributorsThread implements Runnable {
 			JSONArray arr = new JSONArray(strBuilder.toString());
 			int numContributors = arr.length();
 			for(int i=0; i<numContributors; i++){
-				repo.addAssignee(arr.getJSONObject(i).getString(KEY_USERNAME));
+				repo.addAssignee(arr.getJSONObject(i).getString(Constants.KEY_USERLOGIN));
 			}
-		} catch(JSONException e){
-			
+		} catch(JSONException e){	//Will not happen unless JSON format of GitHub API changes.
+			logger.log(Level.WARNING, "Error parsing JSON data.");
 		} catch (IOException e) {
-			
+			//Happens if url is invalid or something unexpected happens.
+			logger.log(Level.WARNING, "Error executing request for contibutors.");
 		}
 	}
 	
