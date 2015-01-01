@@ -24,6 +24,7 @@ public class Issue {
 	private static final String FIELD_NUMBER = "Number: ";
 	private static final String FIELD_LABELS = "Labels: ";
 	private static final String FIELD_COMMENTS = "Comments: ";
+	private static final String VAL_NOASSIGNEE = "No assignee";
 
 	//Data members
 	private String title, status, content, assignee;
@@ -448,7 +449,7 @@ public class Issue {
 		StringBuilder strBuilder = new StringBuilder(status);
 		strBuilder = strBuilder.append(SEPARATOR);
 		strBuilder = strBuilder.append(title).append(SEPARATOR);
-		strBuilder = strBuilder.append(assignee);
+		strBuilder = strBuilder.append(assignee==null? VAL_NOASSIGNEE: assignee);
 		return strBuilder.toString();
 	}
 	

@@ -59,8 +59,9 @@ public class Controller implements Observer {
 			if(model.loginUser(username, password)){
 				logger.log(Level.INFO, "Login success!");
 				view.updateView(String.format(Constants.MSG_LOGGEDIN, username));
+				return true;
 			}
-			return true;
+			return false;
 		} catch(RequestException e){
 			view.updateView(e.getMessage());
 			return false;
