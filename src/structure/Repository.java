@@ -167,6 +167,15 @@ public class Repository {
 	}
 	
 	/**
+	 * Sets the assignees for this Repository.
+	 * @param assignees The list of assignees for this Repository.
+	 */
+	public void setAssignees(ArrayList<String> assignees){
+		assert assignees!=null;
+		this.assignees = assignees;
+	}
+	
+	/**
 	 * Adds a new label to this repository.
 	 * @param label The new label to be added.
 	 */
@@ -174,6 +183,15 @@ public class Repository {
 		if(label!=null && !label.isEmpty()){
 			labels.add(label);
 		}
+	}
+	
+	/**
+	 * Sets the labels for this Repository.
+	 * @param labels The labels for this Repository.
+	 */
+	public void setLabels(ArrayList<String> labels){
+		assert labels!=null;
+		this.labels = labels;
 	}
 	
 	/**

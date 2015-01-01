@@ -32,21 +32,8 @@ import structure.Repository;
  * @author ZiXian92
  */
 public class Model {
-	//API URL and extensions
-	private static final String API_URL = "https://api.github.com";
-	private static final String EXT_USER = "/user";
-	private static final String EXT_REPOS = "/user/repos";
-	private static final String EXT_REPOISSUES = "/repos/%1$s/%2$s/issues";
-	private static final String EXT_REPOLABELS = "/repos/%1$s/%2$s/labels";
-	private static final String EXT_CONTRIBUTORS = "/repos/%1$s/%2$s/contributors";
-	private static final String EXT_EDITISSUE = "/repos/%1$s/%2$s/issues/%3$d";
-	private static final String EXT_ISSUECOMMENTS = "/repos/%1$s/%2$s/issues/%3$d/comments";
-	private static final String EXT_COMMENTS = "/repos/%1$s/%2$s/issues/%3$d/comments";
-
-	//Request headers and values
-	
-
-	private static Model instance = null;	//The single instance of this class
+	//The single instance of this class
+	private static Model instance = null;
 	
 	//For logging
 	private static final Logger logger = Logger.getLogger("com.MyGitHubIssueTracker.model");
@@ -100,9 +87,9 @@ public class Model {
 		
 		//Encoding for basic authentication is to be done on username:password.
 		String code = new String(Base64.encodeBase64((username+":"+password).getBytes()));
-
+		String url = Constants.API_URL+Constants.EXT_USER;
 		try{
-			CloseableHttpResponse response = Util.sendGetRequest(API_URL+EXT_USER, code);
+			CloseableHttpResponse response = Util.sendGetRequest(url, code);
 			String responseStatus = response.getStatusLine().toString();
 			response.close();
 			if(responseStatus.equals(Constants.RESPONSE_OK)){
@@ -133,7 +120,8 @@ public class Model {
 		numRepos = 0;
 		
 		//Send request to get list of repositories.
-		HttpGet request = new HttpGet(API_URL+EXT_REPOS);
+		String url = Constants.API_URL+Constants.EXT_REPOS;
+		HttpGet request = new HttpGet(url);
 		request.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_PREVIEWACCEPT);
 		request.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
 		try{
@@ -211,14 +199,13 @@ public class Model {
 		loadContribThread.run();
 		
 		//Gets the list of labels used in this repository.
-		/*HttpGet labelsRequest = new HttpGet(API_URL+String.format(EXT_REPOLABELS, owner, repoName));
-		labelsRequest.addHeader(HEADER_AUTH, String.format(VAL_AUTH, authCode));
-		labelsRequest.addHeader(HEADER_ACCEPT, VAL_ACCEPT);
-		Thread loadLabelsThread = new Thread(new LoadLabelsThread(repo, labelsRequest));
-		loadLabelsThread.run();*/
+		Thread loadLabelsThread = new Thread(new LoadLabelsThread(repo));
+		loadLabelsThread.run();
+		
+		String url = Constants.API_URL+String.format(Constants.EXT_REPOISSUES, owner, repoName);
 		
 		try{
-			CloseableHttpResponse response = Util.sendGetRequest(API_URL+String.format(EXT_REPOISSUES, owner, repoName), authCode);
+			CloseableHttpResponse response = Util.sendGetRequest(url, authCode);
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
 				logger.log(Level.WARNING, "Failed to get issues for repository {0}.\nResponse: {1}",
 						new Object[] {repoName, response.getStatusLine().toString()});
@@ -267,8 +254,9 @@ public class Model {
 	 */
 	public void updateIssue(Issue issue, Repository repo) throws FailedRequestException, RequestException, MissingMessageException, JSONException{
 		assert repo!=null && issue!=null;
+		String url = Constants.API_URL+String.format(Constants.EXT_COMMENTS, repo.getOwner(), repo.getName(), issue.getNumber());
 		try{
-			CloseableHttpResponse response = Util.sendGetRequest(API_URL+String.format(EXT_COMMENTS, repo.getOwner(), repo.getName(), issue.getNumber()), authCode);
+			CloseableHttpResponse response = Util.sendGetRequest(url, authCode);
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
 				logger.log(Level.WARNING, "Failed to get comments.");
 				response.close();
@@ -430,7 +418,7 @@ public class Model {
 			return null;
 		}
 		
-		String url = API_URL+String.format(EXT_REPOISSUES, repo.getOwner(), repo.getName());
+		String url = Constants.API_URL+String.format(Constants.EXT_REPOISSUES, repo.getOwner(), repo.getName());
 		try{
 			CloseableHttpResponse response = Util.sendPostRequest(url, authCode, new StringEntity(jsonIssue.toString()));
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_CREATED)){
@@ -492,7 +480,7 @@ public class Model {
 			return null;
 		}
 		
-		String url = API_URL+String.format(EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber());
+		String url = Constants.API_URL+String.format(Constants.EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber());
 		try {
 			CloseableHttpResponse response = Util.sendPatchRequest(url, authCode, new StringEntity(changes.toString()));
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK) || response.getEntity()==null){
@@ -548,7 +536,7 @@ public class Model {
 			return null;
 		}
 		
-		String url = API_URL+String.format(EXT_ISSUECOMMENTS, repo.getOwner(), repo.getName(), issue.getNumber());
+		String url = Constants.API_URL+String.format(Constants.EXT_ISSUECOMMENTS, repo.getOwner(), repo.getName(), issue.getNumber());
 		try{
 			CloseableHttpResponse response = Util.sendPostRequest(url, authCode, new StringEntity(comment.toString()));
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_CREATED)){

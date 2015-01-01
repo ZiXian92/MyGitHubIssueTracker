@@ -1,11 +1,16 @@
 package model;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
+import org.json.JSONException;
 
+import Misc.Constants;
 import Misc.Util;
 import structure.Repository;
 
@@ -14,13 +19,11 @@ import structure.Repository;
  * @author ZiXian92
  */
 public class LoadLabelsThread implements Runnable {
-	//Constants
-	private static final String KEY_LABELNAME = "name";
-	private static final String RESPONSE_OK = "HTTP/1.1 200 OK";
+	//For logging purpose
+	private static Logger logger = Logger.getLogger("com.MyGitHubIssueTracker.model.LoadLabelsThread");
 	
 	//Data members
 	private Repository repo;
-	private HttpGet req;
 	
 	/**
 	 * Creates a new instance of this Runnable object.
@@ -28,26 +31,40 @@ public class LoadLabelsThread implements Runnable {
 	 * @param req The Http GET request for the repository's labels. Cannot be null.
 	 */
 	public LoadLabelsThread(Repository repo){
-		assert repo!=null && req!=null;
+		assert repo!=null;
 		this.repo = repo;
-		this.req = req;
+		logger.setUseParentHandlers(true);
 	}
 
 	@Override
 	public void run() {
+		String url = Constants.API_URL+String.format(Constants.EXT_REPOLABELS, repo.getOwner(), repo.getName());
 		try{
-			CloseableHttpResponse res = HttpClients.createDefault().execute(req);
-			if(res.getStatusLine().toString().equals(RESPONSE_OK) && res.getEntity()!=null){
-				HttpEntity messageBody = res.getEntity();
-				JSONArray labelsArr = new JSONArray(Util.getJSONString(messageBody.getContent()));
-				int numLabels = labelsArr.length();
-				for(int i=0; i<numLabels; i++){
-					repo.addLabel(labelsArr.getJSONObject(i).getString(KEY_LABELNAME));
-				}
+			CloseableHttpResponse res = Util.sendGetRequest(url, null);
+			if(!res.getStatusLine().toString().equals(Constants.RESPONSE_OK)){
+				logger.log(Level.WARNING, "Request to fetch labels failed.\nResponse: {0}",
+						res.getStatusLine().toString());
+				res.close();
+				return;
 			}
+			HttpEntity messageBody = res.getEntity();
+			if(messageBody==null){
+				logger.log(Level.WARNING, "Missing message in response.");
+				res.close();
+				return;
+			}
+			JSONArray labelsArr = new JSONArray(Util.getJSONString(messageBody.getContent()));
 			res.close();
-		} catch(Exception e){
-			
+			int numLabels = labelsArr.length();
+			ArrayList<String> labels = new ArrayList<String>();
+			for(int i=0; i<numLabels; i++){	//Either add all or none of the labels.
+				labels.add(labelsArr.getJSONObject(i).getString(Constants.KEY_LABELNAME));
+			}
+			repo.setLabels(labels);
+		} catch(JSONException e){	//Will not appen unless JSON format for GitHub API changes.
+			logger.log(Level.WARNING, "Error parsing JSON.");
+		} catch(IOException e){	//Happens if url is invalid or something unexpected happens.
+			logger.log(Level.WARNING, "Error executing request to fetch labels.");
 		}
 	}
 

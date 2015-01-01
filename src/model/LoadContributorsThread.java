@@ -1,8 +1,7 @@
 package model;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,19 +53,14 @@ public class LoadContributorsThread implements Runnable {
 				response.close();
 				return;
 			}
-			String input;
-			StringBuilder strBuilder = new StringBuilder();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(messageBody.getContent()));
-			while((input = reader.readLine())!=null){
-				strBuilder = strBuilder.append(input);
-			}
-			reader.close();
+			JSONArray arr = new JSONArray(Util.getJSONString(messageBody.getContent()));
 			response.close();
-			JSONArray arr = new JSONArray(strBuilder.toString());
 			int numContributors = arr.length();
-			for(int i=0; i<numContributors; i++){
-				repo.addAssignee(arr.getJSONObject(i).getString(Constants.KEY_USERLOGIN));
+			ArrayList<String> contributors = new ArrayList<String>();
+			for(int i=0; i<numContributors; i++){	//Either add all or none of the contributors.
+				contributors.add(arr.getJSONObject(i).getString(Constants.KEY_USERLOGIN));
 			}
+			repo.setAssignees(contributors);
 		} catch(JSONException e){	//Will not happen unless JSON format of GitHub API changes.
 			logger.log(Level.WARNING, "Error parsing JSON data.");
 		} catch (IOException e) {
