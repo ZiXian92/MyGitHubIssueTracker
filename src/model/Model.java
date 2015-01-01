@@ -497,12 +497,9 @@ public class Model {
 			return null;
 		}
 		
-		HttpPatch request = new HttpPatch(API_URL+String.format(EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber()));
-		request.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
-		request.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_ACCEPT);
+		String url = API_URL+String.format(EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber());
 		try {
-			request.setEntity(new StringEntity(changes.toString()));
-			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			CloseableHttpResponse response = Util.sendPatchRequest(url, authCode, new StringEntity(changes.toString()));
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK) || response.getEntity()==null){
 				logger.log(Level.SEVERE, "Request to edit issue failed.\nResponse: {0}", response.getStatusLine().toString());
 				response.close();
@@ -556,12 +553,9 @@ public class Model {
 			return null;
 		}
 		
-		HttpPost request = new HttpPost(API_URL+String.format(EXT_ISSUECOMMENTS, repo.getOwner(), repo.getName(), issue.getNumber()));
-		request.addHeader(Constants.HEADER_AUTH, String.format(Constants.VAL_AUTH, authCode));
-		request.addHeader(Constants.HEADER_ACCEPT, Constants.VAL_ACCEPT);
+		String url = API_URL+String.format(EXT_ISSUECOMMENTS, repo.getOwner(), repo.getName(), issue.getNumber());
 		try{
-			request.setEntity(new StringEntity(comment.toString()));
-			CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+			CloseableHttpResponse response = Util.sendPostRequest(url, authCode, new StringEntity(comment.toString()));
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_CREATED)){
 				logger.log(Level.WARNING, "Request to comment issue failed.Response: {0}", response.getStatusLine().toString());
 				response.close();
