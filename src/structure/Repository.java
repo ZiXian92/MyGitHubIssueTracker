@@ -23,12 +23,13 @@ public class Repository {
 	private static final String FIELD_CONTRIBUTORS = "Contributors: ";
 	private static final String FIELD_ISSUES = "Issues: ";
 	private static final String FIELD_LABELS = "Labels: ";
+	private static final String FIELD_MILESTONES = "Milestones: ";
 	
 	//Data members
 	private String name, owner, fullName;	//To be extracted by Model to update GitHub.
 	private ArrayList<Issue> issueList;
-	private ArrayList<String> assignees, labels;
-	private HashMap<String, Integer> indexList, milestones;	//Used for lookup on milestone's number
+	private ArrayList<String> assignees, labels, milestones;
+	private HashMap<String, Integer> indexList, milestonesTable;	//Used for lookup on milestone's number
 	private int numIssues;
 	private boolean isInitialized;
 	
@@ -45,7 +46,8 @@ public class Repository {
 		issueList = new ArrayList<Issue>();
 		assignees = new ArrayList<String>();
 		indexList = new HashMap<String, Integer>();
-		milestones = new HashMap<String, Integer>();
+		milestonesTable = new HashMap<String, Integer>();
+		milestones = new ArrayList<String>();
 		labels = new ArrayList<String>();
 		numIssues = 0;
 		isInitialized = false;
@@ -152,8 +154,8 @@ public class Repository {
 	 */
 	public int getMilestoneNumber(String milestone){
 		assert milestone!=null && !milestone.isEmpty();
-		if(milestones.containsKey(milestone)){
-			return milestones.get(milestone);
+		if(milestonesTable.containsKey(milestone)){
+			return milestonesTable.get(milestone);
 		}
 		return -1;
 	}
@@ -269,13 +271,16 @@ public class Repository {
 	}
 	
 	/**
-	 * Adds a milestone to this repository.
+	 * Adds a milestone to this repository if the given milestone has not been added.
 	 * @param number The milestone's number.
 	 * @param milestone The name of the milestone. Cannot be null or empty string.
 	 */
 	public void addMilestone(int number, String milestone){
 		assert milestone!=null && !milestone.isEmpty();
-		milestones.put(milestone, number);
+		if(!milestonesTable.containsKey(milestone)){
+			milestonesTable.put(milestone, number);
+			milestones.add(milestone);
+		}
 	}
 	
 	@Override
@@ -292,7 +297,8 @@ public class Repository {
 			}
 		}
 		strBuilder = strBuilder.append(LINE_DELIM);
-		//strBuilder = strBuilder.append(FIELD_MILESTONES).append(LINE_DELIM);
+		strBuilder = strBuilder.append(FIELD_MILESTONES).append(LINE_DELIM);
+		strBuilder = strBuilder.append(Util.convertToString(milestones)).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_LABELS).append(LINE_DELIM);
 		strBuilder = strBuilder.append(Util.convertToString(labels)).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_ISSUES).append(LINE_DELIM);
