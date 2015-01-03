@@ -28,7 +28,6 @@ public class LoadContributorsThread implements Runnable {
 	/**
 	 * Creates a Runnable instance to fetch the given repository's contributors in another thread.
 	 * @param repo The repository to load contributors into.
-	 * @param request The request to be executed to fetch contributor data.
 	 */
 	public LoadContributorsThread(Repository repo){
 		assert repo!=null;

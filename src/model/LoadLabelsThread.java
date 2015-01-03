@@ -28,7 +28,6 @@ public class LoadLabelsThread implements Runnable {
 	/**
 	 * Creates a new instance of this Runnable object.
 	 * @param repo The repository to load labels into. Cannot be null.
-	 * @param req The Http GET request for the repository's labels. Cannot be null.
 	 */
 	public LoadLabelsThread(Repository repo){
 		assert repo!=null;

@@ -181,8 +181,6 @@ public class Model {
 	 * Fetches issues under the specified repository and stores them in
 	 * a Repository instance.
 	 * @param repo The repository to update from GitHub.
-	 * @return A Repository representing the specified GitHub repository. Returns null if any error
-	 * 			occurs when executing the requests or parsing the response objects.
 	 * @throws FailedRequestException If the request fails.
 	 * @throws MissingMessageException If the message is missing in the response.
 	 * @throws JSONException If an error occurs when parsing the response object.
@@ -258,8 +256,9 @@ public class Model {
 	 * @throws MissingMessageException If the JSON contents are missing from the response.
 	 * @throws JSONException If an error occurred when parsing the response JSON object.
 	 */
-	public void updateIssue(Issue issue, Repository repo) throws FailedRequestException, RequestException, MissingMessageException, JSONException{
-		assert repo!=null && issue!=null;
+	public void updateIssue(Issue issue) throws FailedRequestException, RequestException, MissingMessageException, JSONException{
+		assert issue!=null;
+		Repository repo = issue.getRepository();
 		String url = Constants.API_URL+String.format(Constants.EXT_COMMENTS, repo.getOwner(), repo.getName(), issue.getNumber());
 		try{
 			CloseableHttpResponse response = Util.sendGetRequest(url, authCode);
@@ -334,7 +333,7 @@ public class Model {
 	 * Gets the repository from the list given the repository name.
 	 * @param repoName The full name of the repository to retrieve. Cannot be null or empty.
 	 * @return The Repository with the given name or null if the given repository cannot be found.
-	 * @throws Exception 
+	 * @throws Exception If an error occurs while updating the repository.
 	 */
 	public Repository getRepository(String repoName) throws Exception{
 		assert repoName!=null && !repoName.isEmpty();
@@ -378,7 +377,7 @@ public class Model {
 		if(issue!=null){
 			if(!issue.isInitialized()){
 				try{
-					updateIssue(issue, repo);
+					updateIssue(issue);
 				} catch(Exception e){
 					throw new Exception(Constants.ERROR_UPDATEISSUE);
 				}
@@ -532,6 +531,7 @@ public class Model {
 	 * @param comment The JSON representation of comment to add.
 	 * @param issueName The name of the issue to add comment to.
 	 * @param repoName The name of the repository holding the issue to be commented on.
+	 * @return The edited issue with the added comment.
 	 * @throws FailedRequestException If the request was unsuccessful.
 	 * @throws MissingMessageException If the response does not have any message.
 	 * @throws RequestException If an error occurred while executing the request.
