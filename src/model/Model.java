@@ -365,7 +365,7 @@ public class Model {
 		} catch(Exception e){
 			//This will not happen as user is unable to select issue when repository cannot be selected.
 			//May happen if developer call this method directly without going through the user interface.
-			return null;
+			throw new Exception(Constants.ERROR_UPDATEREPO);
 		}
 		
 		Issue issue;
@@ -377,7 +377,7 @@ public class Model {
 		if(issue!=null){
 			if(!issue.isInitialized()){
 				try{
-					updateIssue(issue);
+					updateIssue(issue);	//Load required information from GitHub.
 				} catch(Exception e){
 					throw new Exception(Constants.ERROR_UPDATEISSUE);
 				}
@@ -426,7 +426,7 @@ public class Model {
 			return null;
 		}
 		
-		if(!jsonIssue.isNull(Constants.KEY_MILESTONE)){
+		if(!jsonIssue.isNull(Constants.KEY_MILESTONE)){	//Sets the milestone field with milestone number.
 			int milestoneNumber = repo.getMilestoneNumber(jsonIssue.getString(Constants.KEY_MILESTONE));
 			if(milestoneNumber==-1){
 				jsonIssue.remove(Constants.KEY_MILESTONE);
@@ -436,7 +436,7 @@ public class Model {
 		}
 		
 		String url = Constants.API_URL+String.format(Constants.EXT_REPOISSUES, repo.getOwner(), repo.getName());
-		try{
+		try{	//Sends the request.
 			CloseableHttpResponse response = Util.sendPostRequest(url, authCode, new StringEntity(jsonIssue.toString()));
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_CREATED)){
 				logger.log(Level.SEVERE, "Request to add new issue failed. Response: {0}", response.getStatusLine().toString());
@@ -450,7 +450,7 @@ public class Model {
 				throw new MissingMessageException();
 			}
 			
-			//Updates repository with new issue locally.
+			//Process the response.
 			JSONObject obj = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			response.close();
 			Issue issue = Issue.makeInstance(obj, repo);
@@ -496,7 +496,7 @@ public class Model {
 			return null;
 		}
 		
-		if(!changes.isNull(Constants.KEY_MILESTONE)){
+		if(!changes.isNull(Constants.KEY_MILESTONE)){	//Set the milestone field with the milestone number.
 			int milestoneNumber = repo.getMilestoneNumber(changes.getString(Constants.KEY_MILESTONE));
 			if(milestoneNumber==-1){
 				changes.remove(Constants.KEY_MILESTONE);
@@ -505,7 +505,7 @@ public class Model {
 		}
 		
 		String url = Constants.API_URL+String.format(Constants.EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber());
-		try {
+		try {	//Sends the request
 			CloseableHttpResponse response = Util.sendPatchRequest(url, authCode, new StringEntity(changes.toString()));
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_OK) || response.getEntity()==null){
 				logger.log(Level.SEVERE, "Request to edit issue failed.\nResponse: {0}", response.getStatusLine().toString());
@@ -518,6 +518,8 @@ public class Model {
 				response.close();
 				throw new MissingMessageException();
 			}
+			
+			//Process the response.
 			JSONObject obj = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			response.close();
 			Issue editedIssue = Issue.makeInstance(obj, repo);
@@ -563,7 +565,7 @@ public class Model {
 		}
 		
 		String url = Constants.API_URL+String.format(Constants.EXT_ISSUECOMMENTS, repo.getOwner(), repo.getName(), issue.getNumber());
-		try{
+		try{	//Sends the request.
 			CloseableHttpResponse response = Util.sendPostRequest(url, authCode, new StringEntity(comment.toString()));
 			if(!response.getStatusLine().toString().equals(Constants.RESPONSE_CREATED)){
 				logger.log(Level.WARNING, "Request to comment issue failed.Response: {0}", response.getStatusLine().toString());
@@ -576,6 +578,8 @@ public class Model {
 				response.close();
 				throw new MissingMessageException();
 			}
+			
+			//Process the response.
 			comment = new JSONObject(Util.getJSONString(messageBody.getContent()));
 			issue.addComment(comment);
 			return issue;

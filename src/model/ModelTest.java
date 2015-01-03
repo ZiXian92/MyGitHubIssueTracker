@@ -54,7 +54,7 @@ public class ModelTest {
 		assertEquals(5, list.length);
 	}
 	
-	//As each person's repository listng is different and Repository does not have an ID in this application,
+	//As each person's repository listing is different and Repository does not have an ID in this application,
 	//it is almost impossible to automate testing of success use cases.
 	//Thus this tests only for fail cases.
 	//To test correctness of success cases, do it using exploratory testing.
