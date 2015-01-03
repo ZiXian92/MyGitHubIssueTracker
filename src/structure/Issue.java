@@ -446,7 +446,7 @@ public class Issue {
 		strBuilder = strBuilder.append(FIELD_COMMENTS).append(LINE_DELIM);
 		int numComments = comments.size();
 		for(int i=0; i<numComments; i++){
-			strBuilder = strBuilder.append(comments.get(i)).append(LINE_DELIM);
+			strBuilder = strBuilder.append(LINE_DELIM).append(i+1).append(". ").append(comments.get(i)).append(LINE_DELIM);
 		}
 		return strBuilder.toString();
 	}
