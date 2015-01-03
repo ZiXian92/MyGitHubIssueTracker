@@ -202,6 +202,10 @@ public class Model {
 		Thread loadLabelsThread = new Thread(new LoadLabelsThread(repo));
 		loadLabelsThread.run();
 		
+		//Gets list of milestones
+		Thread loadMilestonesThread = new Thread(new LoadMilestonesThread(repo));
+		loadMilestonesThread.run();
+		
 		String url = Constants.API_URL+String.format(Constants.EXT_REPOISSUES, owner, repoName);
 		
 		try{
@@ -223,16 +227,18 @@ public class Model {
 			JSONObject temp;
 			JSONArray arr = new JSONArray(Util.getJSONString(messageBody.getContent()));
 			response.close();
-			loadLabelsThread.join();	//Wait for labels to be loaded.
+			
 			int size = arr.length();
 			ArrayList<Issue> tempIssueList = new ArrayList<Issue>();
 			for(int i=0; i<size; i++){	//If JSON exception occurs here, no issue is added to repo.
 				temp = arr.getJSONObject(i);
 				tempIssueList.add(Issue.makeInstance(temp, repo));
 			}
-			repo.setIssues(tempIssueList);
+			loadLabelsThread.join();	//Wait for labels to be loaded.
+			repo.setIssues(tempIssueList);	//Involves setting of applicable labels to issues
 			repo.setIsInitialized(true);
 			loadContribThread.join();
+			loadMilestonesThread.join();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		} catch(JSONException e){	//repo has no issue here.

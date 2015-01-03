@@ -28,7 +28,7 @@ public class Repository {
 	private String name, owner, fullName;	//To be extracted by Model to update GitHub.
 	private ArrayList<Issue> issueList;
 	private ArrayList<String> assignees, labels;
-	private HashMap<String, Integer> indexList;
+	private HashMap<String, Integer> indexList, milestones;	//Used for lookup on milestone's number
 	private int numIssues;
 	private boolean isInitialized;
 	
@@ -45,6 +45,7 @@ public class Repository {
 		issueList = new ArrayList<Issue>();
 		assignees = new ArrayList<String>();
 		indexList = new HashMap<String, Integer>();
+		milestones = new HashMap<String, Integer>();
 		labels = new ArrayList<String>();
 		numIssues = 0;
 		isInitialized = false;
@@ -142,6 +143,19 @@ public class Repository {
 		}
 		int index = indexList.get(issueName);
 		return getIssue(index);
+	}
+	
+	/**
+	 * Gets the milestone number for the given milestone title.
+	 * @param milestone The milestone title to look up on. Cannot be null or empty string.
+	 * @return The milestone number for the given milestone or -1 if the milestone cannot be found.
+	 */
+	public int getMilestoneNumber(String milestone){
+		assert milestone!=null && !milestone.isEmpty();
+		if(milestones.containsKey(milestone)){
+			return milestones.get(milestone);
+		}
+		return -1;
 	}
 	
 	/**
@@ -252,6 +266,16 @@ public class Repository {
 	 */
 	public void setIsInitialized(boolean isInitialized){
 		this.isInitialized = isInitialized;
+	}
+	
+	/**
+	 * Adds a milestone to this repository.
+	 * @param number The milestone's number.
+	 * @param milestone The name of the milestone. Cannot be null or empty string.
+	 */
+	public void addMilestone(int number, String milestone){
+		assert milestone!=null && !milestone.isEmpty();
+		milestones.put(milestone, number);
 	}
 	
 	@Override

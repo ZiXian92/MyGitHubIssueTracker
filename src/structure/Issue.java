@@ -18,13 +18,15 @@ public class Issue {
 	private static final String LINE_DELIM = "\n";
 	private static final String SEPARATOR = "\t";
 	private static final String FIELD_TITLE = "Title: ";
-	private static final String FIELD_CONTENT = "Body: ";
+	private static final String FIELD_NUMBER = "Number: ";
+	private static final String FIELD_MILESTONE = "Milestone: ";
 	private static final String FIELD_STATUS = "Status: ";
 	private static final String FIELD_ASSIGNEE = "Assignee: ";
-	private static final String FIELD_NUMBER = "Number: ";
 	private static final String FIELD_LABELS = "Labels: ";
+	private static final String FIELD_CONTENT = "Body: ";
 	private static final String FIELD_COMMENTS = "Comments: ";
-	private static final String FIELD_MILESTONE = "Milestone: ";
+	
+	//Represents absence of value.
 	private static final String VAL_NOASSIGNEE = "No assignee";
 	private static final String VAL_NOMILESTONE = "No milestone";
 	
