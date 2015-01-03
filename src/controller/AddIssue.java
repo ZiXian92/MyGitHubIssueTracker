@@ -20,6 +20,7 @@ public class AddIssue extends Command {
 	//Prompt messages
 	private static final String PROMPT_BODY = "Please enter body message(terminate with Enter button): ";
 	private static final String PROMPT_ASSIGNEE = "Enter assignee: ";
+	private static final String PROMPT_MILESTONE = "Enter milestone: ";
 	private static final String PROMPT_LABELS = "Enter label(s)(comma-separated): ";
 	
 	//For separating labels
@@ -56,6 +57,12 @@ public class AddIssue extends Command {
 				obj.put(Constants.KEY_ASSIGNEE, JSONObject.NULL);
 			} else{
 				obj.put(Constants.KEY_ASSIGNEE, input);
+			}
+			
+			printPrompt(PROMPT_MILESTONE);
+			input = reader.readLine();
+			if(!input.isEmpty()){
+				obj.put(Constants.KEY_MILESTONE, input);
 			}
 
 			printPrompt(PROMPT_LABELS);

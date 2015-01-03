@@ -427,6 +427,15 @@ public class Model {
 			return null;
 		}
 		
+		if(!jsonIssue.isNull(Constants.KEY_MILESTONE)){
+			int milestoneNumber = repo.getMilestoneNumber(jsonIssue.getString(Constants.KEY_MILESTONE));
+			if(milestoneNumber==-1){
+				jsonIssue.remove(Constants.KEY_MILESTONE);
+			} else{
+				jsonIssue.put(Constants.KEY_MILESTONE, milestoneNumber);
+			}
+		}
+		
 		String url = Constants.API_URL+String.format(Constants.EXT_REPOISSUES, repo.getOwner(), repo.getName());
 		try{
 			CloseableHttpResponse response = Util.sendPostRequest(url, authCode, new StringEntity(jsonIssue.toString()));

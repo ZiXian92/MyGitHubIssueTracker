@@ -292,6 +292,7 @@ public class Repository {
 			}
 		}
 		strBuilder = strBuilder.append(LINE_DELIM);
+		//strBuilder = strBuilder.append(FIELD_MILESTONES).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_LABELS).append(LINE_DELIM);
 		strBuilder = strBuilder.append(Util.convertToString(labels)).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_ISSUES).append(LINE_DELIM);
