@@ -24,10 +24,17 @@ public class Issue {
 	private static final String FIELD_NUMBER = "Number: ";
 	private static final String FIELD_LABELS = "Labels: ";
 	private static final String FIELD_COMMENTS = "Comments: ";
+	private static final String FIELD_MILESTONE = "Milestone: ";
 	private static final String VAL_NOASSIGNEE = "No assignee";
+	private static final String VAL_NOMILESTONE = "No milestone";
+	
+	//Condensed string formatting
+	private static final String CONDENSEDFORM = "%1$-6.6s\t%2$-30.30s\t%3$-12.12s\t%4$s";
+	private static final int CONDENSEDTITLELENGTH = 30;
+	private static final int CONDENSEDMILESTONELENGTH = 12;
 
 	//Data members
-	private String title, status, content, assignee;
+	private String title, status, content, assignee, milestone;
 	private int number;
 	private ArrayList<String> labels, applicableLabels;
 	private ArrayList<Comment> comments;
@@ -146,6 +153,7 @@ public class Issue {
 		this.labels = new ArrayList<String>();
 		this.applicableLabels = new ArrayList<String>();
 		this.repository = issue.getRepository();
+		this.milestone = issue.getMilestone();
 		String[] arr = issue.getLabels();
 		if(arr!=null){
 			for(String str: arr){
@@ -185,6 +193,9 @@ public class Issue {
 		}
 		issue.setNumComments(obj.getInt(Constants.KEY_COMMENTS));
 		issue.setStatus(obj.getString(Constants.KEY_STATUS));
+		if(!obj.isNull(Constants.KEY_MILESTONE)){
+			issue.setMilestone(obj.getJSONObject(Constants.KEY_MILESTONE).getString(Constants.KEY_MILESTONETITLE));
+		}
 		return issue;
 	}
 	
@@ -291,6 +302,14 @@ public class Issue {
 	 */
 	public Repository getRepository(){
 		return repository;
+	}
+	
+	/**
+	 * Gets the milestone for this issue.
+	 * @return The name of the milestone for this issue.
+	 */
+	public String getMilestone(){
+		return milestone;
 	}
 	
 	/**
@@ -424,11 +443,23 @@ public class Issue {
 		this.repository = repo;
 	}
 	
+	/**
+	 * Sets the milestone for this issue.
+	 * @param milestone The name of the milestone for this issue. Can be null but not an empty string.
+	 */
+	public void setMilestone(String milestone){
+		if(milestone!=null){
+			assert !milestone.isEmpty();
+		}
+		this.milestone = milestone;
+	}
+	
 	@Override
 	public String toString(){
 		StringBuilder strBuilder =  new StringBuilder(FIELD_TITLE);
 		strBuilder = strBuilder.append(title).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_NUMBER).append(number).append(LINE_DELIM);
+		strBuilder = strBuilder.append(FIELD_MILESTONE).append(milestone==null? VAL_NOMILESTONE: milestone).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_STATUS).append(status).append(SEPARATOR);
 		strBuilder = strBuilder.append(FIELD_ASSIGNEE).append(assignee).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_LABELS).append(Util.convertToString(labels)).append(LINE_DELIM);
@@ -446,11 +477,16 @@ public class Issue {
 	 * @return A String summarizing this issue.
 	 */
 	public String getCondensedString(){
-		StringBuilder strBuilder = new StringBuilder(status);
-		strBuilder = strBuilder.append(SEPARATOR);
-		strBuilder = strBuilder.append(title).append(SEPARATOR);
-		strBuilder = strBuilder.append(assignee==null? VAL_NOASSIGNEE: assignee);
-		return strBuilder.toString();
+		String title = this.title;
+		if(title.length()>CONDENSEDTITLELENGTH){
+			title = title.substring(0, CONDENSEDTITLELENGTH-3)+"...";
+		}
+		String milestone = this.milestone==null? VAL_NOMILESTONE: this.milestone;
+		if(milestone.length()>CONDENSEDMILESTONELENGTH){
+			milestone = milestone.substring(0, CONDENSEDMILESTONELENGTH-3)+"...";
+		}
+		String assignee = this.assignee==null? VAL_NOASSIGNEE: this.assignee;
+		return String.format(CONDENSEDFORM, status, title, milestone, assignee);
 	}
 	
 	/**

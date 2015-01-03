@@ -46,6 +46,8 @@ public class IssueTest {
 		assertTrue(issue.getApplicableLabels()!=null);
 		assertEquals(labelsObj.length(), issue.getApplicableLabels().length);
 		assertEquals(Constants.ISSUE_STATUSOPEN, issue.getStatus());
+		assertEquals("V0.9", issue.getMilestone());
+		assertEquals("open  	[Bug] Password can be seen ...	V0.9        	ZiXian92", issue.getCondensedString());
 		System.out.println(issue.toJSONObject().toString());
 	}
 	
