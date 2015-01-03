@@ -41,10 +41,10 @@ public class IssueTest {
 		assertEquals(7, issue.getNumber());
 		assertEquals("ZiXian92", issue.getAssignee());
 		assertFalse(issue.isInitialized());
-		assertEquals(1, issue.getLabels().length);
-		assertEquals("bug", issue.getLabels()[0]);
+		assertEquals(1, issue.getLabels().size());
+		assertEquals("bug", issue.getLabels().get(0));
 		assertTrue(issue.getApplicableLabels()!=null);
-		assertEquals(labelsObj.length(), issue.getApplicableLabels().length);
+		assertEquals(labelsObj.length(), issue.getApplicableLabels().size());
 		assertEquals(Constants.ISSUE_STATUSOPEN, issue.getStatus());
 		assertEquals("V0.9", issue.getMilestone());
 		assertEquals("open  	[Bug] Password can be seen ...	V0.9        	ZiXian92", issue.getCondensedString());
@@ -55,13 +55,13 @@ public class IssueTest {
 	public void testAddComment() throws JSONException{
 		Repository repo = new Repository("testRepo", "noOwner");
 		Issue issue = new Issue("new issue", 7, repo);
-		assertTrue(issue.getComments()==null);
+		assertTrue(issue.getComments().isEmpty());
 		String commentString = "{\"id\": 3, \"user\":{\"login\": \"author1\"}, \"body\": \"New comment.\"}";
 		issue.addComment(new JSONObject(commentString));
-		Issue.Comment[] comments = issue.getComments();
+		ArrayList<Issue.Comment> comments = issue.getComments();
 		assertFalse(comments==null);
-		assertEquals(1, comments.length);
-		assertEquals("author1", comments[0].getAuthor());
-		assertEquals("New comment.", comments[0].getContent());
+		assertEquals(1, comments.size());
+		assertEquals("author1", comments.get(0).getAuthor());
+		assertEquals("New comment.", comments.get(0).getContent());
 	}
 }

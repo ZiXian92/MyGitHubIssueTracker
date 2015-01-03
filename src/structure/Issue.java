@@ -156,18 +156,8 @@ public class Issue {
 		this.applicableLabels = new ArrayList<String>();
 		this.repository = issue.getRepository();
 		this.milestone = issue.getMilestone();
-		String[] arr = issue.getLabels();
-		if(arr!=null){
-			for(String str: arr){
-				labels.add(str);
-			}
-		}
-		arr = issue.getApplicableLabels();
-		if(arr!=null){
-			for(String str: arr){
-				applicableLabels.add(str);
-			}
-		}
+		this.labels = issue.getLabels();
+		this.applicableLabels = issue.getApplicableLabels();
 	}
 	
 	/**
@@ -193,7 +183,6 @@ public class Issue {
 			label = labelArray.getJSONObject(i).getString(Constants.KEY_LABELNAME);
 			issue.addLabel(label);
 		}
-		issue.setNumComments(obj.getInt(Constants.KEY_COMMENTS));
 		issue.setStatus(obj.getString(Constants.KEY_STATUS));
 		if(!obj.isNull(Constants.KEY_MILESTONE)){
 			issue.setMilestone(obj.getJSONObject(Constants.KEY_MILESTONE).getString(Constants.KEY_MILESTONETITLE));
@@ -243,28 +232,18 @@ public class Issue {
 	
 	/**
 	 * Gets the list of labels assigned to this issue.
-	 * @return An array of label names or null if no label is assigned to this issue.
+	 * @return The list of label names.
 	 */
-	public String[] getLabels(){
-		int size = labels.size();
-		if(size==0){
-			return null;
-		}
-		String[] arr = labels.toArray(new String[size]);
-		return arr;
+	public ArrayList<String> getLabels(){
+		return labels;
 	}
 	
 	/**
 	 * Gets the list of labels that can be assigned to this issue.
-	 * @return An array of labels that can be assigned to this issue or null if there is none.
+	 * @return An array of labels that can be assigned to this issue.
 	 */
-	public String[] getApplicableLabels(){
-		int numLabels = applicableLabels.size();
-		if(numLabels==0){
-			return null;
-		}
-		String[] arr = applicableLabels.toArray(new String[numLabels]);
-		return arr;
+	public ArrayList<String> getApplicableLabels(){
+		return applicableLabels;
 	}
 	
 	/**
@@ -277,13 +256,10 @@ public class Issue {
 	
 	/**
 	 * Gets the list of comments for this issue.
-	 * @return An array of comments for this issue or null if there is none.
+	 * @return The list of comments for this issue.
 	 */
-	public Comment[] getComments(){
-		if(comments.isEmpty()){
-			return null;
-		}
-		return comments.toArray(new Comment[comments.size()]);
+	public ArrayList<Comment> getComments(){
+		return comments;
 	}
 	
 	/**
@@ -333,14 +309,6 @@ public class Issue {
 			content = "";
 		}
 		this.content = content;
-	}
-	
-	/**
-	 * Sets the number of comments this issue has.
-	 * @param numComments An integer not less than 0.
-	 */
-	public void setNumComments(int numComments){
-		assert numComments>=0;
 	}
 	
 	/**
@@ -418,6 +386,15 @@ public class Issue {
 			temp.add(new Comment(author, message, id));
 		}
 		comments = temp;
+	}
+	
+	/**
+	 * Sets the comments for this issue.
+	 * @param comments The comments for this issue. Cannot be null.
+	 */
+	public void setComments(ArrayList<Comment> comments){
+		assert comments!=null;
+		this.comments = comments;
 	}
 	
 	/**

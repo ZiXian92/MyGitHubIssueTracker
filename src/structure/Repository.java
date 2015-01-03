@@ -222,13 +222,7 @@ public class Repository {
 		if(indexList.containsKey(issueName)){
 			int index = indexList.get(issueName);
 			Issue issue = issueList.get(index-1);
-			Issue.Comment[] comments = issue.getComments();
-			if(comments!=null){
-				int numComments = comments.length;
-				for(int i=0; i<numComments; i++){
-					editedIssue.addComment(comments[i]);
-				}
-			}
+			editedIssue.setComments(issue.getComments());
 			issueList.set(index-1, editedIssue);
 			indexList.remove(issueName);
 			indexList.put(editedIssue.getTitle(), index);

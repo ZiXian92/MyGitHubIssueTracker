@@ -25,6 +25,7 @@ public class EditIssue extends Command {
 	private static final String PROMPT_TITLE = "New title: ";
 	private static final String PROMPT_CONTENT = "New content: ";
 	private static final String PROMPT_ASSIGNEE = "New assignee: ";
+	private static final String PROMPT_MILESTONE = "New milestone: ";
 	private static final String PROMPT_LABELS = "Labels(comma-separated): ";
 	
 	//For labels processing
@@ -67,6 +68,17 @@ public class EditIssue extends Command {
 			if(!(input = reader.readLine()).isEmpty()){
 				input = input.trim();
 				obj.put(Constants.KEY_ASSIGNEE, input.isEmpty()? JSONObject.NULL: input);
+			}
+			
+			printPrompt(PROMPT_MILESTONE);
+			input = reader.readLine();
+			if(!input.isEmpty()){
+				input = input.trim();
+				if(input.isEmpty()){
+					obj.put(Constants.KEY_MILESTONE, JSONObject.NULL);
+				} else{
+					obj.put(Constants.KEY_MILESTONE, input);
+				}
 			}
 			
 			printPrompt(PROMPT_LABELS);

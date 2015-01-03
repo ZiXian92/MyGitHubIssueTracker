@@ -496,6 +496,14 @@ public class Model {
 			return null;
 		}
 		
+		if(!changes.isNull(Constants.KEY_MILESTONE)){
+			int milestoneNumber = repo.getMilestoneNumber(changes.getString(Constants.KEY_MILESTONE));
+			if(milestoneNumber==-1){
+				changes.remove(Constants.KEY_MILESTONE);
+			}
+			changes.put(Constants.KEY_MILESTONE, milestoneNumber);
+		}
+		
 		String url = Constants.API_URL+String.format(Constants.EXT_EDITISSUE, repo.getOwner(), repo.getName(), issue.getNumber());
 		try {
 			CloseableHttpResponse response = Util.sendPatchRequest(url, authCode, new StringEntity(changes.toString()));
