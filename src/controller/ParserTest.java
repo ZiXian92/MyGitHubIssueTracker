@@ -1,6 +1,6 @@
 package controller;
 
-import Misc.InvalidContextException;
+import misc.InvalidContextException;
 import controller.Parser;
 import static org.junit.Assert.*;
 

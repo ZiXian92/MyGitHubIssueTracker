@@ -6,8 +6,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import Misc.Constants;
-import Misc.Util;
+import misc.Constants;
+import misc.Util;
 
 /**
  * Defines the data structure to represent an issue on GitHub.

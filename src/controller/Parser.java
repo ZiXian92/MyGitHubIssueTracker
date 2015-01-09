@@ -1,7 +1,7 @@
 package controller;
 
-import Misc.Constants;
-import Misc.InvalidContextException;
+import misc.Constants;
+import misc.InvalidContextException;
 
 /**
  * Defines the parser class to parse the input commands.
@@ -187,6 +187,7 @@ public class Parser {
 	 * @return A Command that is appropriate for the current context.
 	 */
 	private Command makeAppropriateCommand(String input, String selectedIssue, String selectedRepo) {
+		assert input!=null && !input.isEmpty();
 		if(selectedRepo==null){
 			return new SelectRepo(input);
 		} else if(selectedIssue==null){

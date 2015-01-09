@@ -5,9 +5,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import Misc.Constants;
-import Misc.InvalidContextException;
-import Misc.RequestException;
+import misc.Constants;
+import misc.InvalidContextException;
+import misc.RequestException;
 import view.View;
 import model.Model;
 

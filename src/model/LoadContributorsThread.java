@@ -10,8 +10,8 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import Misc.Constants;
-import Misc.Util;
+import misc.Constants;
+import misc.Util;
 import structure.Repository;
 
 /**

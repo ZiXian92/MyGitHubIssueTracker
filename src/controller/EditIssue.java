@@ -7,10 +7,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import Misc.Constants;
-import Misc.FailedRequestException;
-import Misc.MissingMessageException;
-import Misc.RequestException;
+import misc.Constants;
+import misc.FailedRequestException;
+import misc.MissingMessageException;
+import misc.RequestException;
 import structure.Issue;
 
 /**

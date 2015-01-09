@@ -17,11 +17,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import Misc.Constants;
-import Misc.FailedRequestException;
-import Misc.MissingMessageException;
-import Misc.RequestException;
-import Misc.Util;
+import misc.Constants;
+import misc.FailedRequestException;
+import misc.MissingMessageException;
+import misc.RequestException;
+import misc.Util;
 import controller.Observer;
 import structure.Issue;
 import structure.Repository;

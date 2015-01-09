@@ -6,8 +6,8 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import Misc.Constants;
-import Misc.Util;
+import misc.Constants;
+import misc.Util;
 
 /**
  * Defines the data structure that represents a repository in GitHub.

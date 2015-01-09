@@ -1,6 +1,6 @@
 package controller;
 
-import Misc.Constants;
+import misc.Constants;
 import structure.Repository;
 
 /**

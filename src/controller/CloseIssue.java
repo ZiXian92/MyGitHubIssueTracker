@@ -4,10 +4,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import structure.Issue;
-import Misc.Constants;
-import Misc.FailedRequestException;
-import Misc.MissingMessageException;
-import Misc.RequestException;
+import misc.Constants;
+import misc.FailedRequestException;
+import misc.MissingMessageException;
+import misc.RequestException;
 
 /**
  * Defines the command to close the selected issue.
