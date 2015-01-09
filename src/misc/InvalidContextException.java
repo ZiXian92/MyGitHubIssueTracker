@@ -1,4 +1,4 @@
-package Misc;
+package misc;
 
 /**
  * Defines the exception class for invalid context.

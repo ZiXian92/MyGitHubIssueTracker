@@ -1,4 +1,4 @@
-package Misc;
+package misc;
 
 /**
  * Defines the exception thrown when HTTP request to GitHub API fails.

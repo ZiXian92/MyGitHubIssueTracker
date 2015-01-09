@@ -1,12 +1,12 @@
 package model;
 
 import static org.junit.Assert.*;
+import misc.RequestException;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import structure.Repository;
-import Misc.RequestException;
 
 /**
  * JUnit tezt class for Model.

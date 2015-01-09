@@ -7,11 +7,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import misc.Util;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
-
-import Misc.Util;
 
 /**
  * JUnit test for Repository.

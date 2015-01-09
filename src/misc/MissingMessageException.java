@@ -1,4 +1,4 @@
-package Misc;
+package misc;
 
 /**
  * Defines the exception to be thrown when message is missing from the HTTP response from GitHub API.

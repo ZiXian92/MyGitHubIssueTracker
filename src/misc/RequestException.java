@@ -1,4 +1,4 @@
-package Misc;
+package misc;
 
 /**
  * Defines the exception to be thrown when an error causing the request to not execute occurs.

@@ -8,13 +8,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import misc.Constants;
+import misc.Util;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
-
-import Misc.Constants;
-import Misc.Util;
 
 /**
  * JUnit test clsss to test Issue class.

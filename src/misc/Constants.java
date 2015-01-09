@@ -1,4 +1,4 @@
-package Misc;
+package misc;
 
 /**
  * Defines the class that holds the constants used by multiple classes.
