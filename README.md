@@ -33,4 +33,4 @@ MyGitHubIssueTracker
 <h3>Exiting the Program</h3>
 <p>Enter <b>exit</b>.</p>
 <h2>Guide for Developers</h2>
-<p>The link to the developer's guide webpage will be posted here once the guide is completed.</p>
+<p>Go to the <a href="http://mygithubissuetrackerdevguide.herokuapp.com/">Official Developer Guide</a> for more information.</p>
