@@ -104,7 +104,7 @@ public class Model {
 	}
 
 	/**
-	 * Loads the repositories and issues from GitHub. Clears all current data in the process.
+	 * Loads the repositories from GitHub. Clears all current data in the process.
 	 * @throws IOException if an error occurred during the request.
 	 * @throws RequestException If an error occurs when sending the request.
 	 * @throws FailedRequestException If the request fails.
