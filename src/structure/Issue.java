@@ -295,9 +295,8 @@ public class Issue {
 	 * @param title The new title for this issue. Cannot be null or empty string.
 	 */
 	public void setTitle(String title){
-		if(title!=null && !title.isEmpty()){
-			this.title = title;
-		}
+		assert title!=null && !title.isEmpty();
+		this.title = title;
 	}
 	
 	/**
@@ -329,19 +328,17 @@ public class Issue {
 	 * @param applicableLabels The list of applicable labels for this issue.
 	 * */
 	public void setApplicableLabels(ArrayList<String> applicableLabels){
-		if(applicableLabels!=null){
-			this.applicableLabels = applicableLabels;
-		}
+		assert applicableLabels!=null;
+		this.applicableLabels = applicableLabels;
 	}
 	
 	/**
 	 * Adds the given label to this issue only if the label is applicable to this issue.
-	 * @param label The name of the label to be added to this issue.
+	 * @param label The name of the label to be added to this issue. Cannot be null or empty string
 	 */
 	public void addLabel(String label){
-		if(label!=null && !label.isEmpty()){
-			labels.add(label);
-		}
+		assert label!=null && !label.isEmpty();
+		labels.add(label);
 	}
 	
 	/**
