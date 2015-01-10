@@ -437,7 +437,7 @@ public class Issue {
 		strBuilder = strBuilder.append(FIELD_NUMBER).append(number).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_MILESTONE).append(milestone==null? VAL_NOMILESTONE: milestone).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_STATUS).append(status).append(SEPARATOR);
-		strBuilder = strBuilder.append(FIELD_ASSIGNEE).append(assignee).append(LINE_DELIM);
+		strBuilder = strBuilder.append(FIELD_ASSIGNEE).append(assignee==null? VAL_NOASSIGNEE: assignee).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_LABELS).append(Util.convertToString(labels)).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_CONTENT).append(content).append(LINE_DELIM);
 		strBuilder = strBuilder.append(FIELD_COMMENTS).append(LINE_DELIM);
