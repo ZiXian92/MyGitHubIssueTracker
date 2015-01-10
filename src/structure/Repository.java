@@ -165,11 +165,10 @@ public class Repository {
 	 * @param issue the issue to be added.
 	 */
 	public void addIssue(Issue issue){
-		if(issue!=null){
-			issueList.add(issue);
-			indexList.put(issue.getTitle(), ++numIssues);
-			issue.setApplicableLabels(labels);
-		}
+		assert issue!=null;
+		issueList.add(issue);
+		indexList.put(issue.getTitle(), ++numIssues);
+		issue.setApplicableLabels(labels);
 	}
 	
 	/**
@@ -177,9 +176,8 @@ public class Repository {
 	 * @param assignee The assignee to add. Cannot be null or empty string.
 	 */
 	public void addAssignee(String assignee){
-		if(assignee!=null && !assignee.isEmpty()){
-			assignees.add(assignee);
-		}
+		assert assignee!=null && !assignee.isEmpty();
+		assignees.add(assignee);
 	}
 	
 	/**
@@ -196,9 +194,8 @@ public class Repository {
 	 * @param label The new label to be added.
 	 */
 	public void addLabel(String label){
-		if(label!=null && !label.isEmpty()){
-			labels.add(label);
-		}
+		assert label!=null && !label.isEmpty();
+		labels.add(label);
 	}
 	
 	/**
@@ -236,9 +233,8 @@ public class Repository {
 	 * @param owner The name of the owner of this repository.
 	 */
 	public void setOwner(String owner){
-		if(owner!=null && !owner.isEmpty()){
-			this.owner = owner;
-		}
+		assert owner!=null && !owner.isEmpty();
+		this.owner = owner;
 	}
 	
 	/**
